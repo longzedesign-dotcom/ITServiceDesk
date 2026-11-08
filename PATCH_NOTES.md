@@ -3,6 +3,14 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.45 — 2026-11-09
+- Verified and reconciled exact source code against the live uploaded Server bundle (Server.zip).
+- Database readiness check: confirmed all 26 standard production sheets are active in DBS_ITSD (1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs).
+- Security & RBAC: verified APP_ROLES, APP_ROLE_PERMISSIONS, and APP_ROLE_ACTION_PERMISSIONS.
+- User authentication initialized: ADMIN, CHALOEM, MANAGER, TECHNICIAN, and ITSUPPORT set with verified SHA-256 salted credentials.
+- Login screen specifications: User icon [person] for Username, Key icon [key] for Password, bidirectional eye state toggle, Patch Update badge ITSD V1.1.45, and developer credit Create by : LongZe Design.
+- Deployed as Apps Script Version @4 and synced to GitHub repository.
+
 ## V1.1.01 — 2026-10-29
 - ปรับไอคอนและพื้นที่กด แถบค้นหา ฟอร์ม เมนู กราฟ และการเลื่อนบน Mobile
 - รองรับ viewport 393×852, 375×812, 360×800 และ 360×640 CSS px
