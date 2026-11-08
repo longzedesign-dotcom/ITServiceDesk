@@ -1,5 +1,6 @@
 # 🛠️ คู่มือการติดตั้งและตั้งค่าระบบ (Installation Guide)
 ### ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
+**Version: ITSD V1.1.45 | Developer: Create by : LongZe Design**
 
 คู่มือนี้จัดทำขึ้นเพื่อให้ผู้ดูแลระบบ (System Administrator) และนักพัฒนา สามารถติดตั้งและตั้งค่าระบบ ITSD ได้อย่างถูกต้อง สมบูรณ์ และพร้อมเปิดใช้งานจริง 100%
 
@@ -9,9 +10,9 @@
 1. [สิ่งที่ต้องเตรียมล่วงหน้า (Prerequisites)](#1-สิ่งที่ต้องเตรียมล่วงหน้า-prerequisites)
 2. [วิธีที่ 1: การติดตั้งผ่าน Clasp CLI (แนะนำสำหรับนักพัฒนา)](#2-วิธีที่-1-การติดตั้งผ่าน-clasp-cli-แนะนำสำหรับนักพัฒนา)
 3. [วิธีที่ 2: การติดตั้งผ่าน Google Apps Script Editor (ผ่าน Web Browser)](#3-วิธีที่-2-การติดตั้งผ่าน-google-apps-script-editor-ผ่าน-web-browser)
-4. [การสั่งรันคำสั่งเริ่มต้นระบบ (Initial System Setup)](#4-การสั่งรันคำสั่งเริ่มต้นระบบ-initial-system-setup)
+4. [การสั่งรันคำสั่งเริ่มต้นระบบและการเชื่อมโยงฐานข้อมูล (Database Binding)](#4-การสั่งรันคำสั่งเริ่มต้นระบบและการเชื่อมโยงฐานข้อมูล-database-binding)
 5. [การ Deploy เป็น Web App Production](#5-การ-deploy-เป็น-web-app-production)
-6. [การตั้งค่าระบบแจ้งเตือน Telegram Bot (Optional)](#6-การตั้งค่าระบบแจ้งเตือน-telegram-bot-optional)
+6. [การเชื่อมต่อ LINE Official Account Webhook (Optional)](#6-การเชื่อมต่อ-line-official-account-webhook-optional)
 7. [การตั้งค่าระบบสำรองข้อมูลอัตโนมัติ (Automatic Backup)](#7-การตั้งค่าระบบสำรองข้อมูลอัตโนมัติ-automatic-backup)
 8. [การตรวจสอบและแก้ไขปัญหาที่พบบ่อย (Troubleshooting)](#8-การตรวจสอบและแก้ไขปัญหาที่พบบ่อย-troubleshooting)
 
@@ -21,7 +22,7 @@
 
 ก่อนเริ่มการติดตั้ง ให้เตรียมทรัพยากรบน Google Workspace ดังต่อไปนี้:
 
-1. **Google Spreadsheet ID**:  
+1. **Google Spreadsheet ID (ฐานข้อมูลหลัก 26 ตารางมาตรฐาน)**:  
    - ไฟล์ฐานข้อมูลหลักชื่อ `DBS_ITSD`
    - URL: `https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit`
    - **ID**: `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`
@@ -97,10 +98,10 @@ clasp deploy --description "v1.0.0 Deployment"
    - เลือกบัญชี Google ของท่าน
    - หากขึ้นหน้าต่างเตือน ให้คลิก **ขั้นสูง (Advanced)** แล้วคลิก **ไปยัง ITServiceDesk (ไม่ปลอดภัย)**
    - คลิก **อนุญาต (Allow)**
-5. ฟังก์ชัน `setupSystem` จะดำเนินการ:
-   - ตรวจสอบความถูกต้องของตารางฐานข้อมูลทั้ง 11 ชีต
-   - ตั้งค่า Time-driven Trigger ตรวจสอบงานซ่อมเกินกำหนด (Overdue) ทุกวันเวลา 08:00
-   - ตั้งค่า Trigger สำรองข้อมูลอัตโนมัติ (Database Backup) ทุกวันเวลา 01:00
+5. ฟังก์ชัน `setupSystem_` จะดำเนินการ:
+   - ตรวจสอบความถูกต้องของตารางฐานข้อมูลทั้ง 26 ตารางมาตรฐาน
+   - ตรวจสอบความสมบูรณ์ของชีต `MST_DEVICE_MODELS`, `INVENTORY`, `INCIDENT`, และ `APP_USERS`
+   - ตรวจสอบโฟลเดอร์ Google Drive สำหรับจัดเก็บไฟล์แนบ
 
 ---
 
@@ -112,30 +113,23 @@ clasp deploy --description "v1.0.0 Deployment"
 2. คลิก **แก้ไข (Edit)** หรือคลิกไอคอนเครื่องหมายบวก ➕ เลือก **การทำให้ใช้งานได้ใหม่ (New deployment)**
 3. เลือกประเภท: **เว็บแอป (Web app)**
 4. ตั้งค่าตัวเลือกดังนี้:
-   - **คำอธิบาย (Description)**: `ITSD Production Version`
+   - **คำอธิบาย (Description)**: `ITSD V1.1.45 Production Release`
    - **เรียกใช้ในฐานะ (Execute as)**: `ฉัน (Me - บัญชีเจ้าของระบบ)`
    - **ผู้ที่มีสิทธิ์เข้าถึง (Who has access)**: `ทุกคน (Anyone)`
 5. คลิก **ทำให้ใช้งานได้ (Deploy)**
-6. คัดลอก **URL ของเว็บแอป (Web app URL)** เพื่อแจกจ่ายให้ผู้ใช้งานในองค์กร
+6. คัดลอก **URL ของเว็บแอป (Web app URL)** เพื่อแจกจ่ายให้ผู้ใช้งานในองค์กร:  
+   👉 `https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec`
 
 ---
 
-## 6. การตั้งค่าระบบแจ้งเตือน Telegram Bot (Optional)
+## 6. การเชื่อมต่อ LINE Official Account Webhook (Optional)
 
-หากต้องการให้ระบบแจ้งเตือนเข้ากลุ่มแชตของทีมช่างเมื่อมีผู้แจ้งซ่อมใหม่:
+ระบบมีโมดูล LINE Integration รองรับการแจ้งซ่อมผ่าน LINE Messaging API:
 
-1. เปิดแอป Telegram แล้วค้นหาบอต `@BotFather`
-2. พิมพ์คำสั่ง `/newbot` แล้วตั้งชื่อบอตตามต้องการ จะได้รับ **Bot API Token**
-3. นำบอตเข้ากลุ่ม Telegram ของทีมช่าง
-4. ค้นหา Chat ID ของกลุ่ม (สามารถส่งข้อความเข้ากลุ่มแล้วดึง Chat ID ผ่าน API)
-5. เปิดไฟล์ `src/Config.gs` แล้วนำค่าไปใส่ในส่วน `CONFIG.TELEGRAM`:
-   ```javascript
-   TELEGRAM: {
-     BOT_TOKEN: '123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ',
-     CHAT_ID: '-1001234567890'
-   }
-   ```
-6. สั่ง Deploy ใหม่ หรือ Push อัปเดตขึ้น Apps Script ระบบจะเริ่มแจ้งเตือนอัตโนมัติทันที
+1. ใน LINE Developers Console สร้าง Messaging API Channel
+2. นำ Web App URL ไปใส่ในช่อง **Webhook URL** (ต่อท้ายด้วย `/exec` หรือใช้ POST Webhook)
+3. เมื่อผู้ใช้งานส่งข้อความหรือภาพถ่ายเข้ามา ข้อความจะถูกนำเข้าสู่ตาราง `LINE_INBOX`
+4. เจ้าหน้าที่สามารถใช้เมนู **LINE Inbox Review** เพื่อแปลงข้อความเข้าเป็น Ticket ได้ทันที
 
 ---
 

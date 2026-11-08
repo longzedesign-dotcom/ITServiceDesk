@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 **🌐 URL ใช้งานระบบจริง (Web App Production URL):**  
-[https://script.google.com/macros/s/AKfycbyd6wA9tOHfKqB5ySgH8tJ8nawHVWSj1pALTWVnISjVHcxehz3PPhSkQOkXJRcRGS-L/exec](https://script.google.com/macros/s/AKfycbyd6wA9tOHfKqB5ySgH8tJ8nawHVWSj1pALTWVnISjVHcxehz3PPhSkQOkXJRcRGS-L/exec)
+[https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec](https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec)
 
 </div>
 
@@ -23,7 +23,7 @@
 1. [ภาพรวมของระบบ (Overview)](#-ภาพรวมของระบบ-overview)
 2. [ผังการทำงานของระบบ (Workflows & Architecture)](#-ผังการทำงานของระบบ-workflows--architecture)
 3. [ฟังก์ชันการทำงานหลัก (Key Features)](#-ฟังก์ชันการทำงานหลัก-key-features)
-4. [โครงสร้างฐานข้อมูล Google Sheets (DBS_ITSD - 11 ตาราง)](#️-โครงสร้างฐานข้อมูล-google-sheets-dbs_itsd---11-ตาราง)
+4. [โครงสร้างฐานข้อมูล Google Sheets (DBS_ITSD - 26 ตารางมาตรฐาน)](#️-โครงสร้างฐานข้อมูล-google-sheets-dbs_itsd---26-ตารางมาตรฐาน)
 5. [โครงสร้างไฟล์โค้ดของระบบ (Codebase Architecture)](#-โครงสร้างไฟล์โค้ดของระบบ-codebase-architecture)
 6. [บัญชีผู้ใช้เริ่มต้นสำหรับการทดสอบ (Default Accounts)](#-บัญชีผู้ใช้เริ่มต้นสำหรับการทดสอบ-default-accounts)
 7. [คู่มือเอกสารอ้างอิงเพิ่มเติม](#-คู่มือเอกสารอ้างอิงเพิ่มเติม)
@@ -118,21 +118,39 @@ sequenceDiagram
 
 ---
 
-## 🗄️ โครงสร้างฐานข้อมูล Google Sheets (DBS_ITSD - 11 ตาราง)
+## 🗄️ โครงสร้างฐานข้อมูล Google Sheets (DBS_ITSD - 26 ตารางมาตรฐาน)
 
-| ลำดับ | ชื่อชีต (Sheet Name) | คำอธิบาย | จำนวนคอลัมน์ |
-| :---: | :--- | :--- | :---: |
-| 1 | **`Users`** | บัญชีผู้ใช้งาน สิทธิ์ รหัสผ่านที่เข้ารหัส และประวัติล็อกอิน | 18 |
-| 2 | **`Asset`** | ทะเบียนครุภัณฑ์ อุปกรณ์ไอที และสถานที่ติดตั้ง (4,278 รายการ) | 20 |
-| 3 | **`Tecnical_Spec`** | รายละเอียดสเปกทางเทคนิคของอุปกรณ์ (CPU, RAM, Storage) | 17 |
-| 4 | **`Ticket_Incident`** | รายการใบงานแจ้งซ่อม และประวัติการดำเนินการ | 20 |
-| 5 | **`Master_Reference`** | แคตตาล็อกหมวดหมู่อุปกรณ์ ยี่ห้อ และรุ่นมาตรฐาน | 4 |
-| 6 | **`Cost`** | บันทึกค่าใช้จ่ายการซ่อมบำรุงและค่าอะไหล่ | 11 |
-| 7 | **`Asset_del`** | ถังขยะสำรองข้อมูลครุภัณฑ์ที่ถูกลบออกจากระบบ | 22 |
-| 8 | **`SystemLog`** | บันทึก Audit Log กิจกรรมการเข้าใช้งานและการเปลี่ยนแปลงข้อมูล | 6 |
-| 9 | **` Setting`** | การตั้งค่าระบบและการแจ้งเตือนอัตโนมัติ | 3 |
-| 10 | **`Reference`** | ตารางข้อมูลอ้างอิงรหัสพัสดุและฝ่ายงาน | 31 |
-| 11 | **`Data_Dic`** | พจนานุกรมข้อมูล (Data Dictionary) คำอธิบายคอลัมน์ทั้งหมด | 28 |
+ฐานข้อมูลหลักของระบบจัดเก็บไว้ที่ Google Sheets:  
+**ID: `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs` (DBS_ITSD)**
+
+| ลำดับ | ชื่อชีต (Sheet Name) | คำอธิบายการจัดเก็บข้อมูล |
+| :---: | :--- | :--- |
+| 1 | **`APP_USERS`** | บัญชีผู้ใช้งานระบบ, Salt, Hash รหัสผ่าน (12,000 rounds), สถานะล็อกอิน และสิทธิ์ |
+| 2 | **`APP_USER_PROFILE`** | ข้อมูลส่วนบุคคล เบอร์โทรศัพท์ แผนก และตำแหน่งงาน |
+| 3 | **`APP_ROLES`** | นิยามบทบาทผู้ใช้งาน (ADMIN, MANAGER, TECHNICIAN, ITSUPPORT, USER) |
+| 4 | **`APP_ROLE_PERMISSIONS`** | สิทธิ์การเข้าถึงเมนูและโมดูลระบบ |
+| 5 | **`APP_ROLE_ACTION_PERMISSIONS`** | สิทธิ์การกระทำเชิงลึก (Action Matrix) ของแต่ละบทบาท |
+| 6 | **`APP_SESSIONS`** | เซสชันโทเคนและอายุการเข้าสู่ระบบของผู้ใช้งาน |
+| 7 | **`APP_AUDIT_LOG`** | บันทึกประวัติการกระทำและ Audit Trail ความปลอดภัยของระบบ |
+| 8 | **`APP_SETTINGS`** | การตั้งค่าระบบ ชื่อโครงการ โฟลเดอร์ Drive และไอคอนระบบ |
+| 9 | **`APP_LOOKUPS`** | ค่าตัวเลือกมาตรฐาน (ประเภทปัญหา, หมวดหมู่อุปกรณ์, สถานะ) |
+| 10 | **`Branding`** | ข้อมูลภาพลักษณ์องค์กร โลโก้ และชุดสีของระบบ |
+| 11 | **`INVENTORY`** | ทะเบียนครุภัณฑ์และอุปกรณ์คอมพิวเตอร์ทั้งหมด |
+| 12 | **`INVENTORY_SORTED`** | ทะเบียนครุภัณฑ์ฉบับจัดเรียงดัชนีเพื่อการค้นหารวดเร็ว |
+| 13 | **`MST_DEVICE_MODELS`** | แคตตาล็อกประเภท ยี่ห้อ และรุ่นอุปกรณ์มาตรฐาน |
+| 14 | **`SOFTWARE_LICENSES`** | ทะเบียนใบอนุญาตซอฟต์แวร์และคีย์ลิขสิทธิ์ |
+| 15 | **`MST_ORG_UNITS`** | โครงสร้างฝ่าย สำนัก และกลุ่มงานในองค์กร |
+| 16 | **`INCIDENT`** | รายการใบงานแจ้งซ่อมหลักทั้งหมด (Tickets) |
+| 17 | **`INCIDENT_META`** | ข้อมูลประกอบและข้อมูลจำเพาะทางเทคนิคของใบงาน |
+| 18 | **`INCIDENT_EVENTS`** | ประวัติ Timeline เหตุการณ์และขั้นตอนการดำเนินงานซ่อม |
+| 19 | **`INCIDENT_FILES`** | รายการไฟล์แนบ รูปถ่ายความเสียหาย และเอกสาร Service |
+| 20 | **`TICKET_SERVICE_REPORT`** | ข้อมูลรายงานสรุปงานซ่อมและใบส่งคืนอุปกรณ์ |
+| 21 | **`PM_PLANNINGS`** | แผนแม่บทโครงการบำรุงรักษาเชิงป้องกัน (PM) |
+| 22 | **`PM_PLANNING_ITEMS`** | รายการอุปกรณ์และพื้นที่ในแผนการตรวจเช็ก PM |
+| 23 | **`PM_PLANS`** | ตารางการนัดหมายและการเข้าตรวจเช็กตามปฏิทิน |
+| 24 | **`PM_PLAN_HISTORY`** | ประวัติและบันทึกผลการบำรุงรักษาเชิงป้องกัน |
+| 25 | **`LINE_INBOX`** | ข้อความและรูปภาพที่ส่งเข้ามาจาก LINE Official Account |
+| 26 | **`LINE_INBOX_REVIEWS`** | รายการตรวจสอบและแปลงข้อความ LINE เป็น Ticket |
 
 ---
 
@@ -145,39 +163,36 @@ ITSD/
 ├── README.md                 # ภาพรวมและสถาปัตยกรรมระบบ
 ├── INSTALL_GUIDE.md          # คู่มือการติดตั้งและตั้งค่าระบบ
 ├── MANUAL_USER.md            # คู่มือการใช้งานระบบสำหรับผู้ใช้ทุกกลุ่ม
-└── src/                      # โฟลเดอร์ Source Code ทั้งหมด
-    ├── appsscript.json       # Manifest กำหนด Timezone (Asia/Bangkok) และสิทธิ์ Web App
-    ├── Config.gs             # กำหนดค่าคงที่ SPREADSHEET_ID, FOLDER_ID, Mapping คอลัมน์
-    ├── Main.gs               # Gateway จัดการ doGet, doPost, Session, API Controller
-    ├── SecurityService.gs    # บริการความปลอดภัย SHA-256 + Salt และ Account Lockout
-    ├── CreateIssue.gs        # ฟังก์ชันเปิดใบแจ้งซ่อมใหม่ และอัปโหลดรูปลง Google Drive
-    ├── UpdateIssue.gs        # ฟังก์ชันอัปเดตสถานะงานซ่อม และคำนวณค่าใช้จ่าย
-    ├── ApproveIssue.gs       # บริการอนุมัติใบงานแจ้งซ่อม
-    ├── Approve.gs            # บริการเข้าสู่ระบบและอนุมัติผู้ใช้งาน
-    ├── Register.gs           # บริการลงทะเบียนผู้ใช้งานใหม่
-    ├── AssetOperations.gs    # บริการจัดการครุภัณฑ์ (เพิ่ม, แก้ไข, ลบลง Asset_del)
-    ├── MasterData.gs         # ฟังก์ชันดึง Master Data, Categories, Technicians, Assets
-    ├── ReportIssue.gs        # ฟังก์ชันประมวลผลรายงาน ค่าใช้จ่าย สถิติ และส่งออก CSV
-    ├── ConfigIssue.gs        # ระบบตรวจสอบแจ้งซ่อมเกินกำหนด (Overdue) และตั้งค่า Triggers
-    ├── Notification.gs       # บริการส่งข้อความแจ้งเตือนผ่าน Telegram Bot API
-    ├── Logger.gs             # บริการบันทึก Audit Activity Log
-    ├── Backup.gs             # บริการสำรองข้อมูลฐานข้อมูลอัตโนมัติประจำวัน
-    ├── Login.html            # หน้าจอเข้าสู่ระบบและสมัครสมาชิก ดีไซน์ Glassmorphic พร้อม Show/Hide Password
-    └── Index.html            # หน้าจอ Single Page Application แดชบอร์ดและจัดการงานซ่อมครบวงจร
+├── PATCH_NOTES.md            # ประวัติการ Patch Update และ Release Notes
+├── COLOR_TEMPLATE.md         # สเปกแม่แบบสี UI 6-Color Standard
+├── DBS_ITSD.xlsx             # สำเนาโครงสร้างและข้อมูลฐานข้อมูล 26 ตารางมาตรฐาน
+└── src/                      # โฟลเดอร์ Source Code สำหรับ Deploy ขึ้น Google Apps Script
+    ├── appsscript.json       # Manifest กำหนด Timezone (Asia/Bangkok), V8 Runtime และ OAuth Scopes
+    ├── Entrypoints.js        # Entrypoint หลัก doGet() ให้บริการ Web App และ doPost() รับ LINE Webhook
+    ├── Api.js                # Public API Facade เชื่อมต่อระหว่าง Frontend SPA กับ Backend Engine
+    ├── Server.js             # Core Enterprise Engine (Auth, RBAC, Inventory, Incident, PM, LINE)
+    ├── Index.html            # โครงสร้าง Web Application Shell, ฟอร์ม Login และ Layout
+    ├── UI_Client.html        # Client Controller ควบคุม State, Routing, Form และ Event Handlers
+    ├── UI_Styles.html        # Complete Design System, Responsive Themes (12 Palettes & Dark Mode)
+    └── UI_Templates.html     # Client-side Template Partials สำหรับ Dynamic Views
 ```
 
 ---
 
 ## 👥 บัญชีผู้ใช้เริ่มต้นสำหรับการทดสอบ (Default Accounts)
 
-| รหัสผู้ใช้ | Username | ชื่อ-นามสกุล | แผนก/ฝ่าย | สิทธิ์ (Role) | สถานะ |
+ข้อมูลบัญชีผู้ใช้งานในตาราง `APP_USERS` ที่ผ่านการเข้ารหัส SHA-256 with Salt 12,000 รอบ พร้อมเข้าใช้งานได้ทันที:
+
+| รหัสผู้ใช้ | Username | ชื่อ-นามสกุล | สิทธิ์ (Role) | รหัสผ่านเริ่มต้น | สถานะ |
 | :---: | :---: | :--- | :---: | :---: | :---: |
-| **U003** | `Chaloem.T` | คุณเฉลิมพร ถาโคตร | ไอที | **Admin** | ใช้งาน |
-| **U001** | `Anutin.C` | คุณอนุทิน ชาญวีระยำ | อ้ายทุย | **User** | ใช้งาน |
-| **U002** | `Kantasit.C` | คุณคันธสิทธิ์ ช่องดารากุล | ไอที | **User** | ใช้งาน |
+| **USR-ADMIN** | `ADMIN` | ผู้ดูแลระบบส่วนกลาง | **ADMIN** | `Admin@ITSD2026!` | พร้อมใช้งาน |
+| **USR-CHALOEM** | `CHALOEM` | คุณเฉลิม ธนากิจโภคิน | **ADMIN** | `Admin@ITSD2026!` | พร้อมใช้งาน |
+| **USR-MANAGER** | `MANAGER` | ผู้จัดการ | **MANAGER** | `Admin@ITSD2026!` | พร้อมใช้งาน |
+| **USR-TECHNICIAN** | `TECHNICIAN` | เจ้าหน้าที่ IT | **TECHNICIAN** | `Admin@ITSD2026!` | พร้อมใช้งาน |
+| **USR-ITSUPPORT** | `ITSUPPORT` | ทศพล กาญจนพันธ์ | **ITSUPPORT** | `Admin@ITSD2026!` | พร้อมใช้งาน |
 
 > [!NOTE]  
-> หากต้องการรีเซ็ตรหัสผ่านหรือทดสอบระบบ ผู้ดูแลระบบสามารถใช้รหัสผ่าน Hash ที่กำหนดไว้ในตาราง `Users` หรือลงทะเบียนผู้ใช้ใหม่ผ่านหน้าจอและให้อนุมัติผ่าน Admin ได้ทันที
+> ผู้ใช้งานสามารถเปลี่ยนรหัสผ่านส่วนตัวได้ที่เมนูโปรไฟล์หลังจากเข้าสู่ระบบสำเร็จ ระบบปฏิบัติตามมาตรฐานความปลอดภัย NIST SP 800-63B และระงับบัญชีชั่วคราวอัตโนมัติหากกรอกรหัสผ่านผิดเกิน 5 ครั้ง
 
 ---
 
