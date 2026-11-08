@@ -3,6 +3,14 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.46 — 2026-11-09
+- Applied Pro Style 5: "Orange Energy" (Active • Friendly • Exciting) color palette across the entire ITSD Web App.
+- Core brand palette: Primary Energy Orange (#FA7737), Golden Amber (#FFC92E), Warm Coral Peach (#FD9E76), Deep Midnight Navy (#051344), and Fresh Mint (#55E07E).
+- Modernized Dashboard KPI cards with 16px border-radius, soft elevation hover, and Deep Midnight Navy contrast typography.
+- Professional Midnight Navy (#051344) Enterprise sidebar navigation with glowing Energy Orange active pills and amber hover states.
+- Enhanced CTA buttons with orange gradient (linear-gradient(135deg, #FA7737, #F97316)) and warm drop shadows.
+- Updated COLOR_TEMPLATE.md, deployed as Apps Script Version @6, and committed to GitHub repository.
+
 ## V1.1.45 — 2026-11-09
 - Verified and reconciled exact source code against the live uploaded Server bundle (Server.zip).
 - Database readiness check: confirmed all 26 standard production sheets are active in DBS_ITSD (1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs).

@@ -118,7 +118,7 @@ clasp deploy --description "v1.0.0 Deployment"
    - **ผู้ที่มีสิทธิ์เข้าถึง (Who has access)**: `ทุกคน (Anyone)`
 5. คลิก **ทำให้ใช้งานได้ (Deploy)**
 6. คัดลอก **URL ของเว็บแอป (Web app URL)** เพื่อแจกจ่ายให้ผู้ใช้งานในองค์กร:  
-   👉 `https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec`
+   👉 `https://script.google.com/macros/s/AKfycbzmKNSf_9OLbN93OkJY6wf8JrQYuzLKGMvNvN0dXb-aE8zmopeUTHZydHKOxDtCxZjE/exec`
 
 ---
 

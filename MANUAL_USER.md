@@ -1,6 +1,6 @@
 # 📖 คู่มือการใช้งานระบบ (User Manual)
 ### ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
-**Enterprise Edition — Version ITSD V1.1.45**  
+**Enterprise Edition — Version ITSD V1.1.46 (Theme: Style 5 — Orange Energy)**  
 **Create by : LongZe Design**
 
 ---
@@ -39,7 +39,7 @@
 - **File Storage**: Google Drive โฟลเดอร์ `pic_itcare` สำหรับจัดเก็บรูปถ่ายความเสียหายและเอกสารแนบใบงาน
 
 **🌐 URL สำหรับเข้าใช้งานระบบจริง (Production URL):**  
-👉 [https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec](https://script.google.com/macros/s/AKfycbwyum4XgEWbJSL93LAFBouLo7dgtarxxU2XnZDIZGtXHyoBIj8FmVOVUAUW81Pv3wO-/exec)
+👉 [https://script.google.com/macros/s/AKfycbzmKNSf_9OLbN93OkJY6wf8JrQYuzLKGMvNvN0dXb-aE8zmopeUTHZydHKOxDtCxZjE/exec](https://script.google.com/macros/s/AKfycbzmKNSf_9OLbN93OkJY6wf8JrQYuzLKGMvNvN0dXb-aE8zmopeUTHZydHKOxDtCxZjE/exec)
 
 ---
 
