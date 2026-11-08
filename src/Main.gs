@@ -72,6 +72,10 @@ function serveLoginPage(errorMsg) {
   const template = HtmlService.createTemplateFromFile('Login');
   template.scriptUrl = ScriptApp.getService().getUrl();
   template.errorMsg = errorMsg || '';
+  template.version = (CONFIG.SYSTEM_INFO && CONFIG.SYSTEM_INFO.VERSION) || 'ITSD V1.0.01';
+  template.patch = (CONFIG.SYSTEM_INFO && CONFIG.SYSTEM_INFO.PATCH) || 'Build 01';
+  template.patchFull = (CONFIG.SYSTEM_INFO && CONFIG.SYSTEM_INFO.PATCH_FULL) || 'Patch Update: Build 01 (2026-11-09)';
+  template.developer = (CONFIG.SYSTEM_INFO && CONFIG.SYSTEM_INFO.DEVELOPER) || 'Create by : LongZe Design';
   return template.evaluate()
     .setTitle('เข้าสู่ระบบ - ITSD : ITServiceDesk')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)

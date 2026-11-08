@@ -27,6 +27,17 @@ const CONFIG = {
   TELEGRAM: {
     BOT_TOKEN: '',
     CHAT_ID: ''
+  },
+
+  // 5. ข้อมูลเวอร์ชันและประวัติ Patch Update (Patch Update Tracker)
+  SYSTEM_INFO: {
+    APP_NAME: 'ITSD : ITServiceDesk',
+    SUBTITLE: 'ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที',
+    VERSION: 'ITSD V1.0.01',
+    PATCH: 'Build 01',
+    PATCH_FULL: 'Patch Update: Build 01 (2026-11-09)',
+    DEVELOPER: 'Create by : LongZe Design',
+    LAST_UPDATED: '2026-11-09'
   }
 };
 

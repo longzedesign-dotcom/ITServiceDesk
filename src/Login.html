@@ -9,7 +9,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
@@ -69,7 +69,7 @@
     }
   </script>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center relative overflow-hidden px-4">
+<body class="gradient-bg min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-8">
   
   <!-- Animated Background Elements -->
   <div class="blob w-80 h-80 bg-blue-500 opacity-25 -top-20 -left-20"></div>
@@ -77,9 +77,9 @@
   <div class="blob w-60 h-60 bg-cyan-400 opacity-15 top-1/2 left-1/3" style="animation-delay: -8s;"></div>
 
   <!-- Main Container -->
-  <div class="w-full max-w-lg z-10 py-8">
+  <div class="w-full max-w-lg z-10">
     <!-- Header Logo / App Name -->
-    <div class="text-center mb-8">
+    <div class="text-center mb-6">
       <div class="inline-flex p-4 bg-white/15 backdrop-blur-md rounded-2xl text-white mb-3 shadow-xl border border-white/20">
         <i class="fa-solid fa-headset text-3xl"></i>
       </div>
@@ -97,9 +97,12 @@
       </div>
 
       <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <!-- Username Field with [User] icon -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
-            <i class="fa-regular fa-user text-gray-400"></i> ชื่อผู้ใช้งาน (Username)
+          <label for="login-username" class="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-2">
+            <i class="fa-solid fa-user text-blue-600"></i>
+            <span>Username</span>
+            <span class="text-xs font-normal text-gray-500">(ชื่อผู้ใช้งาน)</span>
           </label>
           <div class="relative">
             <input type="text" id="login-username" required 
@@ -107,16 +110,24 @@
               placeholder="เช่น Chaloem.T, Anutin.C">
           </div>
         </div>
+
+        <!-- Password Field with [Key] icon & Show/Hide Password Eye Toggle -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center justify-between">
-            <span class="flex items-center gap-2"><i class="fa-regular fa-lock text-gray-400"></i> รหัสผ่าน (Password)</span>
+          <label for="login-password" class="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-key text-blue-600"></i>
+              <span>Password</span>
+              <span class="text-xs font-normal text-gray-500">(รหัสผ่าน)</span>
+            </span>
           </label>
           <div class="relative">
             <input type="password" id="login-password" required 
               class="w-full px-4 py-3 pr-11 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition duration-200 text-gray-800"
               placeholder="••••••••">
-            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
-              <i class="fa-regular fa-eye"></i>
+            <button type="button" onclick="togglePasswordVisibility('login-password', this)" 
+              title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน"
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 focus:outline-none transition p-1">
+              <i class="fa-solid fa-eye text-base"></i>
             </button>
           </div>
         </div>
@@ -190,23 +201,27 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-              <i class="fa-regular fa-circle-user text-gray-400"></i> ชื่อผู้ใช้งาน (Username)
+            <label for="reg-username" class="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-user text-blue-600"></i>
+              <span>Username</span>
             </label>
             <input type="text" id="reg-username" required 
               class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
               placeholder="สำหรับเข้าสู่ระบบ">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-              <i class="fa-regular fa-lock text-gray-400"></i> รหัสผ่าน (Password)
+            <label for="reg-password" class="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-key text-blue-600"></i>
+              <span>Password</span>
             </label>
             <div class="relative">
               <input type="password" id="reg-password" required 
                 class="w-full px-3.5 py-2.5 pr-10 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
                 placeholder="ขั้นต่ำ 6 ตัวอักษร">
-              <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
-                <i class="fa-regular fa-eye"></i>
+              <button type="button" onclick="togglePasswordVisibility('reg-password', this)" 
+                title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 focus:outline-none transition p-1">
+                <i class="fa-solid fa-eye text-base"></i>
               </button>
             </div>
           </div>
@@ -228,6 +243,20 @@
         </p>
       </div>
     </div>
+
+    <!-- Patch Update & Developer Badge (ล่างหน้าจอ Login) -->
+    <div class="mt-8 text-center text-xs space-y-2 drop-shadow-sm">
+      <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/25 shadow-lg text-white">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-mono font-bold tracking-wider text-sm text-yellow-300"><?!= version || 'ITSD V1.0.01' ?></span>
+        <span class="text-white/40">|</span>
+        <span class="text-blue-100 font-medium"><?!= patchFull || 'Patch Update: Build 01 (2026-11-09)' ?></span>
+      </div>
+      <div class="text-[12px] text-blue-100 font-light tracking-wide">
+        <span class="font-medium text-white"><?!= developer || 'Create by : LongZe Design' ?></span> &bull; <span>IT Service Desk & Asset Management System</span>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -248,17 +277,30 @@
       });
     }
 
+    /**
+     * ฟังก์ชันสลับแสดง/ซ่อนรหัสผ่านตามเงื่อนไข:
+     * - เมื่อเป็น password (ซ่อนอยู่) -> คลิกจะเปลี่ยนเป็น text พร้อมเปลี่ยนไอคอนเป็น fa-eye-slash และ title 'ซ่อนรหัสผ่าน'
+     * - เมื่อเป็น text (แสดงอยู่) -> คลิกจะเปลี่ยนเป็น password พร้อมเปลี่ยนไอคอนเป็น fa-eye และ title 'แสดงรหัสผ่าน'
+     */
     function togglePasswordVisibility(inputId, btn) {
       const input = document.getElementById(inputId);
+      if (!input) return;
       const icon = btn.querySelector('i');
+      
       if (input.type === 'password') {
         input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        if (icon) {
+          icon.className = 'fa-solid fa-eye-slash text-base text-blue-600';
+        }
+        btn.setAttribute('title', 'ซ่อนรหัสผ่าน');
+        btn.setAttribute('aria-label', 'ซ่อนรหัสผ่าน');
       } else {
         input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+        if (icon) {
+          icon.className = 'fa-solid fa-eye text-base text-gray-400';
+        }
+        btn.setAttribute('title', 'แสดงรหัสผ่าน');
+        btn.setAttribute('aria-label', 'แสดงรหัสผ่าน');
       }
     }
     
