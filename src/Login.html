@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ - ITSD : ITServiceDesk</title>
+  <!-- Google Fonts: Sarabun -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+    }
+    /* Floating animated blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      animation: floatBubble 12s infinite alternate;
+    }
+    @keyframes floatBubble {
+      0% { transform: translateY(0px) scale(1); }
+      100% { transform: translateY(-40px) scale(1.08); }
+    }
+    /* Custom SweetAlert2 modern styling */
+    div:where(.swal2-container) div:where(.swal2-popup) {
+      font-family: 'Sarabun', sans-serif !important;
+      border-radius: 1.5rem !important;
+      padding: 1.75rem !important;
+    }
+    div:where(.swal2-container) button:where(.swal2-styled) {
+      border-radius: 0.75rem !important;
+      padding: 0.625rem 1.5rem !important;
+      font-weight: 500 !important;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center relative overflow-hidden px-4">
+  
+  <!-- Animated Background Elements -->
+  <div class="blob w-80 h-80 bg-blue-500 opacity-25 -top-20 -left-20"></div>
+  <div class="blob w-96 h-96 bg-indigo-600 opacity-20 -bottom-20 -right-20" style="animation-delay: -4s;"></div>
+  <div class="blob w-60 h-60 bg-cyan-400 opacity-15 top-1/2 left-1/3" style="animation-delay: -8s;"></div>
+
+  <!-- Main Container -->
+  <div class="w-full max-w-lg z-10 py-8">
+    <!-- Header Logo / App Name -->
+    <div class="text-center mb-8">
+      <div class="inline-flex p-4 bg-white/15 backdrop-blur-md rounded-2xl text-white mb-3 shadow-xl border border-white/20">
+        <i class="fa-solid fa-headset text-3xl"></i>
+      </div>
+      <h1 class="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">ITSD : ITServiceDesk</h1>
+      <p class="text-blue-100 mt-1 text-sm font-light drop-shadow-sm">ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที</p>
+    </div>
+
+    <!-- Login Box Card -->
+    <div id="login-box" class="glass-card rounded-3xl shadow-2xl p-8 md:p-10 transition-all duration-300 transform scale-100">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fa-solid fa-right-to-bracket text-brand-600"></i> เข้าสู่ระบบ
+        </h2>
+        <p class="text-xs text-gray-500 mt-1">กรุณากรอกชื่อผู้ใช้งานและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+            <i class="fa-regular fa-user text-gray-400"></i> ชื่อผู้ใช้งาน (Username)
+          </label>
+          <div class="relative">
+            <input type="text" id="login-username" required 
+              class="w-full px-4 py-3 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition duration-200 text-gray-800"
+              placeholder="เช่น Chaloem.T, Anutin.C">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="fa-regular fa-lock text-gray-400"></i> รหัสผ่าน (Password)</span>
+          </label>
+          <div class="relative">
+            <input type="password" id="login-password" required 
+              class="w-full px-4 py-3 pr-11 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition duration-200 text-gray-800"
+              placeholder="••••••••">
+            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        
+        <button type="submit" 
+          class="w-full bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-medium py-3 rounded-xl transition duration-200 shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2 mt-4">
+          <span>เข้าสู่ระบบ</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Toggle Button to Register -->
+      <div class="text-center mt-6 pt-5 border-t border-gray-200/60">
+        <p class="text-sm text-gray-600">
+          ยังไม่มีบัญชีผู้ใช้ในระบบ? 
+          <a href="#" onclick="toggleAuthBox('register')" class="text-brand-600 hover:text-brand-700 hover:underline font-semibold ml-1">
+            ลงทะเบียนเข้าใช้งาน
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Register Box Card (hidden by default) -->
+    <div id="register-box" class="glass-card rounded-3xl shadow-2xl p-8 md:p-10 transition-all duration-300 transform scale-95 hidden">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fa-solid fa-user-plus text-emerald-600"></i> ลงทะเบียนสมัครสมาชิก
+        </h2>
+        <p class="text-xs text-gray-500 mt-1">กรอกข้อมูลให้ครบถ้วนเพื่อส่งขออนุมัติใช้งานระบบ</p>
+      </div>
+
+      <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-id-card text-gray-400"></i> ชื่อ-นามสกุล
+            </label>
+            <input type="text" id="reg-name" required 
+              class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+              placeholder="สมชาย ใจดี">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-envelope text-gray-400"></i> อีเมล
+            </label>
+            <input type="email" id="reg-email" required 
+              class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+              placeholder="somchai@example.com">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-phone text-gray-400"></i> เบอร์โทรศัพท์
+            </label>
+            <input type="text" id="reg-phone" required 
+              class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+              placeholder="0812345678">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-building text-gray-400"></i> สำนัก/กอง/ฝ่าย
+            </label>
+            <input type="text" id="reg-dept" required 
+              class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+              placeholder="เช่น ฝ่ายไอที, สพจ.">
+          </div>
+        </div>
+
+        <hr class="border-gray-200/60 my-2">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-circle-user text-gray-400"></i> ชื่อผู้ใช้งาน (Username)
+            </label>
+            <input type="text" id="reg-username" required 
+              class="w-full px-3.5 py-2.5 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+              placeholder="สำหรับเข้าสู่ระบบ">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <i class="fa-regular fa-lock text-gray-400"></i> รหัสผ่าน (Password)
+            </label>
+            <div class="relative">
+              <input type="password" id="reg-password" required 
+                class="w-full px-3.5 py-2.5 pr-10 bg-white/80 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600 text-gray-800"
+                placeholder="ขั้นต่ำ 6 ตัวอักษร">
+              <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" 
+          class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium py-3 rounded-xl transition duration-200 mt-4 shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-check"></i> <span>ลงทะเบียน</span>
+        </button>
+      </form>
+
+      <!-- Toggle Button to Login -->
+      <div class="text-center mt-6 pt-5 border-t border-gray-200/60">
+        <p class="text-sm text-gray-600">
+          มีบัญชีผู้ใช้งานอยู่แล้ว? 
+          <a href="#" onclick="toggleAuthBox('login')" class="text-brand-600 hover:text-brand-700 hover:underline font-semibold ml-1">
+            กลับไปหน้าเข้าสู่ระบบ
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Embedded template variables from GAS backend
+    const SCRIPT_URL = "<?!= scriptUrl ?>";
+    const SERVER_ERROR = "<?!= errorMsg ?>";
+    
+    // Show server error message on page load (e.g., expired session)
+    if (SERVER_ERROR) {
+      window.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+          icon: 'info',
+          title: 'แจ้งเตือน',
+          text: SERVER_ERROR,
+          confirmButtonColor: '#2563eb',
+          confirmButtonText: 'ตกลง'
+        });
+      });
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+    
+    function toggleAuthBox(mode) {
+      const loginBox = document.getElementById('login-box');
+      const regBox = document.getElementById('register-box');
+      
+      if (mode === 'register') {
+        loginBox.classList.add('hidden');
+        loginBox.classList.remove('scale-100');
+        loginBox.classList.add('scale-95');
+        
+        regBox.classList.remove('hidden');
+        setTimeout(() => {
+          regBox.classList.remove('scale-95');
+          regBox.classList.add('scale-100');
+        }, 10);
+      } else {
+        regBox.classList.add('hidden');
+        regBox.classList.remove('scale-100');
+        regBox.classList.add('scale-95');
+        
+        loginBox.classList.remove('hidden');
+        setTimeout(() => {
+          loginBox.classList.remove('scale-95');
+          loginBox.classList.add('scale-100');
+        }, 10);
+      }
+    }
+
+    function showError(msg) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: msg,
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'ตกลง'
+      });
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const uname = document.getElementById('login-username').value;
+      const pword = document.getElementById('login-password').value;
+      
+      Swal.fire({
+        title: 'กำลังเข้าสู่ระบบ...',
+        text: 'โปรดรอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          Swal.close();
+          if (res.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'เข้าสู่ระบบสำเร็จ!',
+              text: 'กำลังนำคุณไปที่หน้าแดชบอร์ด...',
+              timer: 1200,
+              showConfirmButton: false
+            }).then(() => {
+              window.top.location.href = SCRIPT_URL + "?page=index&token=" + res.token;
+            });
+          } else {
+            showError(res.message);
+          }
+        })
+        .withFailureHandler(function(err) {
+          Swal.close();
+          showError('การเข้าสู่ระบบล้มเหลว: ' + err.message);
+        })
+        .handleApiCall('login', { Username: uname, Password: pword });
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const phone = document.getElementById('reg-phone').value;
+      const dept = document.getElementById('reg-dept').value;
+      const username = document.getElementById('reg-username').value;
+      const password = document.getElementById('reg-password').value;
+      
+      if (password.length < 6) {
+        showError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+        return;
+      }
+
+      Swal.fire({
+        title: 'กำลังส่งข้อมูลสมัครสมาชิก...',
+        text: 'โปรดรอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          Swal.close();
+          if (res.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'ลงทะเบียนสำเร็จ!',
+              text: res.message,
+              confirmButtonColor: '#10b981',
+              confirmButtonText: 'เข้าสู่ระบบเลย'
+            }).then(() => {
+              document.getElementById('register-form').reset();
+              toggleAuthBox('login');
+            });
+          } else {
+            showError(res.message);
+          }
+        })
+        .withFailureHandler(function(err) {
+          Swal.close();
+          showError('การลงทะเบียนล้มเหลว: ' + err.message);
+        })
+        .handleApiCall('register', {
+          Full_name: name,
+          Email: email,
+          Phone_number: phone,
+          Department: dept,
+          Username: username,
+          Password: password,
+          Role: 'User'
+        });
+    }
+  </script>
+</body>
+</html>
