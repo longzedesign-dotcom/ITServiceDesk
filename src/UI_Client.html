@@ -704,7 +704,7 @@ function uiAssetSide(id) {
     ['IP Address', x.ip],
   ];
   $('inventorySide').innerHTML =
-    `<div class="ui-side-head"><div><h2><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span> ${esc(x.id)}</h2><small>${esc(x.type)} · ${esc(x.brand)} ${esc(x.model)}</small></div><button class="ghost" onclick="ui.asset='';inventory()"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></div><div class="ui-side-tabs">${[
+    `<div class="ui-side-head"><div><h2><span class="material-symbols-rounded" aria-hidden="true">inventory_2</span> ${esc(x.id)}</h2><small>${esc(x.type)} · ${esc(x.brand)} ${esc(x.model)}</small></div><button type="button" class="ux-drawer-close" title="ปิดรายละเอียด" aria-label="ปิดรายละเอียด" onclick="ux5CloseDrawer('inventorySide')"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></div><div class="ui-side-tabs">${[
       ['details', 'ข้อมูลทั่วไป'],
       ['specs', 'คุณลักษณะ'],
       ['history', 'ประวัติแจ้งซ่อม'],
@@ -3423,18 +3423,43 @@ function ux5OpenDrawer(id) {
 
 function ux5CloseDrawer(id) {
   const side = $(id);
-  if (side) side.classList.remove('ux5-drawer-open');
-  if (id === 'ticketSide') ui.ticket = '';
-  if (id === 'inventorySide') ui.asset = '';
+  if (side) {
+    side.classList.remove('ux5-drawer-open');
+    if (id === 'inventorySide') {
+      side.innerHTML = '<div class="empty">เลือกอุปกรณ์เพื่อดูรายละเอียด</div>';
+    } else if (id === 'ticketSide') {
+      side.innerHTML = '<div class="empty">เลือกรายการเพื่อดูรายละเอียด</div>';
+    }
+  }
+  if (id === 'ticketSide') {
+    ui.ticket = '';
+    if (typeof uiDrawTickets === 'function') uiDrawTickets();
+  }
+  if (id === 'inventorySide') {
+    ui.asset = '';
+    if (typeof uiDrawInventory === 'function') uiDrawInventory();
+  }
   ux5.drawer = '';
   $('uxDrawerBackdrop')?.classList.add('hidden');
   document.body.classList.remove('ux5-drawer-active');
 }
 
 function ux5CloseAllDrawers() {
-  ['ticketSide', 'inventorySide'].forEach((id) => $(id)?.classList.remove('ux5-drawer-open'));
+  ['ticketSide', 'inventorySide'].forEach((id) => {
+    const side = $(id);
+    if (side) {
+      side.classList.remove('ux5-drawer-open');
+      if (id === 'inventorySide') {
+        side.innerHTML = '<div class="empty">เลือกอุปกรณ์เพื่อดูรายละเอียด</div>';
+      } else if (id === 'ticketSide') {
+        side.innerHTML = '<div class="empty">เลือกรายการเพื่อดูรายละเอียด</div>';
+      }
+    }
+  });
   ui.ticket = '';
   ui.asset = '';
+  if (typeof uiDrawTickets === 'function') uiDrawTickets();
+  if (typeof uiDrawInventory === 'function') uiDrawInventory();
   ux5.drawer = '';
   $('uxDrawerBackdrop')?.classList.add('hidden');
   document.body.classList.remove('ux5-drawer-active');

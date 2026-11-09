@@ -5,7 +5,7 @@
 # ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที (Enterprise Edition)
 ### Next-Gen Serverless IT Service Desk, Asset Inventory Management & Automated Workflow Suite
 
-[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.47-orange?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.48-orange?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Patch](https://img.shields.io/badge/Theme-Orange%20Energy%20(Style%205)-ff6b2b?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Developer](https://img.shields.io/badge/Developer-LongZe%20Design-purple?style=flat-square)](https://github.com/longzedesign-dotcom)
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20%7C%20Web%20App-34A853?style=flat-square&logo=google)](https://script.google.com/)
@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 **🌐 URL ใช้งานระบบจริง (Web App Production URL):**  
-[https://script.google.com/macros/s/AKfycbxVYRrOuFC4boyK6bPHeXHWnRMpq5ClKi9fegJZN3WBHudzWH55H6Xzv3kuVO6PUPOC/exec](https://script.google.com/macros/s/AKfycbxVYRrOuFC4boyK6bPHeXHWnRMpq5ClKi9fegJZN3WBHudzWH55H6Xzv3kuVO6PUPOC/exec)
+[https://script.google.com/macros/s/AKfycbxhyry7JAVT1yOw_VADDO0syHkjy7fg__ExwArWJAcTdpSfjr1OZtPrmeHnNmED_9Wm/exec](https://script.google.com/macros/s/AKfycbxhyry7JAVT1yOw_VADDO0syHkjy7fg__ExwArWJAcTdpSfjr1OZtPrmeHnNmED_9Wm/exec)
 
 </div>
 

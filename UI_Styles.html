@@ -536,7 +536,26 @@ label textarea {
 .modal-head button {
   border: 0;
   background: transparent;
-  font-size: 19px;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
+}
+.modal-head button:hover {
+  background-color: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+.modal-head button:active {
+  background-color: rgba(15, 23, 42, 0.16);
+  transform: scale(0.92);
 }
 .toast {
   position: fixed;
@@ -1880,18 +1899,28 @@ textarea {
 }
 .ux-drawer-close {
   border: 0;
-  background: #f3f6f9;
-  color: #64798e;
-  width: 30px;
-  height: 30px;
+  background: transparent;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
   flex: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
 }
 .ux-drawer-close:hover {
-  background: #e8eef5;
+  background-color: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+.ux-drawer-close:active {
+  background-color: rgba(15, 23, 42, 0.16);
+  transform: scale(0.92);
 }
 .ux-drawer-backdrop {
   position: fixed;
@@ -13069,5 +13098,268 @@ html[data-theme] #itsdBuildVersion {
   font-weight: 600 !important;
 }
 html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-ink) !important; }
+
+/* ==========================================================================
+   V1.1.48: Universal Circular Icon Buttons & Interaction Design System
+   Matches User Reference (Images 1, 2, 3):
+   - Default: Transparent background, ONLY the icon is displayed, centered.
+   - Hover / Focus: Circular darker/tinted background selection (50% circle).
+   - Active: Pressed scale down with deeper tint.
+   - Applies to: ALL Close, Modal, Panel, Drawer, Expand/Collapse, More (...) buttons.
+   ========================================================================== */
+
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  color: #475569 !important;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s ease,
+              box-shadow 0.2s ease !important;
+  -webkit-tap-highlight-color: transparent !important;
+  vertical-align: middle !important;
+}
+
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+) .material-symbols-rounded {
+  font-size: 20px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  text-align: center !important;
+  color: inherit !important;
+  pointer-events: none !important;
+}
+
+/* Hover: Darker circular background selection (matching user sample images 1 & 2) */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):hover {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+/* Focus Visible */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):focus-visible {
+  outline: 2px solid #fa7737 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Active / Pressed */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):active {
+  background-color: rgba(15, 23, 42, 0.16) !important;
+  transform: scale(0.92) !important;
+}
+
+/* Dark Mode Overrides */
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+),
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+) {
+  color: #94a3b8 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):hover,
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):hover {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):active,
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  .sidebar-collapse,
+  .mobile-menu,
+  .top-icon-button,
+  .palette-toggle,
+  .mode-toggle,
+  #themeToggle,
+  .login48-password-toggle,
+  .admin36-role-more,
+  .ui-side-head > button:not(.primary):not(.outline):not(.link),
+  button.ux-circle-icon-btn,
+  button.icon-btn
+):active {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
 
 </style>

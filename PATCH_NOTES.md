@@ -3,6 +3,20 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.48 — 2026-11-09
+- **Fixed Duplicate Close Buttons on Inventory Registry**: Resolved the issue where the equipment registry drawer (`inventorySide`) rendered two close buttons simultaneously by removing the duplicate `<button class="ghost">` and standardizing on the unified `.ux-drawer-close`.
+- **Universal Circular Icon Button Interaction System**:
+  - Implemented the user's reference design (Images 1, 2, 3):
+    - **Normal State**: Only the icon is shown with transparent background, no borders, perfectly centered.
+    - **Hover State**: Displays a dark circular hover selection ring (`border-radius: 50%`, `rgba(15, 23, 42, 0.08)` in light mode, `rgba(255, 255, 255, 0.14)` in dark mode).
+    - **Active State**: Smooth scale down to 92% with deeper contrast tint.
+  - Applied this interaction pattern universally across:
+    - All modal, panel, and drawer close buttons (`.modal-head button`, `.ux-drawer-close`, `.ocpb-import-close`, `.admin36-detail-head button`).
+    - Expand / Collapse / Menu toggles (`.sidebar-collapse`, `.mobile-menu`).
+    - More options actions (`.admin36-role-more`, `.top-icon-button`, `#themeToggle`, `.palette-toggle`, `.mode-toggle`).
+    - Password visibility toggle (`.login48-password-toggle`).
+- Deployed to Google Apps Script as Version `@8`.
+
 ## V1.1.47 — 2026-11-09
 - **Password Eye Icon Toggle**: Configured `visibility_off` as the default icon for password input when masked. Clicking changes to `visibility` (open eye) and reveals password in plaintext; clicking again reverts to `visibility_off` and masks password.
 - **Top Line Continuous Alignment (ตรงตำแหน่งเส้นเหลือง)**: Perfectly aligned the bottom border of `.brand` and `.topbar` at identical heights (`var(--topbar-height)`) with matching `rgba(250, 119, 55, 0.3)` border separators across the entire screen width, eliminating vertical offsets between the sidebar header and topbar.
