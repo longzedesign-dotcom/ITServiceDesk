@@ -788,9 +788,18 @@ button .material-symbols-rounded {
 .top-icon-button .material-symbols-rounded,
 .sidebar-collapse .material-symbols-rounded,
 .mobile-menu .material-symbols-rounded,
-.modal-head .material-symbols-rounded {
+.modal-head .material-symbols-rounded,
+.ux-drawer-close .material-symbols-rounded,
+.palette-toggle .material-symbols-rounded,
+.mode-toggle .material-symbols-rounded,
+#themeToggle .material-symbols-rounded,
+.login48-password-toggle .material-symbols-rounded,
+.admin36-role-more .material-symbols-rounded,
+button.ux-circle-icon-btn .material-symbols-rounded,
+button.icon-btn .material-symbols-rounded {
   font-size: inherit;
-  margin: 0;
+  margin: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* Login */
@@ -1828,8 +1837,8 @@ textarea {
 .ui-side-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
 }
 .ui-side-head h2 {
   font-size: 18px;
@@ -1848,9 +1857,10 @@ textarea {
   padding: 10px 8px;
   color: #647b95;
 }
+html[data-theme] .ui-side-tabs button.active,
 .ui-side-tabs button.active {
-  color: #075de6;
-  border-bottom: 3px solid #075de6;
+  color: var(--theme-accent, #fa7737) !important;
+  border-bottom: 3px solid var(--theme-accent, #fa7737) !important;
   font-weight: 700;
 }
 .ui-detail {
@@ -1900,26 +1910,29 @@ textarea {
 .ux-drawer-close {
   border: 0;
   background: transparent;
-  color: #64748b;
+  color: var(--theme-heading, #051344);
   width: 36px;
   height: 36px;
   min-width: 36px;
   min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
   border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
   padding: 0;
+  margin: 0;
   flex: none;
   cursor: pointer;
   transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
 }
 .ux-drawer-close:hover {
-  background-color: rgba(15, 23, 42, 0.08);
-  color: #0f172a;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 14%, transparent);
+  color: var(--theme-accent, #fa7737);
 }
 .ux-drawer-close:active {
-  background-color: rgba(15, 23, 42, 0.16);
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 24%, transparent);
+  color: var(--theme-action, #e05316);
   transform: scale(0.92);
 }
 .ux-drawer-backdrop {
@@ -13100,12 +13113,13 @@ html[data-theme] #itsdBuildVersion {
 html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-ink) !important; }
 
 /* ==========================================================================
-   V1.1.48: Universal Circular Icon Buttons & Interaction Design System
-   Matches User Reference (Images 1, 2, 3):
-   - Default: Transparent background, ONLY the icon is displayed, centered.
-   - Hover / Focus: Circular darker/tinted background selection (50% circle).
-   - Active: Pressed scale down with deeper tint.
-   - Applies to: ALL Close, Modal, Panel, Drawer, Expand/Collapse, More (...) buttons.
+   V1.1.49: Precision Centering & Theme-Synchronized Circular Icon Design System
+   Matches User Reference & Chosen Color Theme (Style 5 - Orange Energy):
+   - Centering: Dead-center geometric grid alignment, zero margin offsets (removes 4px font offset).
+   - Resting: Transparent background, displays only the icon.
+   - Hover: Theme-based circular background (color-mix with --theme-accent) and themed icon color.
+   - Active: Pressed scale down (0.92) with deeper theme tint.
+   - Applies to: ALL Close, Modal, Panel, Drawer, Expand/Collapse, and Icon Buttons.
    ========================================================================== */
 
 :is(
@@ -13125,9 +13139,10 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   button.ux-circle-icon-btn,
   button.icon-btn
 ) {
-  display: inline-flex !important;
-  align-items: center !important;
+  display: inline-grid !important;
+  place-items: center !important;
   justify-content: center !important;
+  align-content: center !important;
   width: 36px !important;
   height: 36px !important;
   min-width: 36px !important;
@@ -13136,6 +13151,10 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   max-height: 36px !important;
   padding: 0 !important;
   margin: 0 !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   border-radius: 50% !important;
   border: none !important;
   outline: none !important;
@@ -13143,12 +13162,15 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   background-color: transparent !important;
   box-shadow: none !important;
   cursor: pointer !important;
+  flex: 0 0 36px !important;
   flex-shrink: 0 !important;
-  color: #475569 !important;
+  color: var(--theme-heading, #051344) !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
   transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
               color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.15s ease,
-              box-shadow 0.2s ease !important;
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s ease !important;
   -webkit-tap-highlight-color: transparent !important;
   vertical-align: middle !important;
 }
@@ -13169,18 +13191,36 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
-) .material-symbols-rounded {
+) :is(.material-symbols-rounded, svg, i) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
   font-size: 20px !important;
-  line-height: 1 !important;
+  line-height: 20px !important;
   margin: 0 !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   padding: 0 !important;
-  display: block !important;
   text-align: center !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  text-indent: 0 !important;
   color: inherit !important;
   pointer-events: none !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  font-feature-settings: 'liga' !important;
 }
 
-/* Hover: Darker circular background selection (matching user sample images 1 & 2) */
+/* Hover: Themed circular background selection referencing active Color Theme */
 :is(
   .ux-drawer-close,
   .modal-head button,
@@ -13198,8 +13238,10 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   button.ux-circle-icon-btn,
   button.icon-btn
 ):hover {
-  background-color: rgba(15, 23, 42, 0.08) !important;
-  color: #0f172a !important;
+  background-color: rgba(250, 119, 55, 0.12) !important;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 14%, transparent) !important;
+  color: var(--theme-accent, #fa7737) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent, #fa7737) 18%, transparent) !important;
 }
 
 /* Focus Visible */
@@ -13220,9 +13262,10 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   button.ux-circle-icon-btn,
   button.icon-btn
 ):focus-visible {
-  outline: 2px solid #fa7737 !important;
+  outline: 2px solid var(--theme-focus, #fa7737) !important;
   outline-offset: 2px !important;
-  background-color: rgba(15, 23, 42, 0.08) !important;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 14%, transparent) !important;
+  color: var(--theme-accent, #fa7737) !important;
 }
 
 /* Active / Pressed */
@@ -13243,7 +13286,8 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   button.ux-circle-icon-btn,
   button.icon-btn
 ):active {
-  background-color: rgba(15, 23, 42, 0.16) !important;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 26%, transparent) !important;
+  color: var(--theme-action, #e05316) !important;
   transform: scale(0.92) !important;
 }
 
@@ -13282,7 +13326,7 @@ html[data-theme='dark'] :is(
   button.ux-circle-icon-btn,
   button.icon-btn
 ) {
-  color: #94a3b8 !important;
+  color: var(--theme-muted, #94a3b8) !important;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -13321,8 +13365,10 @@ html[data-theme='dark'] :is(
   button.ux-circle-icon-btn,
   button.icon-btn
 ):hover {
-  background-color: rgba(255, 255, 255, 0.14) !important;
-  color: #ffffff !important;
+  background-color: rgba(250, 119, 55, 0.22) !important;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 22%, transparent) !important;
+  color: var(--theme-accent, #ff9357) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent, #fa7737) 30%, transparent) !important;
 }
 
 html[data-theme='dark'] :is(
@@ -13359,7 +13405,9 @@ html[data-theme='dark'] :is(
   button.ux-circle-icon-btn,
   button.icon-btn
 ):active {
-  background-color: rgba(255, 255, 255, 0.22) !important;
+  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 38%, transparent) !important;
+  color: #ffffff !important;
+  transform: scale(0.92) !important;
 }
 
 </style>

@@ -3,6 +3,20 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.49 — 2026-11-09
+- **Precision Centering of Close & Icon Buttons (กากบาทอยู่กึ่งกลางสมบูรณ์ 100%)**:
+  - Eliminated the 4px horizontal offset caused by legacy `button .material-symbols-rounded { margin-right: 4px; }` across all icon buttons.
+  - Implemented geometric grid-centered layout (`display: inline-grid !important; place-items: center !important;`) for both `.ux-drawer-close` and all circular icon buttons.
+  - Explicitly reset icon child dimensions and margins (`width: 20px; height: 20px; margin: 0 !important; font-size: 20px; line-height: 20px;`) ensuring mathematical subpixel centering across Retina and standard displays.
+- **Theme Color Integration (พื้นหลังและสีปุ่มอ้างอิงตาม Color Theme ที่เลือก)**:
+  - Button hover and active states now dynamically reference the active theme's accent color (`color-mix(in srgb, var(--theme-accent) 14%, transparent)` in light mode, `color-mix(in srgb, var(--theme-accent) 22%, transparent)` in dark mode).
+  - On hover, the close icon turns into the active theme accent color (`var(--theme-accent, #fa7737)` in Orange Energy Style 5), replacing generic grey with vibrant theme-conscious styling.
+  - Active/pressed state applies deeper theme tint (`color-mix(in srgb, var(--theme-accent) 26%, transparent)`) with 0.92 scale.
+- **Side Drawer Header & Active Tab Theme Alignment**:
+  - Aligned drawer header items to `align-items: center` for clean vertical centering between title metadata and the close button.
+  - Replaced legacy blue underline (`#075de6`) on `.ui-side-tabs button.active` with `var(--theme-accent, #fa7737)` in Light Mode, perfectly matching the Orange Energy theme.
+- Deployed to Google Apps Script as Version `@9`.
+
 ## V1.1.48 — 2026-11-09
 - **Fixed Duplicate Close Buttons on Inventory Registry**: Resolved the issue where the equipment registry drawer (`inventorySide`) rendered two close buttons simultaneously by removing the duplicate `<button class="ghost">` and standardizing on the unified `.ux-drawer-close`.
 - **Universal Circular Icon Button Interaction System**:
