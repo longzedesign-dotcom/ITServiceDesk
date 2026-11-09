@@ -868,7 +868,7 @@ function toggleLoginPassword() {
   button.setAttribute('aria-pressed', String(show));
   button.setAttribute('aria-label', show ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
   const icon = button.querySelector('.material-symbols-rounded');
-  if (icon) icon.textContent = show ? 'visibility_off' : 'visibility';
+  if (icon) icon.textContent = show ? 'visibility' : 'visibility_off';
 }
 
 function showLoginFutureNotice(feature) {

@@ -3,6 +3,22 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.47 — 2026-11-09
+- **Password Eye Icon Toggle**: Configured `visibility_off` as the default icon for password input when masked. Clicking changes to `visibility` (open eye) and reveals password in plaintext; clicking again reverts to `visibility_off` and masks password.
+- **Top Line Continuous Alignment (ตรงตำแหน่งเส้นเหลือง)**: Perfectly aligned the bottom border of `.brand` and `.topbar` at identical heights (`var(--topbar-height)`) with matching `rgba(250, 119, 55, 0.3)` border separators across the entire screen width, eliminating vertical offsets between the sidebar header and topbar.
+- **Sidebar Theme 5 (Orange Energy)**: Replaced legacy royal blue with Style 5 Orange Energy palette:
+  - Sidebar Brand Logo: `linear-gradient(135deg, #FA7737, #FFC92E)` with white icon.
+  - Active Menu Buttons: `linear-gradient(90deg, #FA7737, #EA580C)` with Golden Amber `#FFC92E` left border accent.
+  - Menu Hover States: warm orange glow `rgba(250, 119, 55, 0.14)` with `#FFC92E` text.
+  - Section Headers: Warm Peach `#FD9E76`.
+- **Role Cards & Permission Matrix Overhaul**:
+  - Role Summary Cards (Admin: `#FA7737`, Manager: `#55E07E`, Technician: `#FFC92E`, ITSupport: `#FD9E76`, User: `#7E879B`).
+  - Active Role Card: styled with Style 5 Orange gradient and elevated border glow.
+  - Role List Active Item: replaced legacy dark blue with `linear-gradient(135deg, rgba(250, 119, 55, 0.28), rgba(234, 88, 12, 0.18))` and `#FA7737` badge.
+  - Permission Matrix Table: replaced bright blue checkmarks with Orange Energy gradient badges (`linear-gradient(135deg, #FA7737, #EA580C)`).
+  - Topbar Search Button: styled with Orange Energy `#FA7737` gradient and white typography.
+- Deployed to Google Apps Script as Version `@7`.
+
 ## V1.1.46 — 2026-11-09
 - Applied Pro Style 5: "Orange Energy" (Active • Friendly • Exciting) color palette across the entire ITSD Web App.
 - Core brand palette: Primary Energy Orange (#FA7737), Golden Amber (#FFC92E), Warm Coral Peach (#FD9E76), Deep Midnight Navy (#051344), and Fresh Mint (#55E07E).

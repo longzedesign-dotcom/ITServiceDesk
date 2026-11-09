@@ -867,9 +867,10 @@ button .material-symbols-rounded {
   height: 44px;
   border: 0;
   border-radius: 12px;
-  background: linear-gradient(145deg, #0ea5e9, #1e3a8a);
+  background: linear-gradient(135deg, #fa7737 0%, #ffc92e 100%);
   color: #fff;
   flex: 0 0 44px;
+  box-shadow: 0 4px 14px rgba(250, 119, 55, 0.35);
 }
 .brand-copy {
   min-width: 0;
@@ -925,14 +926,14 @@ button .material-symbols-rounded {
     box-shadow 0.2s;
 }
 .sidebar nav button:hover {
-  background: #112d57;
-  color: #fff;
+  background: rgba(250, 119, 55, 0.14);
+  color: #ffc92e;
 }
 .sidebar nav button.active {
-  background: linear-gradient(90deg, #1465dd, #164fbb);
-  border-left-color: #53b6ff;
+  background: linear-gradient(90deg, #fa7737, #ea580c);
+  border-left-color: #ffc92e;
   color: #fff;
-  box-shadow: none;
+  box-shadow: 0 4px 16px rgba(250, 119, 55, 0.35);
 }
 .sidebar nav button .ico {
   width: 27.6px;
@@ -7328,9 +7329,9 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   color: #233d5a;
 }
 .admin36-role-list-item.active {
-  border-color: #4e97f5;
-  background: #edf6ff;
-  box-shadow: 0 0 0 1px #4e97f5 inset;
+  border-color: #fa7737;
+  background: linear-gradient(135deg, rgba(250, 119, 55, 0.22), rgba(234, 88, 12, 0.12));
+  box-shadow: 0 0 0 1px #fa7737 inset, 0 4px 14px rgba(250, 119, 55, 0.2);
 }
 .admin36-role-mini-icon {
   width: 43px;
@@ -7508,8 +7509,9 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   font-weight: 700;
 }
 .admin36-perm-state.full {
-  background: #2b83f2;
+  background: linear-gradient(135deg, #fa7737, #ea580c);
   color: #fff;
+  box-shadow: 0 2px 6px rgba(250, 119, 55, 0.35);
 }
 .admin36-perm-state.limited {
   background: #aab6c5;
@@ -9002,17 +9004,17 @@ html[data-palette='palette-04'] {
   --palette-dark-focus: #e3a3c0;
 }
 html[data-palette='palette-05'] {
-  --palette-primary: #052a21;
-  --palette-secondary: #a95600;
-  --palette-tertiary: #f3cfac;
-  --palette-highlight: #f6e8da;
-  --theme-accent: #86501f;
-  --theme-action: #603813;
-  --theme-heading: #17372e;
-  --theme-focus: #86501f;
-  --palette-dark-accent: #f0bd8b;
-  --palette-dark-action: #603813;
-  --palette-dark-focus: #f0bd8b;
+  --palette-primary: #fa7737;
+  --palette-secondary: #ffc92e;
+  --palette-tertiary: #fd9e76;
+  --palette-highlight: #051344;
+  --theme-accent: #fa7737;
+  --theme-action: #ea580c;
+  --theme-heading: #051344;
+  --theme-focus: #fa7737;
+  --palette-dark-accent: #fa7737;
+  --palette-dark-action: #ea580c;
+  --palette-dark-focus: #ffc92e;
 }
 html[data-palette='palette-06'] {
   --palette-primary: #202734;
@@ -12848,29 +12850,197 @@ html[data-theme] .ux-btn-primary:hover {
   transform: translateY(-1px) !important;
 }
 
-/* Sidebar styling in Midnight Navy */
+/* V1.1.47: Continuous Top Line Alignment matching User Reference (Yellow Line) */
+html[data-theme] .brand,
+html[data-theme] .topbar {
+  height: var(--topbar-height) !important;
+  min-height: var(--topbar-height) !important;
+  border-bottom: 1px solid rgba(250, 119, 55, 0.3) !important;
+  box-sizing: border-box !important;
+}
+
+/* Sidebar styling in Style 5: Orange Energy + Midnight Navy */
 html[data-theme] .sidebar {
   background: #051344 !important;
-  border-right: 1px solid rgba(250, 119, 55, 0.15) !important;
+  border-right: 1px solid rgba(250, 119, 55, 0.18) !important;
 }
-html[data-theme] .sidebar .nav a.active,
-html[data-theme] .sidebar a.active,
-html[data-theme] .side-item.active {
-  background: linear-gradient(135deg, #fa7737 0%, #f97316 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(250, 119, 55, 0.4) !important;
-  border-radius: 10px !important;
+html[data-theme] .brand {
+  background: #051344 !important;
 }
-html[data-theme] .sidebar .nav a.active .material-symbols-rounded,
-html[data-theme] .sidebar a.active .material-symbols-rounded {
+html[data-theme] .brand .logo {
+  background: linear-gradient(135deg, #fa7737 0%, #ffc92e 100%) !important;
+  box-shadow: 0 4px 14px rgba(250, 119, 55, 0.35) !important;
   color: #ffffff !important;
 }
-html[data-theme] .sidebar a:hover:not(.active) {
+html[data-theme] .sidebar .section-name {
+  color: #fd9e76 !important;
+  font-weight: 600;
+}
+html[data-theme] .sidebar nav button.active {
+  background: linear-gradient(90deg, #fa7737, #ea580c) !important;
+  border-left-color: #ffc92e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(250, 119, 55, 0.35) !important;
+}
+html[data-theme] .sidebar nav button.active .ico,
+html[data-theme] .sidebar nav button.active .material-symbols-rounded {
+  color: #ffffff !important;
+}
+html[data-theme] .sidebar nav button:hover:not(.active) {
   background: rgba(250, 119, 55, 0.14) !important;
   color: #ffc92e !important;
+  border-left-color: rgba(255, 201, 46, 0.6) !important;
 }
-html[data-theme] .sidebar a:hover:not(.active) .material-symbols-rounded {
+html[data-theme] .sidebar nav button:hover:not(.active) .ico,
+html[data-theme] .sidebar nav button:hover:not(.active) .material-symbols-rounded {
   color: #fa7737 !important;
+}
+html[data-theme] .sidebar-collapse:hover {
+  background: #fa7737 !important;
+  color: #ffffff !important;
+}
+
+/* Style 5: Topbar Search & Header Controls */
+html[data-theme] .top-search button {
+  background: linear-gradient(135deg, #fa7737, #ea580c) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(250, 119, 55, 0.3) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+html[data-theme] .top-search button:hover {
+  background: linear-gradient(135deg, #ea580c, #fa7737) !important;
+  box-shadow: 0 4px 14px rgba(250, 119, 55, 0.45) !important;
+  transform: translateY(-1px);
+}
+html[data-theme] .top-search input:focus {
+  border-color: #fa7737 !important;
+  box-shadow: 0 0 0 3px rgba(250, 119, 55, 0.2) !important;
+}
+
+/* Style 5: Role Cards & Permission Matrix */
+html[data-theme] .admin36-role-summary {
+  border-radius: 16px;
+  border: 1px solid rgba(250, 119, 55, 0.18) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+html[data-theme] .admin36-role-summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(250, 119, 55, 0.15) !important;
+}
+html[data-theme] .admin36-role-summary.active {
+  border-color: #fa7737 !important;
+  box-shadow: 0 0 0 1px #fa7737, 0 8px 24px rgba(250, 119, 55, 0.25) !important;
+}
+html[data-theme] .tone-blue .admin36-role-summary-icon,
+html[data-theme] .admin36-role-mini-icon.tone-blue {
+  background: rgba(250, 119, 55, 0.18) !important;
+  color: #fa7737 !important;
+}
+html[data-theme] .tone-blue .admin36-role-arrow {
+  color: #fa7737 !important;
+}
+html[data-theme] .tone-green .admin36-role-summary-icon,
+html[data-theme] .admin36-role-mini-icon.tone-green {
+  background: rgba(85, 224, 126, 0.18) !important;
+  color: #10b981 !important;
+}
+html[data-theme] .tone-green .admin36-role-arrow {
+  color: #10b981 !important;
+}
+html[data-theme] .tone-orange .admin36-role-summary-icon,
+html[data-theme] .admin36-role-mini-icon.tone-orange {
+  background: rgba(255, 201, 46, 0.18) !important;
+  color: #ffc92e !important;
+}
+html[data-theme] .tone-orange .admin36-role-arrow {
+  color: #ffc92e !important;
+}
+html[data-theme] .tone-purple .admin36-role-summary-icon,
+html[data-theme] .admin36-role-mini-icon.tone-purple {
+  background: rgba(253, 158, 118, 0.18) !important;
+  color: #fd9e76 !important;
+}
+html[data-theme] .tone-purple .admin36-role-arrow {
+  color: #fd9e76 !important;
+}
+
+/* Left Role List: Active Role Item */
+html[data-theme] .admin36-role-list-item.active {
+  background: linear-gradient(135deg, rgba(250, 119, 55, 0.28), rgba(234, 88, 12, 0.18)) !important;
+  border-color: #fa7737 !important;
+  box-shadow: 0 0 0 1px #fa7737 inset, 0 4px 14px rgba(250, 119, 55, 0.25) !important;
+  color: #ffffff !important;
+}
+html[data-theme] .admin36-role-list-item.active b {
+  color: #ffffff !important;
+}
+html[data-theme] .admin36-role-list-item.active small {
+  color: #ffd8bf !important;
+}
+html[data-theme] .admin36-role-list-item.active em {
+  background: #fa7737 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+html[data-theme] .admin36-add-role {
+  background: #fa7737 !important;
+  color: #ffffff !important;
+}
+
+/* Permission Matrix Checkmarks & Headers */
+html[data-theme] .admin36-perm-state.full {
+  background: linear-gradient(135deg, #fa7737, #ea580c) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(250, 119, 55, 0.35) !important;
+}
+html[data-theme] .admin36-perm-state.limited {
+  background: #ffc92e !important;
+  color: #051344 !important;
+}
+html[data-theme] .admin36-matrix-role.tone-blue {
+  color: #fa7737 !important;
+}
+html[data-theme] .admin36-matrix-role.tone-green {
+  color: #10b981 !important;
+}
+html[data-theme] .admin36-matrix-role.tone-orange {
+  color: #ffc92e !important;
+}
+html[data-theme] .admin36-matrix-role.tone-purple {
+  color: #fd9e76 !important;
+}
+
+/* Style 5: Status Badges Across Webapp */
+html[data-theme] .status-badge.new,
+html[data-theme] .status-badge.open,
+html[data-theme] .status-pill.status-new,
+html[data-theme] .admin36-role-pill.role-admin,
+html[data-theme] .admin35-role.admin {
+  background: rgba(250, 119, 55, 0.16) !important;
+  color: #fa7737 !important;
+  border-color: rgba(250, 119, 55, 0.4) !important;
+}
+html[data-theme] .status-badge.in_progress,
+html[data-theme] .status-pill.status-pending,
+html[data-theme] .admin36-role-pill.role-technician {
+  background: rgba(255, 201, 46, 0.16) !important;
+  color: #d97706 !important;
+  border-color: rgba(255, 201, 46, 0.4) !important;
+}
+html[data-theme] .status-badge.closed,
+html[data-theme] .status-badge.resolved,
+html[data-theme] .status-pill.status-closed,
+html[data-theme] .admin36-role-pill.role-manager {
+  background: rgba(85, 224, 126, 0.16) !important;
+  color: #10b981 !important;
+  border-color: rgba(85, 224, 126, 0.4) !important;
+}
+html[data-theme] .admin36-role-pill.role-itsupport {
+  background: rgba(253, 158, 118, 0.16) !important;
+  color: #fd9e76 !important;
+  border-color: rgba(253, 158, 118, 0.4) !important;
 }
 
 /* Login Card refinement */
