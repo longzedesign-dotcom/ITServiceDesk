@@ -3,6 +3,14 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.51 — 2026-11-09
+- **Continuous Straight Header Alignment with System Logo (เส้นแบ่งหัว Webapp เป็นแนวเส้นตรงเดียวกันกับ icon ระบบ Sidebar)**:
+  - Synchronized the Webapp header (`.topbar`) and sidebar brand header (`.brand`) to share the exact same standardized height (`--topbar-height: 68px`).
+  - Unified the dividing bottom border (`border-bottom: 1px solid rgba(250, 119, 55, 0.35) !important; box-sizing: border-box !important; margin: 0 !important;`) across both `.brand` and `.topbar`, creating an unbroken, perfectly continuous horizontal straight line at $y = 68\text{px}$ from the left edge of the sidebar across to the right edge of the topbar.
+  - Aligned the bottom dividing line cleanly right beneath the system logo icon (`.brand .logo`), matching the yellow line reference geometry.
+  - Ensured both expanded and collapsed sidebar states (`.sidebar.is-collapsed .brand`) maintain the exact same height and border alignment without any stepping or vertical offset.
+  - Cleaned up legacy conflicting styles (`82px`, `80px`) across the CSS cascade to guarantee a single consistent source of truth.
+
 ## V1.1.50 — 2026-11-09
 - **Bright Luminous Selection for All Status & Action Icons (พื้นหลังสว่างรอยืนยันคลิกเลือก)**:
   - Applied crisp, high-contrast bright circular background highlights when hovering or focusing across:

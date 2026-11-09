@@ -5,7 +5,7 @@
 # ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที (Enterprise Edition)
 ### Next-Gen Serverless IT Service Desk, Asset Inventory Management & Automated Workflow Suite
 
-[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.50-orange?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.51-orange?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Patch](https://img.shields.io/badge/Theme-Orange%20Energy%20(Style%205)-ff6b2b?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Developer](https://img.shields.io/badge/Developer-LongZe%20Design-purple?style=flat-square)](https://github.com/longzedesign-dotcom)
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20%7C%20Web%20App-34A853?style=flat-square&logo=google)](https://script.google.com/)
