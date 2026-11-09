@@ -1244,8 +1244,9 @@ html[data-palette] .palette-toggle:focus-visible {
 }
 .top-icon-button:hover,
 .top-icon-button:focus-visible {
-  background: #f1f5f9;
-  color: #1d5fa7;
+  background: #ffffff;
+  color: var(--theme-accent, #fa7737);
+  box-shadow: 0 3px 12px rgba(250, 119, 55, 0.28), 0 0 0 2px var(--theme-accent, #fa7737);
   outline: none;
   transform: translateY(-1px);
 }
@@ -2285,11 +2286,14 @@ body.ui-theme-dark {
   border-color: #3b4b60;
 }
 .ui-theme-dark .top-icon-button {
-  color: #a8b6c8;
+  color: #94a3b8;
 }
-.ui-theme-dark .top-icon-button:hover {
-  background: #334155;
-  color: #fff;
+.ui-theme-dark .top-icon-button:hover,
+.ui-theme-dark .top-icon-button:focus-visible {
+  background: #ffffff !important;
+  color: var(--theme-accent, #fa7737) !important;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.6), 0 0 0 2px #ffffff !important;
+  transform: translateY(-1px);
 }
 .ui-theme-dark .top-divider {
   background: #334155;
@@ -13220,31 +13224,12 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   font-feature-settings: 'liga' !important;
 }
 
-/* Hover: Themed circular background selection referencing active Color Theme */
-:is(
-  .ux-drawer-close,
-  .modal-head button,
-  .ocpb-import-close,
-  .admin36-detail-head button,
-  .sidebar-collapse,
-  .mobile-menu,
-  .top-icon-button,
-  .palette-toggle,
-  .mode-toggle,
-  #themeToggle,
-  .login48-password-toggle,
-  .admin36-role-more,
-  .ui-side-head > button:not(.primary):not(.outline):not(.link),
-  button.ux-circle-icon-btn,
-  button.icon-btn
-):hover {
-  background-color: rgba(250, 119, 55, 0.12) !important;
-  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 14%, transparent) !important;
-  color: var(--theme-accent, #fa7737) !important;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent, #fa7737) 18%, transparent) !important;
-}
+/* ==========================================================================
+   V1.1.50: Bright Luminous Hover Selection for All Status & Action Icons
+   (กากบาท ปิด, โหมดสว่าง, โหมดมืด, แจ้งเตือน, พาเลตต์สี, เมนู - พื้นหลังสว่างรอยืนยันคลิก)
+   ========================================================================== */
 
-/* Focus Visible */
+/* Hover & Focus & Expanded: Bright luminous background for immediate click selection feedback */
 :is(
   .ux-drawer-close,
   .modal-head button,
@@ -13256,16 +13241,18 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
-):focus-visible {
-  outline: 2px solid var(--theme-focus, #fa7737) !important;
-  outline-offset: 2px !important;
-  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 14%, transparent) !important;
+):is(:hover, :focus-visible, [aria-expanded='true'], .is-active) {
+  background-color: #ffffff !important;
   color: var(--theme-accent, #fa7737) !important;
+  box-shadow: 0 4px 14px rgba(250, 119, 55, 0.28), 0 0 0 2px var(--theme-accent, #fa7737) !important;
+  transform: translateY(-1px) scale(1.05) !important;
 }
 
 /* Active / Pressed */
@@ -13280,18 +13267,21 @@ html[data-theme] .ocpb-import-kpi :is(small, strong) { color: var(--itsd-status-
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
 ):active {
-  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 26%, transparent) !important;
+  background-color: #fff4ed !important;
   color: var(--theme-action, #e05316) !important;
-  transform: scale(0.92) !important;
+  transform: scale(0.94) !important;
+  box-shadow: 0 1px 6px rgba(250, 119, 55, 0.2) !important;
 }
 
-/* Dark Mode Overrides */
+/* Dark Mode Overrides: Bright Luminous White Circle with Glow (พื้นหลังสว่างชัดเจนในโหมดมืด) */
 html[data-theme='dark'] :is(
   .ux-drawer-close,
   .modal-head button,
@@ -13303,6 +13293,8 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
@@ -13320,13 +13312,15 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
 ) {
-  color: var(--theme-muted, #94a3b8) !important;
+  color: #94a3b8 !important;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -13342,12 +13336,14 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
-):hover,
+):is(:hover, :focus-visible, [aria-expanded='true'], .is-active),
 .ui-theme-dark :is(
   .ux-drawer-close,
   .modal-head button,
@@ -13359,16 +13355,18 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
-):hover {
-  background-color: rgba(250, 119, 55, 0.22) !important;
-  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 22%, transparent) !important;
-  color: var(--theme-accent, #ff9357) !important;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent, #fa7737) 30%, transparent) !important;
+):is(:hover, :focus-visible, [aria-expanded='true'], .is-active) {
+  background-color: #ffffff !important;
+  color: var(--theme-accent, #fa7737) !important;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.65), 0 0 0 2px #ffffff !important;
+  transform: translateY(-1px) scale(1.05) !important;
 }
 
 html[data-theme='dark'] :is(
@@ -13382,6 +13380,8 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
@@ -13399,15 +13399,17 @@ html[data-theme='dark'] :is(
   .palette-toggle,
   .mode-toggle,
   #themeToggle,
+  #paletteToggle,
+  #uxNotificationButton,
   .login48-password-toggle,
   .admin36-role-more,
   .ui-side-head > button:not(.primary):not(.outline):not(.link),
   button.ux-circle-icon-btn,
   button.icon-btn
 ):active {
-  background-color: color-mix(in srgb, var(--theme-accent, #fa7737) 38%, transparent) !important;
-  color: #ffffff !important;
-  transform: scale(0.92) !important;
+  background-color: #ffd9c2 !important;
+  color: #c2410c !important;
+  transform: scale(0.94) !important;
 }
 
 </style>

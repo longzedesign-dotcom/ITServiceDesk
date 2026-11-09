@@ -3,6 +3,19 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.50 — 2026-11-09
+- **Bright Luminous Selection for All Status & Action Icons (พื้นหลังสว่างรอยืนยันคลิกเลือก)**:
+  - Applied crisp, high-contrast bright circular background highlights when hovering or focusing across:
+    - Close cross buttons (`.ux-drawer-close`, `.modal-head button`, `.ocpb-import-close`, `.admin36-detail-head button`).
+    - Light / Dark Mode toggles (`#themeToggle`, `.mode-toggle`).
+    - Notifications bell toggle (`#uxNotificationButton`, `.top-icon-button`).
+    - Theme Palette cycle button (`#paletteToggle`, `.palette-toggle`).
+    - Sidebar collapse & mobile menu toggles (`.sidebar-collapse`, `.mobile-menu`).
+    - Password visibility toggle (`.login48-password-toggle`).
+  - **Dark Mode**: When hovered or focused, the button illuminates with a bright white circular background (`#ffffff`), glowing halo (`box-shadow: 0 0 18px rgba(255, 255, 255, 0.65)`), and vivid Energy Orange icon (`#fa7737`), giving unmistakable visual confirmation.
+  - **Light Mode**: Highlights with a clean white circle, prominent orange outline (`0 0 0 2px #fa7737`), and deep shadow.
+  - Active pressed state: subtle scale (0.94) and warm peach tint.
+
 ## V1.1.49 — 2026-11-09
 - **Precision Centering of Close & Icon Buttons (กากบาทอยู่กึ่งกลางสมบูรณ์ 100%)**:
   - Eliminated the 4px horizontal offset caused by legacy `button .material-symbols-rounded { margin-right: 4px; }` across all icon buttons.
