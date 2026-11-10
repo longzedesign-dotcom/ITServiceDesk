@@ -1,6 +1,6 @@
 # 📖 คู่มือการใช้งานระบบ (User Manual)
 ### ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
-**Enterprise Edition — Version ITSD V1.1.51 (Theme: Style 5 — Orange Energy)**  
+**Enterprise Edition — Version ITSD V1.1.52 (Theme: Style 5 — Orange Energy)**  
 **Create by : LongZe Design**
 
 ---
@@ -51,7 +51,7 @@
 2. **ช่องรหัสผ่าน**: แสดงไอคอน `[Key]` (`key`) พร้อมข้อความกำกับ `รหัสผ่าน (Password)`
 3. **ปุ่มแสดง/ซ่อนรหัสผ่าน**: อยู่ทางด้านขวาของช่องรหัสผ่าน แสดงไอคอนรูปตาเปิด/ปิดตามเงื่อนไข
 4. **ข้อมูล Patch Update ด้านล่าง**:
-   - แสดงเลขแพทช์เวอร์ชันปัจจุบัน: **`ITSD V1.1.51`**
+   - แสดงเลขแพทช์เวอร์ชันปัจจุบัน: **`ITSD V1.1.52`**
    - ระบุชื่อผู้พัฒนาอย่างเป็นทางการ: **`Create by : LongZe Design`**
 
 ### 2.2 ตารางบัญชีผู้ใช้งานเริ่มต้นที่พร้อมใช้งาน (Ready-to-use Accounts)

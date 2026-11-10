@@ -3,6 +3,15 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.52 — 2026-11-10
+- **Equipment Registry & Modal Close Button Overhaul (ปุ่มปิดหน้าต่าง/ลิ้นชัก ทะเบียนอุปกรณ์)**:
+  - **สถานะปกติ (Normal)**: ปรับพื้นหลังวงกลมเป็น **สีน้ำเงิน สว่าง (`#2563eb`)** พร้อมไอคอนกากบาทสีขาวบริสุทธิ์ (`#ffffff`) กึ่งกลางวงกลม 100% สอดคล้องกับโทนสีปุ่มการทำงานของระบบ
+  - **เมื่อนำเมาส์มาชี้ (Hover / Focus)**:
+    - **ใน Dark Mode**: เปลี่ยนเป็น **สีขาวสว่าง (`#ffffff`)** พร้อมแสงเรืองรอบปุ่ม (`box-shadow: 0 0 20px rgba(255, 255, 255, 0.9)`) และไอคอนกากบาทสีน้ำเงินเข้ม คอนทราสต์ชัดเจนมองเห็นง่าย
+    - **ใน Light Mode**: เปลี่ยนเป็น **สีสว่างตาม Theme Color** (ไล่เฉดสีส้มเหลืองสดใส `linear-gradient(135deg, #ffc92e, #fa7737)`) ตามชุดสี Style 5 Orange Energy
+  - **คงสีแดงสำหรับปุ่มออกจากหน้าจอ (Sign out / Logout / Exit Buttons)**:
+    - ปุ่มออกจากระบบและปุ่มออกจากหน้าจอ (`.danger`, `button.danger`, `.ux124-logout`, `.sidebar-signout`, `admin39LogoutAll`) ยังคงใช้ **สีแดงเด่นชัด (`#ef4444` / `#fee2e2` / `#dc2626`)** ตลอดเวลา ไม่ถูกทับด้วยสีน้ำเงิน
+
 ## V1.1.51 — 2026-11-09
 - **Continuous Straight Header Alignment with System Logo (เส้นแบ่งหัว Webapp เป็นแนวเส้นตรงเดียวกันกับ icon ระบบ Sidebar)**:
   - Synchronized the Webapp header (`.topbar`) and sidebar brand header (`.brand`) to share the exact same standardized height (`--topbar-height: 68px`).

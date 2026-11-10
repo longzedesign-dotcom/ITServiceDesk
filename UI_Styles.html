@@ -13450,4 +13450,233 @@ html[data-theme='dark'] :is(
   transform: scale(0.94) !important;
 }
 
+/* ==========================================================================
+   V1.1.52: Equipment & Modal Close Buttons - Bright Blue Circular Base
+   with Luminous White (Dark Mode) & Bright Theme Color (Light Mode) Hover Selection
+   ========================================================================== */
+
+/* 1. Base / Normal State: Bright Blue Circular Background for Close Buttons */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+),
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+),
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+) {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  border-radius: 50% !important;
+  border: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+) .material-symbols-rounded,
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+) .material-symbols-rounded {
+  color: #ffffff !important;
+}
+
+/* 2. Hover / Focus in Light Mode: Bright Luminous Theme Color */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible) {
+  background: linear-gradient(135deg, #ffc92e 0%, var(--theme-accent, #fa7737) 100%) !important;
+  background-color: var(--theme-accent, #fa7737) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(250, 119, 55, 0.5), 0 0 0 2px rgba(255, 201, 46, 0.6) !important;
+  transform: translateY(-1px) scale(1.08) !important;
+}
+
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible) .material-symbols-rounded {
+  color: #ffffff !important;
+}
+
+/* 3. Hover / Focus in Dark Mode: Bright Luminous White Circle with Glow */
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible),
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible) {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 0 2px #ffffff !important;
+  transform: translateY(-1px) scale(1.08) !important;
+}
+
+html[data-theme='dark'] :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible) .material-symbols-rounded,
+.ui-theme-dark :is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):is(:hover, :focus-visible) .material-symbols-rounded {
+  color: #1d4ed8 !important;
+}
+
+/* 4. Active / Pressed State */
+:is(
+  .ux-drawer-close,
+  .modal-head button,
+  .ocpb-import-close,
+  .admin36-detail-head button,
+  button[onclick*="closeModal"],
+  button[onclick*="ux5CloseDrawer"],
+  #inventorySide .ux-drawer-close,
+  #ticketSide .ux-drawer-close,
+  #modal .modal-head button
+):active {
+  transform: scale(0.92) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 5. Retain Strict RED for Sign out / Logout / Exit Screen buttons */
+.danger,
+button.danger,
+.ux124-logout,
+.sidebar-signout,
+[onclick*="signOut"],
+[onclick*="admin39LogoutAll"] {
+  color: #ef4444 !important;
+}
+
+.danger,
+button.danger,
+.ux124-logout {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #f87171 !important;
+}
+
+.danger:hover,
+button.danger:hover,
+.ux124-logout:hover {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45) !important;
+}
+
+html[data-theme='dark'] .danger,
+html[data-theme='dark'] button.danger,
+html[data-theme='dark'] .ux124-logout {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+}
+
+html[data-theme='dark'] .danger:hover,
+html[data-theme='dark'] button.danger:hover,
+html[data-theme='dark'] .ux124-logout:hover {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.65) !important;
+}
+
 </style>
