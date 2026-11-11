@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.67
+  Version: V1.1.68
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,6 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
+  - V1.1.68: Preview next sequential inventory ID (e.g. INV-TOR70-1652) in เพิ่มอุปกรณ์ dialog and select newly generated ID returned by saveInventory.
   - V1.1.67: Shift โทร. field ~6 characters to the right in CM A4 service report (.r4 columns 1.71fr 1.05fr .31fr .95fr).
   - V1.1.66: In service70Edit modal remove บันทึก & พิมพ์ใบงาน (PDF) and reorder buttons as บันทึก, พิมพ์ใบงาน (PDF); in service70Html rename โทรศัพท์ภายใน -> โทร. and shrink ชั้น column width by 50% (0.62fr -> 0.31fr) added to โทร. (1fr -> 1.31fr).
   - V1.1.65: Refine CM Service Report A4 template (1cm side margins / 190mm sheet width, full unclipped JOB NO. field, auto-fitted single-line org/suborg display for สำนัก/กอง and กลุ่ม/ศูนย์).
@@ -3178,6 +3179,41 @@ async function submitAssetSpecs(id) {
   }
 }
 
+function inventoryNextIdPreview_() {
+  const codes = (state.inventory || []).map((a) => String(a?.id || '').trim()).filter(Boolean);
+  const existing = new Set(codes.map((c) => c.toUpperCase()));
+  const uuidRx = /^INV-[0-9A-F]{8}$/i;
+  const seqRx = /^(.+-)(\d+)$/;
+  let prefix = '';
+  let width = 4;
+  for (let i = codes.length - 1; i >= 0; i--) {
+    const code = codes[i];
+    if (uuidRx.test(code)) continue;
+    const m = code.match(seqRx);
+    if (m) {
+      prefix = m[1];
+      width = Math.max(4, m[2].length);
+      break;
+    }
+  }
+  if (!prefix) prefix = 'INV-TOR70-';
+  let maxNum = 0;
+  codes.forEach((code) => {
+    if (uuidRx.test(code)) return;
+    if (code.toUpperCase().startsWith(prefix.toUpperCase())) {
+      const tail = code.slice(prefix.length);
+      if (/^\d+$/.test(tail)) maxNum = Math.max(maxNum, Number(tail) || 0);
+    }
+  });
+  let nextNum = maxNum + 1;
+  let candidate = prefix + String(nextNum).padStart(width, '0');
+  while (existing.has(candidate.toUpperCase())) {
+    nextNum++;
+    candidate = prefix + String(nextNum).padStart(width, '0');
+  }
+  return candidate;
+}
+
 function assetForm(id) {
   if (id) {
     if (ui.assetTab === 'specs') return assetSpecsForm(id);
@@ -3185,8 +3221,9 @@ function assetForm(id) {
     return assetGeneralForm(id);
   }
   if (!inventoryCanCreate()) return toast('ไม่มีสิทธิ์เพิ่มอุปกรณ์');
+  const nextId = inventoryNextIdPreview_();
   openModal(
-    'เพิ่มอุปกรณ์',
+    'เพิ่มอุปกรณ์ · ' + nextId,
     `<form id="assetEditorForm" class="asset-compact-form" onsubmit="event.preventDefault();submitAsset('')">
       ${assetGeneralSectionsHtml_({})}
       ${assetSpecsSectionHtml_('a', {})}
@@ -3297,12 +3334,14 @@ async function submitAsset(id) {
       ],
       d = { id };
     keys.forEach((k) => (d[k] = uiValue('a_' + k)));
-    await call('saveInventory', token, d);
+    const savedId = await call('saveInventory', token, d);
     form.dataset.saving = 'false'; form.dataset.dirty = 'false';
     closeModal();
-    ui.asset = id || '';
+    ui.asset = savedId || id || '';
+    ui.assetTab = 'details';
     await refresh();
-    toast('บันทึกอุปกรณ์สำเร็จ', 'success');
+    inventory();
+    toast((id ? 'บันทึกอุปกรณ์สำเร็จ' : 'เพิ่มอุปกรณ์สำเร็จ: ' + (savedId || '')), 'success');
   } catch (e) {
     const text = normalizeUiError(e);
     if (message) {

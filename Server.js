@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.67
+ * Version: V1.1.68
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
+ * - V1.1.68: Replace UUID fallback in itsdImpl_saveInventory_ with nextInventoryId_() reading latest INVENTORY code (e.g. INV-TOR70-1651 -> INV-TOR70-1652).
  * - V1.1.67: Bump APP_VERSION to V1.1.67 for CM A4 service report โทร. column alignment.
  * - V1.1.66: Bump APP_VERSION to V1.1.66 matching CM modal button bar & A4 report โทร./ชั้น updates.
  * - V1.1.65: Bump APP_VERSION to V1.1.65 matching CM Service Report A4 layout refinement.
@@ -46,7 +47,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.67';
+const APP_VERSION = 'V1.1.68';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
@@ -3188,6 +3189,44 @@ function inventoryValidateChoices_(patch, old) {
 }
 
 // apps/webapp/src/server/features/inventory/inventory-service.js
+function nextInventoryId_() {
+  const codes = rows_('INVENTORY')
+    .map((r) => String(r['รหัสอุปกรณ์'] || '').trim())
+    .filter(Boolean);
+  const existing = new Set(codes.map((c) => c.toUpperCase()));
+  const uuidRx = /^INV-[0-9A-F]{8}$/i;
+  const seqRx = /^(.+-)(\d+)$/;
+  let prefix = '';
+  let width = 4;
+  for (let i = codes.length - 1; i >= 0; i--) {
+    const code = codes[i];
+    if (uuidRx.test(code)) continue;
+    const m = code.match(seqRx);
+    if (m) {
+      prefix = m[1];
+      width = Math.max(4, m[2].length);
+      break;
+    }
+  }
+  if (!prefix) prefix = 'INV-TOR70-';
+  let maxNum = 0;
+  codes.forEach((code) => {
+    if (uuidRx.test(code)) return;
+    if (code.toUpperCase().startsWith(prefix.toUpperCase())) {
+      const tail = code.slice(prefix.length);
+      if (/^\d+$/.test(tail)) maxNum = Math.max(maxNum, Number(tail) || 0);
+    }
+  });
+  let nextNum = maxNum + 1;
+  let candidate = prefix + String(nextNum).padStart(width, '0');
+  while (existing.has(candidate.toUpperCase())) {
+    nextNum++;
+    candidate = prefix + String(nextNum).padStart(width, '0');
+  }
+  return candidate;
+}
+
+// apps/webapp/src/server/features/inventory/inventory-service.js
 function itsdImpl_saveInventory_(token, data) {
   if (data && data.survey_only === true) return saveInventorySurvey_(token, data);
   if (data && data.specs_only === true) return saveInventorySpecs_(token, data);
@@ -3204,8 +3243,7 @@ function itsdImpl_saveInventory_(token, data) {
     type = get('type', 'ประเภทอุปกรณ์', 120);
   if (!type) throw Error('กรุณาระบุประเภทอุปกรณ์');
   return lock_(() => {
-    const id =
-        get('id', 'รหัสอุปกรณ์', 80) || 'INV-' + Utilities.getUuid().slice(0, 8).toUpperCase(),
+    const id = get('id', 'รหัสอุปกรณ์', 80) || nextInventoryId_(),
       old = find_('INVENTORY', 'รหัสอุปกรณ์', id),
       patch = {
         รหัสอุปกรณ์: id,
