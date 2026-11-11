@@ -1,15 +1,16 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.68
+  Version: V1.1.69
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
   - No secrets in source code
   - Preserve existing data and backward compatibility
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
-  Modified: 2026-11-11
+  Modified: 2026-11-12
   Change History:
+  - V1.1.69: Align default dark mode & palette-05 initialization with Dark Theme Admin Dashboard (V1.1.69).
   - V1.1.68: Preview next sequential inventory ID (e.g. INV-TOR70-1652) in เพิ่มอุปกรณ์ dialog and select newly generated ID returned by saveInventory.
   - V1.1.67: Shift โทร. field ~6 characters to the right in CM A4 service report (.r4 columns 1.71fr 1.05fr .31fr .95fr).
   - V1.1.66: In service70Edit modal remove บันทึก & พิมพ์ใบงาน (PDF) and reorder buttons as บันทึก, พิมพ์ใบงาน (PDF); in service70Html rename โทรศัพท์ภายใน -> โทร. and shrink ชั้น column width by 50% (0.62fr -> 0.31fr) added to โทร. (1fr -> 1.31fr).
@@ -1363,7 +1364,7 @@ function uiPaletteIds() {
 function normalizePalette(value) {
   if (uiPaletteIds().includes(value)) return value;
   if (value === 'indigo') return 'palette-09';
-  return 'palette-01';
+  return 'palette-05';
 }
 
 function changePalette() {
@@ -7361,13 +7362,13 @@ const ui = {
   theme: (() => {
     const saved = uiReadPreference('ocpb_mode');
     const legacy = uiReadPreference('ocpb_theme');
-    return saved === 'dark' || (!saved && legacy === 'dark') ? 'dark' : 'light';
+    return saved === 'light' || (!saved && legacy === 'light') ? 'light' : 'dark';
   })(),
   palette: (() => {
     const saved = uiReadPreference('ocpb_palette');
     const legacy = uiReadPreference('ocpb_theme');
     if (/^palette-(0[1-9]|1[0-2])$/.test(saved || '')) return saved;
-    return legacy === 'indigo' ? 'palette-09' : 'palette-01';
+    return legacy === 'indigo' ? 'palette-09' : 'palette-05';
   })(),
 };
 

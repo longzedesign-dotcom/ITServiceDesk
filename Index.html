@@ -1,15 +1,16 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: Index.html
-  Version: V1.1.68
+  Version: V1.1.69
   Stage: production
   Purpose: Web application shell and generated asset includes
   Notes:
   - No secrets in source code
   - Preserve existing data and backward compatibility
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
-  Modified: 2026-11-11
+  Modified: 2026-11-12
   Change History:
+  - V1.1.69: Overhaul ITSD visual theme to Dark Theme Admin Dashboard (Obsidian Carbon + Luminous Orange/Teal/Blue ambient glow tokens, default dark mode init, accessible WCAG 2.2 AA contrast).
   - V1.1.68: Auto-increment sequential inventory code (e.g. INV-TOR70-1651 -> INV-TOR70-1652) when adding new equipment.
   - V1.1.67: Bump to V1.1.67 for shifting โทร. ~6 characters right in CM A4 service report.
   - V1.1.66: Bump to V1.1.66 for CM Service Report dialog actions (บันทึก, พิมพ์ใบงาน (PDF)) and โทร./ชั้น layout adjustments.
@@ -39,13 +40,24 @@
     <meta name="color-scheme" content="light dark" />
     <script>
       (function () {
-        var mode = 'light';
+        var mode = 'dark';
         var palette = 'palette-05';
         try {
+          var themeVer = localStorage.getItem('ocpb_theme_ver');
           var legacy = localStorage.getItem('ocpb_theme');
           var savedMode = localStorage.getItem('ocpb_mode');
           var savedPalette = localStorage.getItem('ocpb_palette');
-          mode = savedMode === 'dark' || (!savedMode && legacy === 'dark') ? 'dark' : 'light';
+          if (themeVer !== '1.1.69') {
+            localStorage.setItem('ocpb_theme_ver', '1.1.69');
+            localStorage.setItem('ocpb_mode', 'dark');
+            savedMode = 'dark';
+            if (!savedPalette || savedPalette === 'palette-01') {
+              localStorage.setItem('ocpb_palette', 'palette-05');
+              savedPalette = 'palette-05';
+            }
+          }
+          mode =
+            savedMode === 'light' || (!savedMode && legacy === 'light') ? 'light' : 'dark';
           palette = /^palette-(0[1-9]|1[0-2])$/.test(savedPalette || '')
             ? savedPalette
             : 'palette-05';

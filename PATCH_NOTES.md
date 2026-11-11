@@ -3,6 +3,12 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.69 — 2026-11-12
+- **Dark Theme Admin Dashboard Full UI Overhaul ([`UI_Styles.html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Styles.html), [`Index.html`](file:///Users/chaloem/Antigravity/ITSD/src/Index.html), [`UI_Client.html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Client.html))**:
+  - **Obsidian Carbon Surfaces & Hierarchy**: เปลี่ยนพื้นหลังหลักเป็น Obsidian Carbon Gradient (`#0a0a0a` → `#151515` → `#0a0a0a`), Sidebar & Topbar (`#0d0d0d` + hairline border `#1a1a1a`), การ์ด/ตาราง/Modal/Drawer (`#0d0d0d`), และองค์ประกอบโต้ตอบ/อินพุต (`#141414`/`#1a1a1a` border `#2a2a2a`) พร้อม Light Mode ที่สอดคล้องกัน
+  - **Luminous Orange CTA & Glassmorphic KPI Ambient Glows**: ปุ่มหลักและเมนู Active ใช้สีส้ม `#f97316` → `#ea580c` พร้อมเงาเรืองแสง, ส่วนการ์ด KPI/Summary (`Dashboard`, `Queue`, `Reports`, `Inventory Survey`, `Admin`, `Import`) ใช้การ์ดแก้วทึบไล่เฉดพร้อมกรอบไอคอน Squircle และเงาแยกโทน Blue / Orange / Teal / Purple / Red
+  - **Accessibility & Interactive States**: กำหนดสถานะ `default`, `hover`, `focus-visible` (`2px solid #f97316`), `active`, `disabled`, `loading`, และ `error` (`#ef4444`) ครบถ้วน คงปุ่มอันตราย/ออกจากระบบเป็นสีแดง และคงแบบฟอร์มพิมพ์ใบงาน CM A4 (`service70Html`) เป็นกระดาษขาว-ดำคมชัด
+
 ## V1.1.68 — 2026-11-11
 - **Auto-Increment Sequential Inventory Code ([`nextInventoryId_`](file:///Users/chaloem/Antigravity/ITSD/src/Server.js))**:
   - เปลี่ยนการสร้างรหัสอุปกรณ์ใหม่ใน `itsdImpl_saveInventory_` จากรหัสสุ่ม UUID (`INV-XXXXXXXX`) เป็นการอ่านรหัสอุปกรณ์ล่าสุดจากชีต `INVENTORY` แล้วเพิ่มเลขลำดับต่อท้ายอัตโนมัติ (เช่น `INV-TOR70-1651` → **`INV-TOR70-1652`**) ภายใต้ `lock_()` เพื่อป้องกันรหัสซ้ำซ้อน

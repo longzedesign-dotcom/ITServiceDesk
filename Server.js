@@ -1,15 +1,16 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.68
+ * Version: V1.1.69
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
  * - No secrets in source code
  * - Preserve existing data and backward compatibility
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-11
+ * Modified: 2026-11-12
  * Change History:
+ * - V1.1.69: Bump APP_VERSION to V1.1.69 for Dark Theme Admin Dashboard full UI overhaul.
  * - V1.1.68: Replace UUID fallback in itsdImpl_saveInventory_ with nextInventoryId_() reading latest INVENTORY code (e.g. INV-TOR70-1651 -> INV-TOR70-1652).
  * - V1.1.67: Bump APP_VERSION to V1.1.67 for CM A4 service report โทร. column alignment.
  * - V1.1.66: Bump APP_VERSION to V1.1.66 matching CM modal button bar & A4 report โทร./ชั้น updates.
@@ -47,7 +48,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.68';
+const APP_VERSION = 'V1.1.69';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
