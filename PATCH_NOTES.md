@@ -3,6 +3,10 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.67 — 2026-11-11
+- **CM Service Report A4 Row Alignment ([`service70Html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Client.html))**:
+  - ขยับตำแหน่งช่อง **`โทร.`** ไปทางด้านขวาอีกประมาณ 6 ตัวอักษร (`1.45fr 1.31fr` → `1.71fr 1.05fr`) เพิ่มพื้นที่ช่อง `ชื่อผู้ใช้งาน` และจัดสมดุลความกว้างกับช่อง `โทร.`
+
 ## V1.1.66 — 2026-11-11
 - **CM Service Report Modal & Print Form Polish ([`service70Edit`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Client.html) & [`service70Html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Client.html))**:
   - **ปุ่มการทำงานหน้าต่าง `สร้าง / แก้ไขข้อมูลใบงาน (CM)`**: ตัดปุ่ม `บันทึก & พิมพ์ใบงาน (PDF)` ออก และจัดเรียงลำดับปุ่มใหม่เป็น **`บันทึก`** (ปุ่มหลัก) ตามด้วย **`พิมพ์ใบงาน (PDF)`**

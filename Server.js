@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.66
+ * Version: V1.1.67
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
+ * - V1.1.67: Bump APP_VERSION to V1.1.67 for CM A4 service report โทร. column alignment.
  * - V1.1.66: Bump APP_VERSION to V1.1.66 matching CM modal button bar & A4 report โทร./ชั้น updates.
  * - V1.1.65: Bump APP_VERSION to V1.1.65 matching CM Service Report A4 layout refinement.
  * - V1.1.64: Add shared ticketApplyDevicePatch_ helper so both changeStatus and saveServiceReportDetails can update asset_id, asset_no, brand, model, serial, and device cleanly from Inventory lookups or edits.
@@ -45,7 +46,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.66';
+const APP_VERSION = 'V1.1.67';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
