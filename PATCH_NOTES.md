@@ -3,6 +3,9 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.61 — 2026-11-11
+- **Cardless Equipment Form Group Headings**: นำกรอบ Card และสีพื้นหลังย่อยออกจากกลุ่มฟิลด์ในหน้าต่าง `แก้ไขข้อมูลทั่วไป`, `แก้ไขคุณลักษณะ` และ `เพิ่มอุปกรณ์` (`.asset-compact-section`) โดยใช้หัวข้อขนาดใหญ่ตัวหนา (`15.5px` Desktop / `16px` Mobile) และระยะห่างกลุ่มที่เรียบง่ายสะอาดตาแทน
+
 ## V1.1.60 — 2026-11-11
 - **Single-Screen Compact Equipment Edit Dialog**:
   - **จัดระเบียบหน้าต่าง `แก้ไขข้อมูลทั่วไป` และ `เพิ่มอุปกรณ์` ให้พอดีหน้าเดียวโดยไม่ต้องเลื่อน Scroll บน Desktop**: ปรับ `.modal-box:has(.asset-compact-form)` กว้าง `980px`, จัดกลุ่ม **ข้อมูลอุปกรณ์** เป็น Grid 4 คอลัมน์ (2 แถวโดยช่อง **เลขครุภัณฑ์** กว้าง 2 ช่อง), จัดกลุ่ม **ผู้รับผิดชอบและหน่วยงาน** และ **สถานที่ติดตั้ง** อย่างละ 1 แถว (3 คอลัมน์), ลดระยะห่าง (`padding`, `gap`, `margin`, input height `32px`) และ Refactor ด้วย Shared Helpers (`assetSectionHtml_`, `assetGeneralSectionsHtml_`, `assetSpecsSectionHtml_`, `bindAssetEditorDirty_`) ใน `src/UI_Client.html` + `src/UI_Styles.html` (วัดผลใน Chrome Headless ได้ความสูง Modal `475px`, `needsScroll: false`)

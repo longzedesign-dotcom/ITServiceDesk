@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.60
+ * Version: V1.1.61
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
+ * - V1.1.61: Simplify equipment edit/create form sections — remove card borders/backgrounds and separate groups cleanly with larger bold headings while retaining compact single-screen layout.
  * - V1.1.60: Compact single-screen modal layout for Equipment General Edit & Create dialogs (multi-column groups, tightened spacing, zero vertical scroll on desktop).
  * - V1.1.59: Rewrite project header & branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); keep ADMIN project-name customization via System Settings.
  * - V1.1.58: Synchronized deployment across both Script IDs, modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม), database resilience fallback.
@@ -42,7 +43,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.60';
+const APP_VERSION = 'V1.1.61';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
