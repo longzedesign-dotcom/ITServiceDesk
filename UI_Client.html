@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.59
+  Version: V1.1.60
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,6 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
+  - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
   - V1.1.59: Rewrite project header & client branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); retain ADMIN branding settings controls.
   - V1.1.43: Show clear success/error messages and keep inventory save failures visible in the editor.
   - V1.0.79: Inventory survey report with status filters, progress summaries and permission-checked exports.
@@ -2960,33 +2961,79 @@ function assetNumberBeforeInput(event) {
   }
 }
 
+function assetSectionHtml_(title, body, cols = 3) {
+  return `<section class="ui-form-section asset-compact-section"><h3>${title}</h3><div class="form-grid asset-grid-${cols}">${body}</div></section>`;
+}
+
+function assetGeneralSectionsHtml_(x = {}) {
+  const brands = state.brands || [];
+  const select = (key, label, options, required = false, change = '') =>
+    `<label>${label}<select id="a_${key}" ${required ? 'required' : ''} onchange="${change}">${options}</select></label>`;
+  const input = (key, label, spanClass = '') =>
+    `<label${spanClass ? ` class="${spanClass}"` : ''}>${label}<input id="a_${key}" value="${escAttr(x[key] || '')}" ${key === 'asset_no' ? 'onbeforeinput="assetNumberBeforeInput(event)" oninput="assetNumberInput()" aria-describedby="assetNumberHint"' : ''}></label>`;
+  return (
+    assetSectionHtml_(
+      'ข้อมูลอุปกรณ์',
+      select('type', 'ประเภทอุปกรณ์ *', assetOptions(state.devices || DEVICE_FALLBACK, x.type, 'เลือกประเภทอุปกรณ์'), true, 'assetNumberMode();assetModelOptions()') +
+        `<label>ยี่ห้อ<select id="a_brand" onchange="assetModelOptions()">${assetOptions(brands, x.brand, 'เลือกยี่ห้อ')}</select></label>` +
+        `<label>รุ่น<select id="a_model"></select></label>` +
+        input('serial', 'หมายเลขซีเรียล') +
+        input('asset_no', 'เลขครุภัณฑ์', 'asset-span2') +
+        select('status', 'สถานะครุภัณฑ์ *', assetOptions(Object.keys(ASSET_STATUS_LABELS), x.status, 'เลือกสถานะครุภัณฑ์', ASSET_STATUS_LABELS), true) +
+        select('year', 'ปีงบประมาณที่จัดซื้อ (พ.ศ.)', assetOptions(ASSET_PURCHASE_YEARS, String(x.year ?? ''), 'ยังไม่ระบุ')),
+      4,
+    ) +
+    '<p id="assetNumberHint" class="hint" hidden></p>' +
+    assetSectionHtml_(
+      'ผู้รับผิดชอบและหน่วยงาน',
+      input('owner', 'ผู้รับผิดชอบ') +
+        select('org', 'หน่วยงานหลัก', assetOptions(state.org.filter(o => o.level === 'หน่วยงานหลัก').map(o => o.name), x.org, 'เลือกหน่วยงานหลัก'), false, 'assetSubOptions()') +
+        select('suborg', 'หน่วยงานย่อย', ''),
+      3,
+    ) +
+    assetSectionHtml_(
+      'สถานที่ติดตั้ง',
+      select('building', 'อาคาร', assetOptions(ASSET_BUILDINGS, x.building, 'ยังไม่ระบุ')) +
+        select('floor', 'ชั้น', inventoryFloorOptions(x.floor)) +
+        input('location', 'สถานที่ติดตั้ง'),
+      3,
+    )
+  );
+}
+
+function assetSpecsSectionHtml_(prefix, x = {}) {
+  const fields = [['os', 'Operating System'], ['cpu', 'CPU Brand'], ['speed', 'CPU Speed'], ['ram', 'RAM'], ['disk', 'Harddisk'], ['ip', 'IP Address']];
+  const body = fields.map(([k, l]) => `<label>${l}<input id="${prefix}_${k}" value="${escAttr(x[k] || '')}"></label>`).join('');
+  return assetSectionHtml_('คุณลักษณะทางเทคนิค', body, 3);
+}
+
+function bindAssetEditorDirty_(formId, prefix) {
+  const form = $(formId);
+  if (!form) return;
+  const dirty = event => {
+    if (event.target.id && event.target.id.startsWith(prefix)) form.dataset.dirty = 'true';
+  };
+  form.addEventListener('input', dirty);
+  form.addEventListener('change', dirty);
+}
+
 function assetGeneralForm(id) {
   if (!inventoryCanEdit()) return toast('ไม่มีสิทธิ์แก้ไขข้อมูลอุปกรณ์');
   const x = state.inventory.find(a => a.id === id) || {};
-  const brands = state.brands || [];
-  const select = (key, label, options, required = false, change = '') => `<label>${label}<select id="a_${key}" ${required ? 'required' : ''} onchange="${change}">${options}</select></label>`;
-  const input = (key, label) => `<label>${label}<input id="a_${key}" value="${escAttr(x[key] || '')}" ${key === 'asset_no' ? 'onbeforeinput="assetNumberBeforeInput(event)" oninput="assetNumberInput()" aria-describedby="assetNumberHint"' : ''}></label>`;
-  const section = (title, body) => `<section class="ui-form-section"><h3>${title}</h3><div class="form-grid">${body}</div></section>`;
-  openModal('แก้ไขข้อมูลทั่วไป ' + id, `<form id="assetEditorForm" onsubmit="event.preventDefault();submitAssetGeneral('${escAttr(id)}')">
-    ${section('ข้อมูลอุปกรณ์',
-      select('type', 'ประเภทอุปกรณ์ *', assetOptions(state.devices || DEVICE_FALLBACK, x.type, 'เลือกประเภทอุปกรณ์'), true, 'assetNumberMode();assetModelOptions()') +
-      `<label>ยี่ห้อ<select id="a_brand" onchange="assetModelOptions()">${assetOptions(brands, x.brand, 'เลือกยี่ห้อ')}</select></label>` +
-      `<label>รุ่น<select id="a_model"></select></label>` + input('serial','หมายเลขซีเรียล') + input('asset_no','เลขครุภัณฑ์') +
-      select('status','สถานะครุภัณฑ์ *',assetOptions(Object.keys(ASSET_STATUS_LABELS),x.status,'เลือกสถานะครุภัณฑ์',ASSET_STATUS_LABELS),true) + select('year','ปีงบประมาณที่จัดซื้อ (พ.ศ.)',assetOptions(ASSET_PURCHASE_YEARS, String(x.year ?? ''), 'ยังไม่ระบุ')))}
-    <p id="assetNumberHint" class="hint" hidden></p>
-    ${section('ผู้รับผิดชอบและหน่วยงาน',input('owner','ผู้รับผิดชอบ') + select('org','หน่วยงานหลัก',assetOptions(state.org.filter(o => o.level === 'หน่วยงานหลัก').map(o => o.name),x.org,'เลือกหน่วยงานหลัก'),false,'assetSubOptions()') + select('suborg','หน่วยงานย่อย',''))}
-    ${section('สถานที่ติดตั้ง',select('building','อาคาร',assetOptions(ASSET_BUILDINGS, x.building, 'ยังไม่ระบุ')) + select('floor','ชั้น',inventoryFloorOptions(x.floor)) + input('location','สถานที่ติดตั้ง'))}
-    <p id="assetSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
-    <div class="form-actions"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSaveButton" class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกข้อมูลทั่วไป</button></div></form>`);
+  openModal(
+    'แก้ไขข้อมูลทั่วไป ' + id,
+    `<form id="assetEditorForm" class="asset-compact-form" onsubmit="event.preventDefault();submitAssetGeneral('${escAttr(id)}')">
+      ${assetGeneralSectionsHtml_(x)}
+      <p id="assetSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
+      <div class="form-actions asset-action-bar"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSaveButton" class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกข้อมูลทั่วไป</button></div>
+    </form>`,
+  );
   assetSubOptions(x.suborg || '');
   $('a_asset_no').dataset.original = String(x.asset_no || '');
   $('a_asset_no').dataset.originalType = String(x.type || '');
   assetNumberMode();
   assetModelOptions(String(x.model || ''));
-  const form = $('assetEditorForm');
-  const dirty = event => { if (event.target.id.startsWith('a_')) form.dataset.dirty = 'true'; };
-  form.addEventListener('input', dirty);
-  form.addEventListener('change', dirty);
+  bindAssetEditorDirty_('assetEditorForm', 'a_');
 }
 
 async function submitAssetGeneral(id) {
@@ -3039,16 +3086,15 @@ async function submitAssetGeneral(id) {
 function assetSpecsForm(id) {
   if (!inventoryCanEdit()) return toast('ไม่มีสิทธิ์แก้ไขคุณลักษณะอุปกรณ์');
   const x = state.inventory.find(a => a.id === id) || {};
-  const input = (key, label) => `<label>${label}<input id="as_${key}" value="${escAttr(x[key] || '')}"></label>`;
-  const section = (title, body) => `<section class="ui-form-section"><h3>${title}</h3><div class="form-grid">${body}</div></section>`;
-  openModal('แก้ไขคุณลักษณะ ' + id, `<form id="assetSpecsEditorForm" onsubmit="event.preventDefault();submitAssetSpecs('${escAttr(id)}')">
-    ${section('คุณลักษณะทางเทคนิค', [['os','Operating System'],['cpu','CPU Brand'],['speed','CPU Speed'],['ram','RAM'],['disk','Harddisk'],['ip','IP Address']].map(([k,l]) => input(k,l)).join(''))}
-    <p id="assetSpecsSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
-    <div class="form-actions"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSpecsSaveButton" class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกคุณลักษณะ</button></div></form>`);
-  const form = $('assetSpecsEditorForm');
-  const dirty = event => { if (event.target.id.startsWith('as_')) form.dataset.dirty = 'true'; };
-  form.addEventListener('input', dirty);
-  form.addEventListener('change', dirty);
+  openModal(
+    'แก้ไขคุณลักษณะ ' + id,
+    `<form id="assetSpecsEditorForm" class="asset-compact-form" onsubmit="event.preventDefault();submitAssetSpecs('${escAttr(id)}')">
+      ${assetSpecsSectionHtml_('as', x)}
+      <p id="assetSpecsSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
+      <div class="form-actions asset-action-bar"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSpecsSaveButton" class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกคุณลักษณะ</button></div>
+    </form>`,
+  );
+  bindAssetEditorDirty_('assetSpecsEditorForm', 'as_');
 }
 
 async function submitAssetSpecs(id) {
@@ -3091,32 +3137,21 @@ function assetForm(id) {
     return assetGeneralForm(id);
   }
   if (!inventoryCanCreate()) return toast('ไม่มีสิทธิ์เพิ่มอุปกรณ์');
-  const x = {};
-  const brands = state.brands || [];
-  const select = (key, label, options, required = false, change = '') => `<label>${label}<select id="a_${key}" ${required ? 'required' : ''} onchange="${change}">${options}</select></label>`;
-  const input = (key, label) => `<label>${label}<input id="a_${key}" value="${escAttr(x[key] || '')}" ${key === 'asset_no' ? 'onbeforeinput="assetNumberBeforeInput(event)" oninput="assetNumberInput()" aria-describedby="assetNumberHint"' : ''}></label>`;
-  const section = (title, body) => `<section class="ui-form-section"><h3>${title}</h3><div class="form-grid">${body}</div></section>`;
-  openModal('เพิ่มอุปกรณ์', `<form id="assetEditorForm" onsubmit="event.preventDefault();submitAsset('')">
-    ${section('ข้อมูลอุปกรณ์',
-      select('type', 'ประเภทอุปกรณ์ *', assetOptions(state.devices || DEVICE_FALLBACK, x.type, 'เลือกประเภทอุปกรณ์'), true, 'assetNumberMode();assetModelOptions()') +
-      `<label>ยี่ห้อ<select id="a_brand" onchange="assetModelOptions()">${assetOptions(brands, x.brand, 'เลือกยี่ห้อ')}</select></label>` +
-      `<label>รุ่น<select id="a_model"></select></label>` + input('serial','หมายเลขซีเรียล') + input('asset_no','เลขครุภัณฑ์') +
-      select('status','สถานะครุภัณฑ์ *',assetOptions(Object.keys(ASSET_STATUS_LABELS),x.status,'เลือกสถานะครุภัณฑ์',ASSET_STATUS_LABELS),true) + select('year','ปีงบประมาณที่จัดซื้อ (พ.ศ.)',assetOptions(ASSET_PURCHASE_YEARS, String(x.year ?? ''), 'ยังไม่ระบุ')))}
-    <p id="assetNumberHint" class="hint" hidden></p>
-    ${section('ผู้รับผิดชอบและหน่วยงาน',input('owner','ผู้รับผิดชอบ') + select('org','หน่วยงานหลัก',assetOptions(state.org.filter(o => o.level === 'หน่วยงานหลัก').map(o => o.name),x.org,'เลือกหน่วยงานหลัก'),false,'assetSubOptions()') + select('suborg','หน่วยงานย่อย',''))}
-    ${section('สถานที่ติดตั้ง',select('building','อาคาร',assetOptions(ASSET_BUILDINGS, x.building, 'ยังไม่ระบุ')) + select('floor','ชั้น',inventoryFloorOptions(x.floor)) + input('location','สถานที่ติดตั้ง'))}
-    ${section('คุณลักษณะทางเทคนิค',[['os','Operating System'],['cpu','CPU Brand'],['speed','CPU Speed'],['ram','RAM'],['disk','Harddisk'],['ip','IP Address']].map(([k,l]) => input(k,l)).join(''))}
-    <p id="assetSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
-    <div class="form-actions"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSaveButton" class="primary">บันทึกอุปกรณ์</button></div></form>`);
+  openModal(
+    'เพิ่มอุปกรณ์',
+    `<form id="assetEditorForm" class="asset-compact-form" onsubmit="event.preventDefault();submitAsset('')">
+      ${assetGeneralSectionsHtml_({})}
+      ${assetSpecsSectionHtml_('a', {})}
+      <p id="assetSaveMessage" class="asset-save-message" role="alert" aria-live="assertive" hidden></p>
+      <div class="form-actions asset-action-bar"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button id="assetSaveButton" class="primary">บันทึกอุปกรณ์</button></div>
+    </form>`,
+  );
   assetSubOptions('');
   $('a_asset_no').dataset.original = '';
   $('a_asset_no').dataset.originalType = '';
   assetNumberMode();
   assetModelOptions('');
-  const form = $('assetEditorForm');
-  const dirty = event => { if (event.target.id.startsWith('a_')) form.dataset.dirty = 'true'; };
-  form.addEventListener('input', dirty);
-  form.addEventListener('change', dirty);
+  bindAssetEditorDirty_('assetEditorForm', 'a_');
 }
 
 function assetSurveyForm(id) {

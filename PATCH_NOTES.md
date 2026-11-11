@@ -3,6 +3,10 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.60 — 2026-11-11
+- **Single-Screen Compact Equipment Edit Dialog**:
+  - **จัดระเบียบหน้าต่าง `แก้ไขข้อมูลทั่วไป` และ `เพิ่มอุปกรณ์` ให้พอดีหน้าเดียวโดยไม่ต้องเลื่อน Scroll บน Desktop**: ปรับ `.modal-box:has(.asset-compact-form)` กว้าง `980px`, จัดกลุ่ม **ข้อมูลอุปกรณ์** เป็น Grid 4 คอลัมน์ (2 แถวโดยช่อง **เลขครุภัณฑ์** กว้าง 2 ช่อง), จัดกลุ่ม **ผู้รับผิดชอบและหน่วยงาน** และ **สถานที่ติดตั้ง** อย่างละ 1 แถว (3 คอลัมน์), ลดระยะห่าง (`padding`, `gap`, `margin`, input height `32px`) และ Refactor ด้วย Shared Helpers (`assetSectionHtml_`, `assetGeneralSectionsHtml_`, `assetSpecsSectionHtml_`, `bindAssetEditorDirty_`) ใน `src/UI_Client.html` + `src/UI_Styles.html` (วัดผลใน Chrome Headless ได้ความสูง Modal `475px`, `needsScroll: false`)
+
 ## V1.1.59 — 2026-11-11
 - **Project Header Rewrite & Unified Project Infrastructure Alignment**:
   - **Rewrite Header ทุกไฟล์ Source Code (`src/*.js`, `src/*.html`)**: ปรับชื่อโครงการใน Header เป็น **`ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)`** พร้อมปรับค่า Default Branding ใน `Server.js`, `UI_Client.html` และ `Index.html` ให้ตรงกัน

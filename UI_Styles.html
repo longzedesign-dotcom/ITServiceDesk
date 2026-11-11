@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
-  Version: V1.1.59
+  Version: V1.1.60
   Stage: production
   Purpose: Ordered feature styles and shared Light/Dark tokens
   Notes:
@@ -10,6 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
+  - V1.1.60: Add compact .asset-compact-form single-screen modal grid & tight vertical spacing.
   - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที).
   - V1.1.43: Place high-contrast save-result messages above dialogs and style inline inventory errors.
   - V1.1.42: Remove service-report KPI top accent strips and strengthen the card outlines.
@@ -12590,6 +12591,179 @@ html[data-theme='dark'] .ux-profile-actions button.ux124-logout:focus-visible { 
   .status-compact-form .status-attachment .hint { font-size: 11px; line-height: 1.3; }
   .status-compact-form .status-action-bar .form-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px; }
   .status-compact-form .status-action-bar button { min-height: 44px; font-size: 14px; padding: 9px 12px; width: 100%; }
+}
+
+
+/* Compact single-screen layout for equipment general edit & create dialogs. */
+@media (min-width: 769px) {
+  .modal-box:has(.asset-compact-form) {
+    width: min(980px, 100%);
+    padding: 12px 16px;
+    max-height: calc(100dvh - 24px);
+    overscroll-behavior: contain;
+  }
+  .modal-box:has(.asset-compact-form) .modal-head {
+    margin-bottom: 6px;
+    gap: 10px;
+  }
+  .modal-box:has(.asset-compact-form) .modal-head h2 {
+    font-size: 16.5px;
+    line-height: 1.3;
+  }
+  .asset-compact-form {
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+  .asset-compact-form .asset-compact-section {
+    padding: 9px 11px;
+    margin-bottom: 7px;
+    border-radius: 10px;
+    border: 1px solid var(--theme-border, #dce5ee);
+    background: color-mix(in srgb, var(--theme-raised, #f8fbff) 40%, var(--theme-panel, #ffffff));
+  }
+  .asset-compact-form .asset-compact-section:last-of-type {
+    margin-bottom: 0;
+  }
+  .asset-compact-form .asset-compact-section h3 {
+    font-size: 13px;
+    line-height: 1.25;
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    gap: 6px;
+    color: var(--theme-heading, inherit);
+    border-bottom: 1px solid color-mix(in srgb, var(--theme-border, #dce5ee) 60%, transparent);
+  }
+  .asset-compact-form .form-grid {
+    gap: 7px 10px;
+  }
+  .asset-compact-form .asset-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .asset-compact-form .asset-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .asset-compact-form .asset-span2 {
+    grid-column: span 2;
+  }
+  .asset-compact-form label {
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11.5px;
+    line-height: 1.25;
+  }
+  .asset-compact-form label :is(input, select, textarea) {
+    margin-top: 0;
+  }
+  .asset-compact-form :is(input, select, textarea) {
+    min-width: 0;
+    width: 100%;
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 8px;
+    font-size: 13px;
+    line-height: 1.25;
+    box-sizing: border-box;
+    border-radius: 7px;
+  }
+  .asset-compact-form #assetNumberHint {
+    margin: 3px 0 6px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .asset-compact-form .asset-save-message {
+    margin: 6px 0 0;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 7px;
+  }
+  .asset-compact-form .asset-action-bar {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--theme-border, #d4e1ee);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+  }
+  .asset-compact-form .asset-action-bar button {
+    min-height: 34px;
+    padding: 6px 14px;
+    font-size: 13px;
+    line-height: 1.3;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-box:has(.asset-compact-form) {
+    padding: 12px;
+    width: 100%;
+    overscroll-behavior: contain;
+  }
+  .modal-box:has(.asset-compact-form) .modal-head {
+    margin-bottom: 8px;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .modal-box:has(.asset-compact-form) .modal-head h2 {
+    font-size: 16px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .asset-compact-form .asset-compact-section {
+    padding: 9px 10px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--theme-border, #dce5ee);
+  }
+  .asset-compact-form .asset-compact-section h3 {
+    font-size: 14px;
+    margin: 0 0 7px;
+  }
+  .asset-compact-form .asset-grid-4,
+  .asset-compact-form .asset-grid-3 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .asset-compact-form .asset-span2 {
+    grid-column: auto;
+  }
+  .asset-compact-form label {
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 12.5px;
+  }
+  .asset-compact-form label :is(input, select, textarea) {
+    margin-top: 0;
+  }
+  .asset-compact-form :is(input, select, textarea) {
+    min-height: 42px;
+    height: auto;
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+  .asset-compact-form .asset-action-bar {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--theme-border, #d4e1ee);
+  }
+  .asset-compact-form .asset-action-bar button {
+    min-height: 44px;
+    width: 100%;
+    padding: 8px 12px;
+  }
 }
 
 
