@@ -1,16 +1,16 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
-  Version: V1.1.61
-  Stage: production
-  Purpose: Ordered feature styles and shared Light/Dark tokens
-  Notes:
-  - No secrets in source code
-  - Preserve existing data and backward compatibility
-  - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
-  Modified: 2026-11-11
-  Change History:
-  - V1.1.61: Remove nested section cards in .asset-compact-form and separate form groups with larger bold headings (15.5px desktop / 16px mobile).
+ * Version: V1.1.62
+ * Stage: production
+ * Purpose: Ordered feature styles and shared Light/Dark tokens
+ * Notes:
+ * - No secrets in source code
+ * - Preserve existing data and backward compatibility
+ * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
+ * Modified: 2026-11-11
+ * Change History:
+ * - V1.1.62: Add CM-Form_69 Service Report logo upload, live A4 preview frame, and cardless ticket-linked summary styles.
   - V1.1.60: Add compact .asset-compact-form single-screen modal grid & tight vertical spacing.
   - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที).
   - V1.1.43: Place high-contrast save-result messages above dialogs and style inline inventory errors.
@@ -10839,7 +10839,83 @@ html[data-theme] :is(.badge, .ui-badge) {
 .service70-actions button {
   white-space: normal;
 }
+.project70-report-logo-row {
+  display: grid;
+  grid-template-columns: 164px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.project70-report-logo-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  padding: 8px 10px;
+  border: 1px dashed var(--theme-border);
+  border-radius: 10px;
+  background: #fff;
+}
+.project70-report-logo-box img {
+  max-width: 140px;
+  max-height: 58px;
+  object-fit: contain;
+}
+.project70-report-logo-ctl {
+  display: grid;
+  gap: 8px;
+}
+.project70-report-logo-ctl small {
+  color: var(--theme-muted);
+}
+.project70-report-preview-wrap {
+  margin: 8px 0 14px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  overflow-x: auto;
+}
+.project70-report-preview {
+  display: block;
+  width: 794px;
+  max-width: 100%;
+  height: 1123px;
+  margin: 0 auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+}
+.service70-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  padding: 4px 0 10px;
+  border-bottom: 1px solid var(--theme-border);
+}
+.service70-summary > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.service70-summary small {
+  font-size: 11.5px;
+  color: var(--theme-muted);
+}
+.service70-summary strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-text);
+  overflow-wrap: anywhere;
+}
 @media (max-width: 700px) {
+  .project70-report-logo-row,
+  .service70-summary {
+    grid-template-columns: 1fr;
+  }
+  .project70-report-preview {
+    height: 540px;
+  }
   .project70 .project70-grid {
     grid-template-columns: 1fr;
   }

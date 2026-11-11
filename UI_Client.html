@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.61
+  Version: V1.1.62
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,7 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
-  - V1.1.61: Align equipment form version header with cardless typography-separated section design.
+  - V1.1.62: Rewrite CM-Form_69 A4 service report layout (100% match to Open Technology / สคบ. PDF), embed Open Technology logo default, add live A4 preview & logo controls in Settings, link ticket+inventory fields + note edit + auto-prompt after technician marks repair finished.
   - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
   - V1.1.59: Rewrite project header & client branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); retain ADMIN branding settings controls.
   - V1.1.43: Show clear success/error messages and keep inventory save failures visible in the editor.
@@ -3351,6 +3351,7 @@ async function submitStatus(id) {
     ui.ticket = id;
     nav('tickets');
     toast('บันทึกสถานะแล้ว');
+    if (payload.to === 'รอยืนยันผล') service70Edit(id);
   } catch (e) {
     fail(e);
   } finally {
@@ -6141,13 +6142,30 @@ function project70Render() {
   const s = d.line.status || {};
   line.innerHTML = `<section><h2>LINE Settings</h2><p>ตั้งค่าตัวรับข้อมูลฝั่ง Apps Script แล้วใช้ค่าเดียวกันกับ Cloudflare Worker ข้อความจะเข้าคิวรอตรวจสอบก่อนอนุมัติแจ้งซ่อม</p><dl><dt>ตัวรับ Apps Script</dt><dd>${s.ready ? 'ตั้งค่าพร้อมรับข้อมูล' : 'ยังตั้งค่าไม่ครบ'}</dd><dt>กุญแจ HMAC</dt><dd>${d.line.signing_key_configured ? 'ตั้งค่าแล้ว — ไม่แสดงค่าเดิม' : 'ยังไม่ตั้งค่า'}</dd><dt>LINE_INBOX</dt><dd>${s.schemaReady ? 'โครงสร้างพร้อมใช้งาน' : 'ยังไม่มีชีตหรือหัวตารางไม่ตรง'}</dd><dt>ฐานข้อมูลตัวรับ</dt><dd>${d.line.database_matches ? 'ตรงกับโครงการนี้' : 'ไม่ตรงกับโครงการ — ต้องแก้ก่อนเปิดรับ'}</dd></dl><label class="project70-check"><input id="project70LineEnabled" type="checkbox" ${d.line.enabled ? 'checked' : ''}> เปิดรับข้อความแจ้งซ่อม</label><div class="project70-grid"><label class="project70-full">Group IDs ที่อนุญาต<textarea id="project70Groups" rows="3" maxlength="4000">${esc(d.line.groups.join('\n'))}</textarea><small>หนึ่งกลุ่มต่อบรรทัด หรือคั่นด้วย comma ต้องตั้ง ALLOWED_GROUP_IDS ฝั่ง Worker ให้ตรงกัน</small></label>${project70Input('project70Hmac', 'กุญแจ HMAC ใหม่ (เว้นว่างเพื่อคงเดิม)', '', 'ตั้งค่าเดียวกับ ITSD_LINE_GATEWAY_HMAC_KEY ที่ Cloudflare', 'password')}${project70Input('project70LinePassword', 'รหัสผ่าน ADMIN', '', 'ยืนยันตัวตนก่อนเปลี่ยนการรับข้อมูลหรือกุญแจ', 'password')}</div><div class="project70-actions"><button type="button" class="primary" id="project70SaveLine">บันทึก LINE ฝั่ง Apps Script</button><button type="button" class="outline" id="project70RefreshLine">ตรวจสถานะอีกครั้ง</button></div><div class="project70-status" id="project70LineResult" role="status"></div></section>
   <section><h2>เชื่อมต่อ Cloudflare และ LINE</h2><dl><dt>Webhook URL</dt><dd>${esc(d.gateway_url ? d.gateway_url + '/webhook/line' : 'บันทึก Worker URL ในแท็บโครงการก่อน')}</dd><dt>APP_SCRIPT_URL</dt><dd>${esc(d.deployment_url || 'บันทึก URL /exec ในแท็บโครงการก่อน')}</dd><dt>ITSD_DATABASE_ID</dt><dd><code>${esc(d.database_id)}</code></dd></dl><p>หน้านี้ไม่เปลี่ยน Cloudflare Secrets ให้โดยอัตโนมัติ ผู้ดูแลตั้งค่าผ่าน Cloudflare Dashboard หรือ Wrangler ที่ลงชื่อเข้าใช้แล้ว</p><details><summary>คำสั่งตั้งค่า Worker ทีละรายการ</summary><pre>${esc(project70WorkerText())}</pre></details><details><summary>เปลี่ยนกุญแจและตรวจสอบการรับข้อมูล</summary><ol><li>ปิดรับข้อมูลที่ Apps Script ชั่วคราว และตรวจคิว Cloudflare ก่อนเปลี่ยนกุญแจ</li><li>สร้างกุญแจสุ่มใหม่ที่แตกต่างจาก LINE Channel Secret ตั้งใน Cloudflare Secret ชื่อ ITSD_LINE_GATEWAY_HMAC_KEY</li><li>กรอกกุญแจเดียวกันในหน้านี้ บันทึกขณะยังปิดรับข้อมูล แล้วเปิดรับอีกครั้งเมื่อตั้งค่าทั้งสองฝั่งตรงกัน</li><li>ตั้ง ALLOWED_GROUP_IDS ทั้งสองฝั่งให้ตรงกัน และตั้ง Webhook URL /webhook/line ใน LINE Developers</li><li>ส่งข้อความแจ้งซ่อมจากกลุ่ม LINE ตรวจ Logs และตรวจว่ารายการใหม่ปรากฏในหน้าตรวจสอบข้อความจาก LINE</li><li>หากหยุดรับนานจนข้อความเข้าคิว failed ให้ตรวจและส่งซ้ำจากคิวหลังแก้การเชื่อมต่อ</li></ol></details><p>ผลตรวจ Gateway ยืนยันเพียงว่า Worker ตอบสนอง การรับข้อมูลครบทุกขั้นตอนต้องตรวจสอบด้วยข้อความจริงจากกลุ่ม LINE</p></section>`;
-  report.innerHTML = `<section><h2>แม่แบบใบงานบริการ</h2><p>จัดหน้า A4 ตาม CM-Form_69 เติมข้อมูลจากรายการแจ้งซ่อม และเว้นพื้นที่ลงนาม พิมพ์ได้ในรอยืนยันผลและพิมพ์ซ้ำหลังปิดงาน</p><div class="project70-grid">${project70Input('project70Provider', 'ชื่อบริษัท / ผู้ให้บริการ', d.report.report_provider, 'เว้นว่างเพื่อใช้ชื่อโครงการ')}${project70Input('project70ReportTitle', 'ชื่อแบบฟอร์ม', d.report.report_title, 'เว้นว่างเพื่อใช้ชื่อใบแจ้งซ่อมมาตรฐาน')}<label class="project70-full">ที่อยู่ / ข้อมูลติดต่อผู้ให้บริการ<textarea id="project70Address" rows="3" maxlength="500">${esc(d.report.report_provider_address)}</textarea></label><label class="project70-full">ชื่อโครงการในใบงาน<textarea id="project70ReportProject" rows="2" maxlength="240">${esc(d.report.report_project_description)}</textarea><small>เว้นว่างเพื่อใช้ชื่อโครงการจาก Branding โลโก้ใช้ไอคอนระบบที่ตั้งค่าในแท็บทั่วไป</small></label></div><div class="project70-actions"><button type="button" class="primary" id="project70SaveReport">บันทึกแม่แบบใบงาน</button></div><div class="project70-status" id="project70ReportResult" role="status"></div><h3>การใช้ใบงาน</h3><ol><li>เปิดรายละเอียดงานที่สถานะรอยืนยันผล → ข้อมูลใบงาน เพื่อบันทึกผลการซ่อมและอุปกรณ์ส่งซ่อม/ทดแทน (ถ้ามี)</li><li>กดพิมพ์ใบงาน (PDF) แล้วเลือกบันทึกเป็น PDF หรือเครื่องพิมพ์</li><li>ลงนามผู้ปฏิบัติงานและผู้รับบริการ แล้วแนบเอกสารกลับในขั้นตอนยืนยันผล</li></ol><p>ข้อมูลที่ไม่มีจะเว้นว่าง การพิมพ์ไม่เปลี่ยนสถานะและไม่ถือว่าลงนามแล้ว</p></section>`;
+  const reportLogoUrl = d.report.report_logo_data_url || SERVICE_REPORT_DEFAULT_LOGO;
+  report.innerHTML = `<section><h2>แม่แบบใบงานบริการ (CM-Form_69)</h2><p>จัดหน้า A4 เหมือนต้นฉบับ Open Technology / สคบ. 100% ดึงข้อมูลจากใบแจ้งซ่อม ครุภัณฑ์ และผลการซ่อมหลังแก้ไขเสร็จอัตโนมัติ</p><div class="project70-report-logo-row"><div class="project70-report-logo-box"><img id="project70LogoImg" src="${reportLogoUrl}" alt="โลโก้หัวใบงาน"></div><div class="project70-report-logo-ctl"><label>โลโก้หัวใบงาน (PNG / JPG)<input id="project70LogoFile" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg"></label><div class="project70-actions"><button type="button" class="outline" id="project70UploadLogo">อัปโหลดโลโก้ใบงาน</button><button type="button" class="outline" id="project70ClearLogo">คืนค่าโลโก้ Open Technology</button></div><small>หากยังไม่เคยอัปโหลด ระบบจะใช้โลโก้ Open Technology มาตรฐานให้อัตโนมัติ</small></div></div><div class="project70-grid">${project70Input('project70Provider', 'ชื่อบริษัท / ผู้ให้บริการ', d.report.report_provider || SERVICE_REPORT_DEFAULTS.report_provider, 'เว้นว่างเพื่อใช้ค่าเริ่มต้น')}${project70Input('project70ReportTitle', 'ชื่อแบบฟอร์ม', d.report.report_title || SERVICE_REPORT_DEFAULTS.report_title, 'เว้นว่างเพื่อใช้ชื่อใบแจ้งซ่อมมาตรฐาน')}<label class="project70-full">ที่อยู่ / ข้อมูลติดต่อผู้ให้บริการ<textarea id="project70Address" rows="2" maxlength="500">${esc(d.report.report_provider_address || SERVICE_REPORT_DEFAULTS.report_provider_address)}</textarea></label><label class="project70-full">ชื่อโครงการในใบงาน<textarea id="project70ReportProject" rows="2" maxlength="240">${esc(d.report.report_project_description || SERVICE_REPORT_DEFAULTS.report_project_description)}</textarea></label></div><div class="project70-actions"><button type="button" class="primary" id="project70SaveReport">บันทึกแม่แบบใบงาน</button><button type="button" class="outline" id="project70FillDefaultReport">เติมค่ามาตรฐาน CM</button><button type="button" class="outline" id="project70PreviewPrint">พิมพ์ตัวอย่างใบงาน (PDF)</button></div><div class="project70-status" id="project70ReportResult" role="status"></div><h3>ตัวอย่างหน้าตาใบงาน A4 แบบเรียลไทม์</h3><div class="project70-report-preview-wrap"><iframe id="project70ReportPreview" class="project70-report-preview" title="ตัวอย่างแม่แบบใบงาน A4"></iframe></div><h3>ขั้นตอนการใช้งานใบงาน</h3><ol><li>เมื่อเจ้าหน้าที่เปลี่ยนสถานะงานเป็น <strong>รอยืนยันผล (แก้ไขเสร็จ)</strong> ระบบจะเปิดหน้าต่างบันทึกข้อมูลใบงานให้อัตโนมัติ เพื่อระบุสถานะงาน (เสร็จสิ้นเรียบร้อย / ส่งซ่อม / สำรองอุปกรณ์ / เปลี่ยนอุปกรณ์) และอุปกรณ์ส่งซ่อม/ทดแทน</li><li>กด <strong>บันทึก &amp; พิมพ์ใบงาน (PDF)</strong> เพื่อออกใบงาน A4 แล้วลงนามผู้ปฏิบัติงานและผู้ใช้งาน</li><li>แนบใบงานที่ลงนามแล้วในขั้นตอนยืนยันผลเพื่อปิดงาน</li></ol></section>`;
   const bind = (id, handler) => {
     const el = $(id);
     if (el) el.onclick = (event) => handler(event.currentTarget);
   };
   bind('project70Save', (button) => project70Save(button, 'project70ConnectionResult'));
   bind('project70SaveReport', (button) => project70Save(button, 'project70ReportResult'));
+  bind('project70UploadLogo', (button) => project70UploadReportLogo(button));
+  bind('project70ClearLogo', (button) => project70ClearReportLogo(button));
+  bind('project70FillDefaultReport', () => {
+    uiSetValue('project70Provider', SERVICE_REPORT_DEFAULTS.report_provider);
+    uiSetValue('project70ReportTitle', SERVICE_REPORT_DEFAULTS.report_title);
+    uiSetValue('project70Address', SERVICE_REPORT_DEFAULTS.report_provider_address);
+    uiSetValue('project70ReportProject', SERVICE_REPORT_DEFAULTS.report_project_description);
+    project70UpdateReportPreview();
+    project70Message('project70ReportResult', 'เติมค่ามาตรฐาน Open Technology / สคบ. แล้ว กดบันทึกเพื่อใช้งานจริง');
+  });
+  bind('project70PreviewPrint', (button) => project70PreviewReportPrint(button));
+  ['project70Provider', 'project70ReportTitle', 'project70Address', 'project70ReportProject'].forEach((fid) => {
+    const el = $(fid);
+    if (el) el.addEventListener('input', project70UpdateReportPreview);
+  });
+  project70UpdateReportPreview();
   bind('project70CheckGateway', (button) =>
     project70Task(
       button,
@@ -6392,54 +6410,327 @@ function project70Save(button, messageId) {
 }
 
 // apps/webapp/src/client/features/service-reports/work-order-controller.js
+const SERVICE_REPORT_DEFAULT_LOGO =
+  'data:image/png;base64,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';
+
+const SERVICE_REPORT_DEFAULTS = {
+  report_provider: 'บริษัท โอเพ่น เทคโนโลยี จำกัด (มหาชน)',
+  report_provider_address:
+    '223/95 ชั้น 20 คันทรี คอมเพล็กซ์ อาคารเอ ถนนสรรพาวุธ เขตบางนา กรุงเทพฯ 10260 โทร. 02-753-4291 โทรสาร. 02-753-4289',
+  report_title: 'ใบแจ้งซ่อมเครื่องคอมพิวเตอร์และอุปกรณ์ต่อพ่วง (CM) สำนักงานคณะกรรมการคุ้มครองผู้บริโภค',
+  report_project_description:
+    'โครงการบำรุงรักษาเครือข่าย เครื่องคอมพิวเตอร์แม่ข่าย เครื่องคอมพิวเตอร์ อุปกรณ์คอมพิวเตอร์ และห้องปฏิบัติการคอมพิวเตอร์',
+};
+
+function project70ReportSampleData() {
+  const logo =
+    project70UI?.data?.report?.report_logo_data_url || SERVICE_REPORT_DEFAULT_LOGO;
+  return {
+    version: state?.version || 'V1.1.62',
+    generated_at: '2026-11-11 10:30:00',
+    branding: state?.branding || { project_name: 'ITSD : ITServiceDesk' },
+    template: {
+      provider: uiValue('project70Provider', true) || SERVICE_REPORT_DEFAULTS.report_provider,
+      address:
+        uiValue('project70Address', true) || SERVICE_REPORT_DEFAULTS.report_provider_address,
+      title: uiValue('project70ReportTitle', true) || SERVICE_REPORT_DEFAULTS.report_title,
+      project:
+        uiValue('project70ReportProject', true) ||
+        SERVICE_REPORT_DEFAULTS.report_project_description,
+      logo_data_url: logo,
+    },
+    ticket: {
+      id: 'INC-2569-0142',
+      reported_at: '2026-11-11 09:15:00',
+      reporter: 'นางสาวสมหญิง ใจดี',
+      phone: '2415',
+      org: 'สำนักคุ้มครองผู้บริโภค 1',
+      suborg: 'กลุ่มงานรับเรื่องราวร้องทุกข์',
+      floor: '5',
+      asset_no: 'สคบ. 66-014-0089',
+      serial: 'PF4ABCD9',
+      brand: 'Lenovo',
+      model: 'ThinkCentre M70q Gen 3',
+      device: 'Computer PC',
+      description: 'เปิดเครื่องไม่ติด มีเสียงแจ้งเตือนที่เมนบอร์ดและหน้าจอไม่แสดงผล',
+      resolution: 'ตรวจสอบหน่วยความจำ (RAM) และเปลี่ยนโมดูล DDR4 16GB ทดสอบบูตระบบ Windows และโปรแกรมสำนักงานใช้งานได้ปกติ',
+      note: 'นัดตรวจเช็คความเสถียรอีกครั้งภายใน 7 วัน',
+      technician: 'นายธนากร ช่างซ่อม',
+      finished_at: '2026-11-11 10:30:00',
+      confirmed_by: 'นางสาวสมหญิง ใจดี',
+      status: 'รอยืนยันผล',
+    },
+    detail: {
+      outcome: 'COMPLETED',
+      outcome_date: '2026-11-11',
+      sent_name: '',
+      sent_model: '',
+      sent_serial: '',
+      replacement_name: '',
+      replacement_model: '',
+      replacement_serial: '',
+    },
+  };
+}
+
+function project70UpdateReportPreview() {
+  const frame = $('project70ReportPreview');
+  if (!frame) return;
+  const sample = project70ReportSampleData();
+  frame.srcdoc = service70Html(sample, sample.template.logo_data_url);
+}
+
+function project70EncodeLogo(file) {
+  return new Promise((resolve, reject) => {
+    if (file.size > 5 * 1024 * 1024) {
+      reject(Error('ไฟล์โลโก้ต้องมีขนาดไม่เกิน 5 MB'));
+      return;
+    }
+    const url = URL.createObjectURL(file),
+      img = new Image();
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(Error('ไม่สามารถอ่านไฟล์รูปภาพได้'));
+    };
+    img.onload = () => {
+      try {
+        const maxW = 480,
+          scale = Math.min(1, maxW / Math.max(1, img.naturalWidth)),
+          w = Math.max(1, Math.round(img.naturalWidth * scale)),
+          h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/png');
+        resolve(dataUrl.split(',')[1]);
+      } catch (e) {
+        reject(e);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.src = url;
+  });
+}
+
+async function project70UploadReportLogo(button) {
+  const file = uiFile('project70LogoFile');
+  if (!file) {
+    toast('กรุณาเลือกไฟล์โลโก้หัวใบงาน');
+    return;
+  }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!['png', 'jpg', 'jpeg'].includes(ext) || !['image/png', 'image/jpeg'].includes(file.type)) {
+    toast('รองรับเฉพาะไฟล์ PNG หรือ JPG เท่านั้น');
+    return;
+  }
+  return project70Task(
+    button,
+    async () => {
+      const base64 = await project70EncodeLogo(file),
+        uploadName = file.name.replace(/\.[^.]+$/, '') + '.png',
+        r = await call('uploadServiceReportLogo', token, uploadName, 'image/png', base64);
+      project70UI.data.report.report_logo_file_id = r.file_id;
+      project70UI.data.report.report_logo_data_url = r.data_url;
+      project70UI.data.revision = r.revision;
+      if ($('project70LogoImg')) $('project70LogoImg').src = r.data_url;
+      if ($('project70LogoFile')) $('project70LogoFile').value = '';
+      project70UpdateReportPreview();
+      project70Message('project70ReportResult', 'อัปโหลดโลโก้หัวใบงานแล้ว');
+    },
+    'project70ReportResult',
+  );
+}
+
+async function project70ClearReportLogo(button) {
+  return project70Task(
+    button,
+    async () => {
+      const r = await call('clearServiceReportLogo', token);
+      project70UI.data.report.report_logo_file_id = '';
+      project70UI.data.report.report_logo_data_url = '';
+      project70UI.data.revision = r.revision;
+      if ($('project70LogoImg')) $('project70LogoImg').src = SERVICE_REPORT_DEFAULT_LOGO;
+      project70UpdateReportPreview();
+      project70Message('project70ReportResult', 'คืนค่าโลโก้ Open Technology แล้ว');
+    },
+    'project70ReportResult',
+  );
+}
+
+async function project70PreviewReportPrint(button) {
+  if (button?.disabled) return;
+  if (button) button.disabled = true;
+  try {
+    const sample = project70ReportSampleData();
+    await service70PrintHtml(service70Html(sample, sample.template.logo_data_url), button);
+  } finally {
+    if (button?.isConnected) button.disabled = false;
+  }
+}
+
 function service70Date(value) {
-  const s = String(value || '');
+  const s = String(value || '').trim();
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
   return m ? `${m[3]}/${m[2]}/${Number(m[1]) + 543}${m[4]}` : s;
 }
 
+function service70DateOnly(value) {
+  const s = String(value || '').trim();
+  if (!s) return '';
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+  if (m) {
+    const y = Number(m[1]);
+    return `${m[3]}/${m[2]}/${y < 2400 ? y + 543 : y}`;
+  }
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s.*)?$/);
+  if (m) {
+    const y = Number(m[3]);
+    return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${y < 2400 ? y + 543 : y}`;
+  }
+  return s;
+}
+
+function service70IsoDate(value) {
+  const s = String(value || '').trim();
+  if (!s) return '';
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+  if (m) {
+    const y = Number(m[1]);
+    return `${String(y > 2400 ? y - 543 : y).padStart(4, '0')}-${m[2]}-${m[3]}`;
+  }
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s.*)?$/);
+  if (m) {
+    const y = Number(m[3]);
+    return `${String(y > 2400 ? y - 543 : y).padStart(4, '0')}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  }
+  return '';
+}
+
 function service70Html(data, logo = '') {
-  const t = data.ticket,
+  const t = data.ticket || {},
     d = data.detail || {},
     b = data.template || {},
     e = esc;
+  const logoSrc = /^data:image\/(?:png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(
+    logo || b.logo_data_url || '',
+  )
+    ? logo || b.logo_data_url
+    : SERVICE_REPORT_DEFAULT_LOGO;
+  const provider = b.provider || SERVICE_REPORT_DEFAULTS.report_provider;
+  const address = b.address || SERVICE_REPORT_DEFAULTS.report_provider_address;
+  const title = b.title || SERVICE_REPORT_DEFAULTS.report_title;
+  const project = b.project || SERVICE_REPORT_DEFAULTS.report_project_description;
   const field = (label, value, cls = '') =>
-    `<div class="field ${cls}"><span>${label}</span><b>${e(value || '')}</b></div>`;
-  const mark = (key, label) =>
-    `<span class="check"><i>${d.outcome === key ? '✓' : ''}</i>${label}</span>`;
+    `<div class="field ${cls}"><span class="lbl">${label}</span><b class="dots">${e(value || '')}</b></div>`;
+  const checkMark = (checked, label) =>
+    `<span class="check"><i class="box">${checked ? '✓' : ''}</i><span>${label}</span></span>`;
   const types = [
-    ['Computer PC', /^(?:Computer PC|PC|Desktop)$/i],
-    ['Notebook', /notebook|laptop/i],
-    ['UPS', /^ups$/i],
-    ['Printer', /printer/i],
-    ['Scanner', /scanner/i],
+    ['Computer PC', /(?:computer\s*pc|desktop|^pc$|คอมพิวเตอร์ตั้งโต๊ะ|เครื่องคอมพิวเตอร์)/i],
+    ['Notebook', /notebook|laptop|โน้ตบุ๊ก/i],
+    ['UPS', /\bups\b|สำรองไฟ/i],
+    ['Printer', /printer|เครื่องพิมพ์/i],
+    ['Scanner', /scanner|สแกนเนอร์/i],
   ];
-  const other = t.device && !types.some(([, rx]) => rx.test(t.device));
-  return `<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Service_${e(t.id)}</title><link rel="stylesheet" href="https:\/\/fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"><style>
-  @page{size:A4 portrait;margin:12mm 14mm 14mm;@bottom-left{content:"${e(t.id)}";font:8pt Tahoma;color:#444}@bottom-right{content:counter(page) " / " counter(pages);font:8pt Tahoma;color:#444}}*{box-sizing:border-box}body{margin:0;color:#111;background:#fff;font:11pt/1.6 'Noto Sans Thai',Tahoma,sans-serif;overflow-wrap:anywhere}.head{display:flex;align-items:center;gap:5mm;border-bottom:1.2mm solid #111;padding-bottom:3mm}.logo{width:20mm;height:20mm;object-fit:contain}.brand{flex:1;min-width:0}.brand strong{display:block;font-size:12pt}.brand small{display:block;font-size:8.5pt}.job{text-align:right;font-size:9pt;max-width:70mm}.job h1{font:700 14pt Georgia,serif;margin:0 0 2mm}.title{text-align:center;margin:4mm 0 1mm;font-size:12pt}.project{text-align:center;font-size:9pt;margin-bottom:4mm}.state{font-size:9pt;padding:1.5mm 0;border-bottom:.2mm solid #aaa;margin-bottom:4mm}.grid{display:grid;grid-template-columns:1fr 1fr;gap:2mm 5mm}.field{display:flex;gap:2mm;align-items:baseline;min-width:0}.field span{flex-shrink:0}.field b{font-weight:400;flex:1;border-bottom:.2mm dotted #777;min-height:6mm;white-space:pre-wrap}.full{grid-column:1/-1}.types{display:flex;flex-wrap:wrap;gap:2mm 4mm;margin:3mm 0}.check{display:inline-flex;align-items:baseline;gap:1.5mm}.check i{display:inline-block;width:3.6mm;height:3.6mm;border:.25mm solid #111;line-height:3mm;font-style:normal;text-align:center}.section{margin-top:4mm}.section h2{font-size:11pt;margin:0 0 1mm}.text{white-space:pre-wrap;min-height:18mm;border-bottom:.2mm dotted #888}.resolution{min-height:25mm}.outcome{margin-top:5mm;display:flex;flex-wrap:wrap;gap:2mm 4mm;break-inside:avoid}.equipment{margin-top:3mm;break-inside:avoid}.equipment strong{display:block;font-weight:500}.note{margin-top:3mm;white-space:pre-wrap;min-height:8mm}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:12mm;margin-top:9mm;break-inside:avoid;page-break-inside:avoid}.signature{font-size:10pt}.line{height:9mm;border-bottom:.2mm dotted #777}.signature p{margin:2mm 0}.name{min-height:6mm}.foot{font-size:8pt;color:#444;margin-top:5mm;border-top:.2mm solid #bbb;padding-top:2mm;break-inside:avoid}
-  body{font-size:10.5pt;line-height:1.45}.grid{gap:1.5mm 5mm}.field b{min-height:5mm}.section{margin-top:3mm}.text{min-height:12mm}.resolution{min-height:18mm}.outcome{margin-top:4mm}.equipment{margin-top:2.5mm}.equipment-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:2mm 3mm}.equipment-grid .full{grid-column:auto}.equipment-grid .field{display:block}.equipment-grid .field b{display:block}.signatures{margin-top:6mm}.signature .line{height:8mm}.signature p{margin:1.5mm 0}.foot{margin-top:3mm}
-  </style></head><body><header class="head">${/^data:image\/(?:png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(logo) ? `<img class="logo" src="${logo}" alt="">` : ''}<div class="brand"><strong>${e(b.provider || data.branding.project_name)}</strong><small>${e(b.address || '')}</small></div><div class="job"><h1>SERVICE REPORT</h1>JOB NO. ${e(t.id)}</div></header>
-  <h2 class="title">${e(b.title)}</h2><div class="project">${e(b.project)}</div><div class="state">สถานะรายการ: <strong>${e(t.status)}</strong>${t.status === 'รอยืนยันผล' ? ' · รอผู้รับบริการยืนยันผล' : t.closed_at ? ` · ปิดงาน: ${e(service70Date(t.closed_at))}` : ''}</div>
-  <div class="grid">${field('สำนัก/กอง', t.org)}${field('กลุ่ม/ศูนย์', t.suborg)}${field('ชื่อผู้ใช้งาน', t.reporter)}${field('โทรศัพท์', t.phone)}${field('ชั้น', t.floor)}${field('วันที่แจ้ง', service70Date(t.reported_at))}${field('หมายเลขครุภัณฑ์', t.asset_no)}${field('หมายเลขเครื่อง (S/N)', t.serial)}${field('ยี่ห้อ', t.brand)}${field('รุ่น', t.model)}</div>
-  <div class="types"><span>ประเภทอุปกรณ์</span>${types.map(([name, rx]) => `<span class="check"><i>${rx.test(t.device || '') ? '✓' : ''}</i>${name}</span>`).join('')}${other ? `<span>อื่น ๆ: ${e(t.device)}</span>` : ''}</div>
-  <section class="section"><h2>ปัญหา</h2><div class="text">${e(t.description)}</div></section><section class="section"><h2>วิธีการแก้ไข</h2><div class="text resolution">${e(t.resolution)}</div></section>
-  <div class="outcome"><strong>ผลการดำเนินงาน</strong>${service70Outcomes
-    .slice(1)
-    .map(([k, n]) => mark(k, n))
-    .join('')}<span>วันที่ ${e(service70Date(d.outcome_date))}</span></div>
-  <div class="equipment"><strong>อุปกรณ์ส่งซ่อม</strong><div class="grid equipment-grid">${field('ชื่ออุปกรณ์', d.sent_name)}${field('รุ่น', d.sent_model)}${field('หมายเลขอุปกรณ์', d.sent_serial)}</div></div>
-  <div class="equipment"><strong>อุปกรณ์ทดแทน</strong><div class="grid equipment-grid">${field('ชื่ออุปกรณ์', d.replacement_name)}${field('รุ่น', d.replacement_model)}${field('หมายเลขอุปกรณ์', d.replacement_serial)}</div></div>
-  <div class="note">หมายเหตุ: ${e(t.note)}</div>
-  <section class="signatures"><div class="signature"><div class="line">ลงชื่อ</div><p>ผู้ปฏิบัติงาน</p><div class="name">(${e(t.technician)})</div><p>วันที่ ______ / ______ / __________</p></div><div class="signature"><div class="line">ลงชื่อ</div><p>ผู้ใช้งาน / ผู้รับบริการ</p><div class="name">(${e(t.confirmed_by || t.reporter)})</div><p>วันที่ ______ / ______ / __________</p></div></section>
-  <footer class="foot">${e(t.id)} · แก้ไขเสร็จ ${e(service70Date(t.finished_at))}${t.confirmed_at ? ` · ยืนยันในระบบ ${e(service70Date(t.confirmed_at))}` : ''}<br>จัดพิมพ์ ${e(service70Date(data.generated_at))} · ITSD ${e(data.version)} · ชื่อที่พิมพ์ไว้ไม่ใช่ลายเซ็น</footer></body></html>`;
+  const reportDate = service70DateOnly(t.reported_at);
+  const outcomeDate = service70DateOnly(d.outcome_date);
+  return `<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Service_${e(t.id)}</title><link rel="stylesheet" href="https:\/\/fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"><style>
+  @page{size:A4 portrait;margin:11mm 14mm 10mm}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;color:#111;font:10.5pt/1.45 'Sarabun','Noto Sans Thai',Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{width:100%;max-width:182mm;margin:0 auto}
+  .head-wrap{display:grid;grid-template-columns:${logoSrc ? '22mm 1fr' : '1fr'};gap:.5mm 3mm;align-items:start;border-bottom:.35mm solid #222;padding-bottom:2.2mm;margin-bottom:2.8mm}
+  .logo{grid-row:1/span 2;width:22mm;height:11mm;object-fit:contain;align-self:center}
+  .head-top{display:flex;align-items:flex-end;justify-content:space-between;gap:2.5mm}
+  .co-name{color:#1f4e8c;font-weight:700;font-size:10.2pt;line-height:1.15;white-space:nowrap}
+  .sr-box{border:.4mm solid #111;padding:.8mm 5.5mm;font-weight:700;font-size:13pt;line-height:1.1;letter-spacing:.35px;white-space:nowrap;background:#fff;margin:0 auto}
+  .job-no{display:flex;align-items:baseline;gap:1.5mm;font-size:9.5pt;white-space:nowrap;min-width:41mm}
+  .job-no .dots{flex:1;border-bottom:.25mm dotted #333;min-height:4.2mm;padding:0 1.2mm;text-align:center;font-weight:600;font-size:9.5pt}
+  .co-addr{color:#1f4e8c;font-size:8.2pt;line-height:1.25}
+  .title{text-align:center;font-size:11.5pt;font-weight:700;margin:2.5mm 0 .8mm;line-height:1.3}
+  .project{text-align:center;font-size:9.6pt;font-weight:400;margin:0 0 6mm;line-height:1.35}
+  .row{display:grid;gap:3mm;margin-bottom:2.6mm;align-items:baseline}
+  .r2{grid-template-columns:1fr 1fr}
+  .r4{grid-template-columns:1.45fr 1fr .62fr .95fr}
+  .field{display:flex;align-items:baseline;gap:1.8mm;min-width:0}
+  .field .lbl{white-space:nowrap;flex-shrink:0}
+  .dots{flex:1;min-width:0;min-height:4.8mm;border-bottom:.25mm dotted #444;padding:0 1.5mm;font-weight:400;line-height:1.25;overflow-wrap:anywhere}
+  .dots.center{text-align:center}
+  .types-row{display:flex;align-items:center;gap:4.5mm;margin:3.5mm 0 4.5mm;flex-wrap:wrap}
+  .types-row .lbl{white-space:nowrap;margin-right:1mm}
+  .types-list{flex:1;display:flex;align-items:center;justify-content:space-between;gap:3mm;flex-wrap:wrap}
+  .check{display:inline-flex;align-items:center;gap:2mm;white-space:nowrap}
+  .check i.box{display:inline-flex;align-items:center;justify-content:center;width:3.8mm;height:3.8mm;border:.3mm solid #111;font-style:normal;font-size:9.5pt;font-weight:700;line-height:1;flex-shrink:0}
+  .area{margin-top:4mm}
+  .area-lbl{font-size:10.5pt;margin-bottom:.8mm}
+  .ruled-wrap{position:relative}
+  .ruled-lines{position:absolute;inset:0 0 auto 0;pointer-events:none}
+  .ruled-lines i{display:block;height:7.6mm;border-bottom:.25mm dotted #444}
+  .ruled-text{position:relative;line-height:7.6mm;min-height:22.8mm;white-space:pre-wrap;overflow-wrap:anywhere;padding:0 1.5mm}
+  .ruled-wrap.lines4 .ruled-text{min-height:30.4mm}
+  .outcome-grid{display:grid;grid-template-columns:auto 1.15fr .85fr 1.05fr 1.15fr;gap:2.5mm 3mm;align-items:center;margin-top:7mm;break-inside:avoid}
+  .outcome-grid .lbl{white-space:nowrap;padding-right:1mm}
+  .outcome-grid .date-inline{display:flex;align-items:baseline;gap:1.5mm}
+  .outcome-grid .outcome-r2{grid-column:2}
+  .equip-grid{display:grid;grid-template-columns:23mm 1.15fr 1fr 1.15fr;gap:3.2mm 3mm;align-items:baseline;margin-top:5.5mm;break-inside:avoid}
+  .equip-grid .grp{white-space:nowrap}
+  .note-row{margin-top:4mm;break-inside:avoid}
+  .signatures{display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:11mm;break-inside:avoid;page-break-inside:avoid}
+  .sig-col{display:flex;flex-direction:column;gap:4.5mm}
+  .sig-line,.sig-paren,.sig-date{display:flex;align-items:baseline;gap:1.5mm;white-space:nowrap}
+  .sig-paren{padding:0 3mm 0 8mm}
+  .sig-date .dots{min-width:12mm;text-align:center}
+  </style></head><body><main class="sheet">
+  <header class="head-wrap">
+    <img class="logo" src="${logoSrc}" alt="Logo">
+    <div class="head-top">
+      <div class="co-name">${e(provider)}</div>
+      <div class="sr-box">SERVICE REPORT</div>
+      <div class="job-no"><span>JOB NO.</span><span class="dots">${e(t.id)}</span></div>
+    </div>
+    <div class="co-addr">${e(address)}</div>
+  </header>
+  <h1 class="title">${e(title)}</h1>
+  <div class="project">${e(project)}</div>
+  <div class="row r2">${field('สำนัก/กอง', t.org)}${field('กลุ่ม/ศูนย์', t.suborg)}</div>
+  <div class="row r4">${field('ชื่อผู้ใช้งาน', t.reporter)}${field('โทรศัพท์ภายใน', t.phone)}${field('ชั้น', t.floor)}${field('วันที่', reportDate)}</div>
+  <div class="row r2">${field('หมายเลขครุภัณฑ์', t.asset_no)}${field('หมายเลขเครื่อง', t.serial)}</div>
+  <div class="row r2">${field('ยี่ห้อ', t.brand)}${field('รุ่น', t.model)}</div>
+  <div class="types-row"><span class="lbl">ประเภทอุปกรณ์</span><div class="types-list">${types.map(([name, rx]) => checkMark(rx.test(t.device || ''), name)).join('')}</div></div>
+  <section class="area"><div class="area-lbl">ปัญหา</div><div class="ruled-wrap"><div class="ruled-lines" aria-hidden="true"><i></i><i></i><i></i></div><div class="ruled-text">${e(t.description || '')}</div></div></section>
+  <section class="area"><div class="area-lbl">วิธีการแก้ไข</div><div class="ruled-wrap lines4"><div class="ruled-lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="ruled-text">${e(t.resolution || '')}</div></div></section>
+  <section class="outcome-grid">
+    <span class="lbl">สถานะของงาน</span>
+    ${checkMark(d.outcome === 'COMPLETED', 'เสร็จสิ้นเรียบร้อย')}
+    ${checkMark(d.outcome === 'SENT_FOR_REPAIR', 'ส่งซ่อม')}
+    ${checkMark(d.outcome === 'LOAN_DEVICE', 'สำรองอุปกรณ์')}
+    <div class="date-inline"><span>วันที่</span><b class="dots center">${e(outcomeDate)}</b></div>
+    <div class="outcome-r2">${checkMark(d.outcome === 'REPLACED', 'เปลี่ยนอุปกรณ์')}</div>
+  </section>
+  <section class="equip-grid">
+    <span class="grp">อุปกรณ์ส่งซ่อม</span>${field('ชื่ออุปกรณ์', d.sent_name)}${field('รุ่นของอุปกรณ์', d.sent_model)}${field('หมายเลขอุปกรณ์', d.sent_serial)}
+    <span class="grp">อุปกรณ์ทดแทน</span>${field('ชื่ออุปกรณ์', d.replacement_name)}${field('รุ่นของอุปกรณ์', d.replacement_model)}${field('หมายเลขอุปกรณ์', d.replacement_serial)}
+  </section>
+  <div class="field note-row"><span class="lbl">หมายเหตุ</span><b class="dots">${e(t.note || '')}</b></div>
+  <section class="signatures">
+    <div class="sig-col">
+      <div class="sig-line"><span>ลงชื่อ</span><b class="dots"></b><span>ผู้ปฏิบัติงาน</span></div>
+      <div class="sig-paren"><span>(</span><b class="dots center">${e(t.technician || '')}</b><span>)</span></div>
+      <div class="sig-date"><span>วันที่</span><b class="dots"></b><span>/</span><b class="dots"></b><span>/</span><b class="dots"></b></div>
+    </div>
+    <div class="sig-col">
+      <div class="sig-line"><span>ลงชื่อ</span><b class="dots"></b><span>ผู้ใช้งาน</span></div>
+      <div class="sig-paren"><span>(</span><b class="dots center">${e(t.confirmed_by || t.reporter || '')}</b><span>)</span></div>
+      <div class="sig-date"><span>วันที่</span><b class="dots"></b><span>/</span><b class="dots"></b><span>/</span><b class="dots"></b></div>
+    </div>
+  </section>
+  </main></body></html>`;
 }
 
-async function service70Print(id, button) {
-  if (button?.disabled) return;
-  if (button) button.disabled = true;
+async function service70PrintHtml(html) {
   let frame;
   try {
-    const data = await call('getServiceReport', token, id);
     document.getElementById('service70PrintFrame')?.remove();
     frame = document.createElement('iframe');
     frame.id = 'service70PrintFrame';
@@ -6455,10 +6746,9 @@ async function service70Print(id, button) {
       pointerEvents: 'none',
     });
     document.body.appendChild(frame);
-    const logo = (typeof admin35 !== 'undefined' && admin35.icon) || '';
     const doc = frame.contentDocument;
     doc.open();
-    doc.write(service70Html(data, logo));
+    doc.write(html);
     doc.close();
     await Promise.race([
       doc.fonts?.ready || Promise.resolve(),
@@ -6485,6 +6775,18 @@ async function service70Print(id, button) {
     setTimeout(() => frame.remove(), 120000);
   } catch (e) {
     frame?.remove();
+    throw e;
+  }
+}
+
+async function service70Print(id, button) {
+  if (button?.disabled) return;
+  if (button) button.disabled = true;
+  try {
+    const data = await call('getServiceReport', token, id);
+    const logo = data?.template?.logo_data_url || SERVICE_REPORT_DEFAULT_LOGO;
+    await service70PrintHtml(service70Html(data, logo));
+  } catch (e) {
     fail(e);
   } finally {
     if (button?.isConnected) button.disabled = false;
@@ -6496,13 +6798,82 @@ async function service70Edit(id) {
   try {
     const data = await call('getServiceReport', token, id);
     if (epoch !== uiViewEpoch) return;
-    const d = data.detail,
-      disabled = data.can_edit ? '' : 'disabled';
+    const t = data.ticket || {},
+      d = data.detail || {},
+      disabled = data.can_edit ? '' : 'disabled',
+      outcomeDate = d.outcome_date || service70IsoDate(t.finished_at) || '';
+    const sumItem = (label, value) =>
+      `<div><small>${label}</small><strong>${esc(value || '-')}</strong></div>`;
     openModal(
-      'ข้อมูลใบงาน ' + id,
-      `<form id="service70Form"><p class="ui-note">บันทึกผลการซ่อมและอุปกรณ์ตามจริง ข้อมูลส่วนนี้ไม่เปลี่ยนสถานะงาน</p><div class="form-grid"><label>ผลการดำเนินงาน<select id="service70Outcome" ${disabled}>${service70Outcomes.map(([k, n]) => `<option value="${k}" ${k === d.outcome ? 'selected' : ''}>${n}</option>`).join('')}</select></label><label>วันที่ผลการดำเนินงาน<input id="service70Date" type="date" value="${escAttr(d.outcome_date)}" ${disabled}></label>${service70Fields.map(([k, n]) => `<label>${n}<input id="service70_${k}" maxlength="160" value="${escAttr(d[k])}" ${disabled}></label>`).join('')}</div><p class="ui-note">พิมพ์จากข้อมูลที่บันทึกแล้ว จากนั้นลงนามและแนบกลับในขั้นตอนยืนยันผล</p><div class="form-actions"><button type="button" class="outline" id="service70Print">พิมพ์ใบงาน (PDF)</button>${data.can_edit ? '<button class="primary" type="submit">บันทึกข้อมูลใบงาน</button>' : ''}</div></form>`,
+      'สร้าง / แก้ไขข้อมูลใบงาน (CM) ' + id,
+      `<form id="service70Form" class="asset-compact-form">
+        <div class="asset-compact-head">ข้อมูลเชื่อมโยงจากรายการแจ้งซ่อมและครุภัณฑ์</div>
+        <div class="service70-summary">
+          ${sumItem('JOB NO.', t.id)}
+          ${sumItem('สำนัก/กอง · กลุ่ม/ศูนย์', [t.org, t.suborg].filter(Boolean).join(' · '))}
+          ${sumItem('ผู้ใช้งาน · โทร · ชั้น', [t.reporter, t.phone, t.floor ? 'ชั้น ' + t.floor : ''].filter(Boolean).join(' · '))}
+          ${sumItem('วันที่แจ้ง · ผู้ดำเนินการ', [service70DateOnly(t.reported_at), t.technician].filter(Boolean).join(' · '))}
+          ${sumItem('เลขครุภัณฑ์ · หมายเลขเครื่อง', [t.asset_no, t.serial].filter(Boolean).join(' · '))}
+          ${sumItem('อุปกรณ์ · ยี่ห้อ · รุ่น', [t.device, t.brand, t.model].filter(Boolean).join(' · '))}
+          ${sumItem('ปัญหา', t.description)}
+          ${sumItem('วิธีการแก้ไข', t.resolution)}
+        </div>
+        <div class="asset-compact-head">สถานะของงานและวันที่</div>
+        <div class="asset-compact-row c2">
+          <label>สถานะของงาน<select id="service70Outcome" ${disabled}>${service70Outcomes.map(([k, n]) => `<option value="${k}" ${k === d.outcome ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+          <label>วันที่<input id="service70Date" type="date" value="${escAttr(outcomeDate)}" ${disabled}></label>
+        </div>
+        <div class="asset-compact-head">อุปกรณ์ส่งซ่อม</div>
+        <div class="asset-compact-row c3">
+          <label>ชื่ออุปกรณ์<input id="service70_sent_name" maxlength="160" value="${escAttr(d.sent_name)}" ${disabled}></label>
+          <label>รุ่นของอุปกรณ์<input id="service70_sent_model" maxlength="160" value="${escAttr(d.sent_model)}" ${disabled}></label>
+          <label>หมายเลขอุปกรณ์<input id="service70_sent_serial" maxlength="160" value="${escAttr(d.sent_serial)}" ${disabled}></label>
+        </div>
+        <div class="asset-compact-head">อุปกรณ์ทดแทน</div>
+        <div class="asset-compact-row c3">
+          <label>ชื่ออุปกรณ์<input id="service70_replacement_name" maxlength="160" value="${escAttr(d.replacement_name)}" ${disabled}></label>
+          <label>รุ่นของอุปกรณ์<input id="service70_replacement_model" maxlength="160" value="${escAttr(d.replacement_model)}" ${disabled}></label>
+          <label>หมายเลขอุปกรณ์<input id="service70_replacement_serial" maxlength="160" value="${escAttr(d.replacement_serial)}" ${disabled}></label>
+        </div>
+        <div class="asset-compact-head">หมายเหตุท้ายใบงาน</div>
+        <label>หมายเหตุ<input id="service70Note" maxlength="500" value="${escAttr(t.note)}" placeholder="ระบุหมายเหตุเพิ่มเติมในใบงาน (ถ้ามี)" ${disabled}></label>
+        <div class="form-actions">
+          <button type="button" class="outline" id="service70Print">พิมพ์ใบงาน (PDF)</button>
+          ${data.can_edit ? '<button class="outline" type="submit">บันทึกข้อมูลใบงาน</button><button class="primary" type="button" id="service70SaveAndPrint">บันทึก &amp; พิมพ์ใบงาน (PDF)</button>' : ''}
+        </div>
+      </form>`,
+      'asset-compact-dialog',
     );
+    const saveReport = async () => {
+      const input = {
+        revision: data.revision,
+        outcome: uiValue('service70Outcome'),
+        outcome_date: uiValue('service70Date'),
+        note: uiValue('service70Note', true),
+      };
+      service70Fields.forEach(([k]) => (input[k] = uiValue('service70_' + k, true)));
+      const result = await call('saveServiceReportDetails', token, id, input);
+      data.revision = result.revision;
+      if (data.ticket) data.ticket.note = result.note ?? input.note;
+      return result;
+    };
     $('service70Print').onclick = (event) => service70Print(id, event.currentTarget);
+    if ($('service70SaveAndPrint')) {
+      $('service70SaveAndPrint').onclick = async (event) => {
+        const btn = event.currentTarget;
+        if (btn.disabled) return;
+        btn.disabled = true;
+        try {
+          await saveReport();
+          await refresh();
+          await service70Print(id, btn);
+        } catch (e) {
+          fail(e);
+        } finally {
+          if (btn.isConnected) btn.disabled = false;
+        }
+      };
+    }
     $('service70Form').onsubmit = async (event) => {
       event.preventDefault();
       const form = event.currentTarget,
@@ -6510,14 +6881,8 @@ async function service70Edit(id) {
       if (button.disabled) return;
       button.disabled = true;
       try {
-        const input = {
-          revision: data.revision,
-          outcome: uiValue('service70Outcome'),
-          outcome_date: uiValue('service70Date'),
-        };
-        service70Fields.forEach(([k]) => (input[k] = uiValue('service70_' + k, true)));
-        const result = await call('saveServiceReportDetails', token, id, input);
-        data.revision = result.revision;
+        await saveReport();
+        await refresh();
         toast('บันทึกข้อมูลใบงานแล้ว');
       } catch (e) {
         fail(e);
@@ -9019,17 +9384,26 @@ const service70Outcomes = [
     const t = state?.tickets?.find((x) => x.id === id),
       form = $('sTo')?.form;
     if (!form || !['รอยืนยันผล', 'ปิดงาน'].includes(t?.status)) return;
+    const bar = document.createElement('div');
+    bar.className = 'service70-actions';
+    bar.style.margin = '0 0 8px';
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'outline';
+    editBtn.textContent = 'สร้าง / กรอกข้อมูลใบงาน';
+    editBtn.onclick = () => service70Edit(id);
+    const printBtn = document.createElement('button');
+    printBtn.type = 'button';
+    printBtn.className = 'outline';
+    printBtn.textContent = 'พิมพ์ใบงาน (PDF)';
+    printBtn.onclick = () => service70Print(id, printBtn);
+    bar.append(editBtn, printBtn);
     const help = document.createElement('p');
     help.className = 'ui-note';
     help.textContent =
-      'พิมพ์ใบงานจากข้อมูลที่บันทึกแล้ว ลงนาม และแนบใบงานกลับในช่องหลักฐานก่อนยืนยันผล';
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'outline';
-    button.textContent = 'พิมพ์ใบงาน (PDF)';
-    button.onclick = () => service70Print(id, button);
-    form.insertBefore(button, form.firstChild);
-    form.insertBefore(help, button.nextSibling);
+      'กรอกสถานะงาน / อุปกรณ์ส่งซ่อม-ทดแทน แล้วกดพิมพ์ใบงาน A4 ลงนามและแนบกลับในช่องหลักฐานก่อนยืนยันผล';
+    form.insertBefore(bar, form.firstChild);
+    form.insertBefore(help, bar.nextSibling);
     const label = $('sFile')?.closest('label');
     if (label?.firstChild?.nodeType === 3)
       label.firstChild.textContent = 'แนบใบงานที่ลงนาม / หลักฐาน Service (ถ้ามี)';

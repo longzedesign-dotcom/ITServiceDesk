@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.61
+ * Version: V1.1.62
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,7 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
- * - V1.1.61: Simplify equipment edit/create form sections — remove card borders/backgrounds and separate groups cleanly with larger bold headings while retaining compact single-screen layout.
+ * - V1.1.62: Match CM-Form_69.pdf Service Report 100% (Open Technology logo, header, 5 device checkboxes, dotted ruled lines, 2-row job status, equipment rows, signatures), add report logo upload/reset & live A4 preview in Settings, and auto-open service report modal after marking repair finished.
  * - V1.1.60: Compact single-screen modal layout for Equipment General Edit & Create dialogs (multi-column groups, tightened spacing, zero vertical scroll on desktop).
  * - V1.1.59: Rewrite project header & branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); keep ADMIN project-name customization via System Settings.
  * - V1.1.58: Synchronized deployment across both Script IDs, modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม), database resilience fallback.
@@ -43,7 +43,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.61';
+const APP_VERSION = 'V1.1.62';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
@@ -1345,6 +1345,16 @@ const SERVICE_REPORT_HEADERS_ = [
 
 // apps/webapp/src/server/features/service-reports/work-order-service.js
 const SERVICE_REPORT_OUTCOMES_ = ['', 'COMPLETED', 'SENT_FOR_REPAIR', 'LOAN_DEVICE', 'REPLACED'];
+
+// Default Open Technology / OCPB Service Report (CM) header fields matching reference PDF template.
+const SERVICE_REPORT_TEMPLATE_DEFAULTS_ = Object.freeze({
+  provider: 'บริษัท โอเพ่น เทคโนโลยี จำกัด (มหาชน)',
+  address:
+    '223/95 ชั้น 20 คันทรี คอมเพล็กซ์ อาคารเอ ถนนสรรพาวุธ เขตบางนา กรุงเทพฯ 10260 โทร. 02-753-4291 โทรสาร. 02-753-4289',
+  title: 'ใบแจ้งซ่อมเครื่องคอมพิวเตอร์และอุปกรณ์ต่อพ่วง (CM) สำนักงานคณะกรรมการคุ้มครองผู้บริโภค',
+  project:
+    'โครงการบำรุงรักษาเครือข่าย เครื่องคอมพิวเตอร์แม่ข่าย เครื่องคอมพิวเตอร์ อุปกรณ์คอมพิวเตอร์ และห้องปฏิบัติการคอมพิวเตอร์',
+});
 
 // apps/webapp/src/server/features/tickets/ticket-workflow.js
 function normalizePriority_(value) {
@@ -9688,13 +9698,17 @@ function project70Configuration_() {
         p.getProperty('LINE_INBOX_SHEET_ID') === DB_ID,
       status: lineMessagingSetupCheck_(),
     },
-    report: Object.fromEntries(
-      [
-        'report_provider',
-        'report_provider_address',
-        'report_title',
-        'report_project_description',
-      ].map((k) => [k, settings[k] || '']),
+    report: Object.assign(
+      Object.fromEntries(
+        [
+          'report_provider',
+          'report_provider_address',
+          'report_title',
+          'report_project_description',
+          'report_logo_file_id',
+        ].map((k) => [k, settings[k] || '']),
+      ),
+      { report_logo_data_url: serviceReportReadLogoDataUrl_(settings) },
     ),
   };
 }
@@ -9991,6 +10005,120 @@ function itsdImpl_createProjectDriveFolders_(token, input) {
 }
 
 // apps/webapp/src/server/features/service-reports/work-order-service.js
+function serviceReportReadLogoDataUrl_(settings) {
+  const s = settings || systemSettingsMap_();
+  const id = String(s.report_logo_file_id || '').trim();
+  if (!id) return '';
+  const cacheKey = 'ITSD_REPORT_LOGO_' + id;
+  const cached = CacheService.getScriptCache().get(cacheKey);
+  if (cached) return cached;
+  try {
+    const file = DriveApp.getFileById(id),
+      blob = file.getBlob(),
+      mime = blob.getContentType();
+    if (!ADMIN35_ICON_MIME.includes(mime)) return '';
+    const dataUrl = 'data:' + mime + ';base64,' + Utilities.base64Encode(blob.getBytes());
+    try {
+      if (dataUrl.length < 95000) CacheService.getScriptCache().put(cacheKey, dataUrl, 21600);
+    } catch (_) {}
+    return dataUrl;
+  } catch (_) {
+    return '';
+  }
+}
+
+function itsdImpl_uploadServiceReportLogo_(token, name, mime, base64) {
+  const actor = project70Admin_(token, 'EDIT');
+  name = boundedText_(name, 'ชื่อไฟล์', 120, true);
+  mime = boundedText_(mime, 'ชนิดไฟล์', 80, true);
+  base64 = boundedText_(base64, 'ข้อมูลรูปภาพ', SECURITY_LIMITS.BASE64, false);
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (!ADMIN35_ICON_MIME.includes(mime) || !['png', 'jpg', 'jpeg'].includes(ext))
+    throw Error('รองรับเฉพาะไฟล์ PNG หรือ JPG เท่านั้น');
+  const bytes = Utilities.base64Decode(base64);
+  if (!bytes.length) throw Error('ไฟล์รูปภาพว่างเปล่า');
+  if (bytes.length > 5 * 1024 * 1024) throw Error('ไฟล์โลโก้ต้องมีขนาดไม่เกิน 5 MB');
+  return lock_(() => {
+    ensureAdminModuleSchema_();
+    const old = find_('APP_SETTINGS', 'key', 'report_logo_file_id'),
+      oldId = (old && old.value) || '';
+    const safeName =
+      'service-report-logo-' +
+      Utilities.formatDate(new Date(), TZ, 'yyyyMMdd-HHmmss') +
+      (mime === 'image/png' ? '.png' : '.jpg');
+    const file = admin35AssetsFolder_().createFile(Utilities.newBlob(bytes, mime, safeName));
+    admin35SetSetting_('report_logo_file_id', file.getId());
+    if (oldId && oldId !== file.getId()) {
+      try {
+        CacheService.getScriptCache().remove('ITSD_REPORT_LOGO_' + oldId);
+        DriveApp.getFileById(oldId).setTrashed(true);
+      } catch (_) {}
+    }
+    const dataUrl = 'data:' + mime + ';base64,' + Utilities.base64Encode(bytes);
+    try {
+      if (dataUrl.length < 95000)
+        CacheService.getScriptCache().put('ITSD_REPORT_LOGO_' + file.getId(), dataUrl, 21600);
+    } catch (_) {}
+    writeAudit_(
+      actor,
+      'UPLOAD',
+      'SETTINGS',
+      'REPORT_LOGO',
+      file.getId(),
+      'SUCCESS',
+      'อัปโหลดโลโก้หัวใบงาน ' + name,
+    );
+    return { file_id: file.getId(), data_url: dataUrl, revision: project70Revision_() };
+  });
+}
+
+function itsdImpl_clearServiceReportLogo_(token) {
+  const actor = project70Admin_(token, 'EDIT');
+  return lock_(() => {
+    ensureAdminModuleSchema_();
+    const old = find_('APP_SETTINGS', 'key', 'report_logo_file_id'),
+      oldId = (old && old.value) || '';
+    admin35SetSetting_('report_logo_file_id', '');
+    if (oldId) {
+      try {
+        CacheService.getScriptCache().remove('ITSD_REPORT_LOGO_' + oldId);
+        DriveApp.getFileById(oldId).setTrashed(true);
+      } catch (_) {}
+    }
+    writeAudit_(
+      actor,
+      'DELETE',
+      'SETTINGS',
+      'REPORT_LOGO',
+      oldId,
+      'SUCCESS',
+      'คืนค่าโลโก้หัวใบงานเป็นค่าเริ่มต้น',
+    );
+    return { file_id: '', data_url: '', revision: project70Revision_() };
+  });
+}
+
+function serviceReportResolveAsset_(t, meta) {
+  if (meta && meta.asset_id) {
+    const byId = find_('INVENTORY', 'รหัสอุปกรณ์', meta.asset_id);
+    if (byId) return byId;
+  }
+  const serial = String(t['หมายเลขซีเรียล'] || '').trim(),
+    assetNo = String(t['เลขครุภัณฑ์'] || '').trim();
+  if (!serial && !assetNo) return null;
+  const rows = all_('INVENTORY');
+  if (serial) {
+    const matches = rows.filter((r) => String(r['หมายเลขซีเรียล'] || '').trim() === serial);
+    if (matches.length === 1) return matches[0];
+  }
+  if (assetNo) {
+    const matches = rows.filter((r) => String(r['เลขครุภัณฑ์'] || '').trim() === assetNo);
+    if (matches.length === 1) return matches[0];
+  }
+  return null;
+}
+
+// apps/webapp/src/server/features/service-reports/work-order-service.js
 function serviceReportSheet_(create) {
   let s = book_().getSheetByName('TICKET_SERVICE_REPORT');
   if (!s && create) s = admin35EnsureSheet_('TICKET_SERVICE_REPORT', SERVICE_REPORT_HEADERS_);
@@ -10029,8 +10157,7 @@ function itsdImpl_getServiceReport_(token, id) {
     detail = serviceReportRecord_(id);
   if (!['รอยืนยันผล', 'ปิดงาน'].includes(t['สถานะการแจ้งซ่อม']))
     throw Error('พิมพ์ใบงานได้เมื่อรอยืนยันผลหรือปิดงานแล้ว');
-  // Read the incident's saved device snapshot. Only the floor comes from its exact linked inventory ID.
-  const asset = meta.asset_id ? find_('INVENTORY', 'รหัสอุปกรณ์', meta.asset_id) : null;
+  const asset = serviceReportResolveAsset_(t, meta);
   const settings = systemSettingsMap_(),
     brand = getSystemBranding_(settings);
   const fields = {
@@ -10038,14 +10165,14 @@ function itsdImpl_getServiceReport_(token, id) {
     reported_at: t['วันที่และเวลาที่แจ้ง'],
     reporter: t['ผู้แจ้งปัญหา'],
     phone: t['เบอร์โทร'],
-    org: t['หน่วยงานหลัก'],
-    suborg: t['หน่วยงานย่อย'],
+    org: t['หน่วยงานหลัก'] || (asset && asset['หน่วยงานหลัก']) || '',
+    suborg: t['หน่วยงานย่อย'] || (asset && asset['หน่วยงานย่อย']) || '',
     floor: (asset && asset['ชั้น']) || '',
-    asset_no: t['เลขครุภัณฑ์'],
-    serial: t['หมายเลขซีเรียล'],
-    brand: t['ยี่ห้อ'],
-    model: t['รุ่น'],
-    device: t['ประเภทอุปกรณ์'],
+    asset_no: t['เลขครุภัณฑ์'] || (asset && asset['เลขครุภัณฑ์']) || '',
+    serial: t['หมายเลขซีเรียล'] || (asset && asset['หมายเลขซีเรียล']) || '',
+    brand: t['ยี่ห้อ'] || (asset && asset['ยี่ห้อ']) || '',
+    model: t['รุ่น'] || (asset && asset['รุ่น']) || '',
+    device: t['ประเภทอุปกรณ์'] || (asset && asset['ประเภทอุปกรณ์']) || '',
     description: t['รายละเอียดคำขอ / อาการเสีย'],
     resolution: t['รายละเอียดการดำเนินงาน / วิธีแก้ไข'],
     note: t['หมายเหตุ'],
@@ -10064,14 +10191,19 @@ function itsdImpl_getServiceReport_(token, id) {
     can_edit: serviceReportCanEdit_(actor, t, meta),
     branding: brand,
     template: {
-      provider: settings.report_provider || '',
-      address: settings.report_provider_address || '',
-      title: settings.report_title || 'ใบแจ้งซ่อมเครื่องคอมพิวเตอร์และอุปกรณ์ต่อพ่วง (CM)',
-      project: settings.report_project_description || brand.project_name,
+      provider: settings.report_provider || SERVICE_REPORT_TEMPLATE_DEFAULTS_.report_provider,
+      address:
+        settings.report_provider_address || SERVICE_REPORT_TEMPLATE_DEFAULTS_.report_provider_address,
+      title: settings.report_title || SERVICE_REPORT_TEMPLATE_DEFAULTS_.report_title,
+      project:
+        settings.report_project_description ||
+        SERVICE_REPORT_TEMPLATE_DEFAULTS_.report_project_description ||
+        brand.project_name,
+      logo_file_id: settings.report_logo_file_id || '',
+      logo_data_url: serviceReportReadLogoDataUrl_(settings),
     },
     generated_at: now_(),
   };
-  // The existing icon endpoint checks the session. The browser may reuse its already loaded image.
   return result;
 }
 
@@ -10101,6 +10233,8 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
     'replacement_model',
     'replacement_serial',
   ].forEach((k) => (patch[k] = boundedText_(input[k], k, 160, true)));
+  const hasNote = Object.prototype.hasOwnProperty.call(input, 'note');
+  const noteText = hasNote ? boundedText_(input.note, 'หมายเหตุ', 500, true) : '';
   if (!Number.isSafeInteger(input.revision) || input.revision < 0)
     throw Error('กรุณาโหลดใบงานใหม่ก่อนบันทึก');
   return lock_(() => {
@@ -10120,6 +10254,9 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
     });
     if (old.__row) update_('TICKET_SERVICE_REPORT', old.__row, patch);
     else append_('TICKET_SERVICE_REPORT', patch);
+    if (hasNote && ticket.__row) {
+      update_('INCIDENT', ticket.__row, { หมายเหตุ: noteText });
+    }
     writeAudit_(
       actor,
       'SERVICE_REPORT_EDIT',
@@ -10129,6 +10266,6 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
       'SUCCESS',
       'บันทึกข้อมูลแบบฟอร์มใบงาน โดยไม่เปลี่ยนสถานะงาน',
     );
-    return { revision: patch.revision };
+    return { revision: patch.revision, note: hasNote ? noteText : ticket['หมายเหตุ'] || '' };
   });
 }

@@ -119,6 +119,8 @@ function createProjectDriveFolders(token, input) { return itsdImpl_createProject
 function adoptCurrentProjectBinding(token, input) { return itsdImpl_adoptCurrentProjectBinding_.apply(this, arguments); }
 function getServiceReport(token, id) { return itsdImpl_getServiceReport_.apply(this, arguments); }
 function saveServiceReportDetails(token, id, input) { return itsdImpl_saveServiceReportDetails_.apply(this, arguments); }
+function uploadServiceReportLogo(token, name, mime, base64) { return itsdImpl_uploadServiceReportLogo_.apply(this, arguments); }
+function clearServiceReportLogo(token) { return itsdImpl_clearServiceReportLogo_.apply(this, arguments); }
 function lineLegacyReviewInbox(token, input) { return itsdImpl_lineLegacyReviewInbox_.apply(this, arguments); }
 function saveDeviceModel(token, data) { return itsdImpl_saveDeviceModel_.apply(this, arguments); }
 function deactivateDeviceModel(token, id) { return itsdImpl_deactivateDeviceModel_.apply(this, arguments); }
