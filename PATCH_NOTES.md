@@ -3,6 +3,13 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.59 — 2026-11-11
+- **Project Header Rewrite & Unified Project Infrastructure Alignment**:
+  - **Rewrite Header ทุกไฟล์ Source Code (`src/*.js`, `src/*.html`)**: ปรับชื่อโครงการใน Header เป็น **`ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)`** พร้อมปรับค่า Default Branding ใน `Server.js`, `UI_Client.html` และ `Index.html` ให้ตรงกัน
+  - **ADMIN Customizable Project Name**: ยืนยันการทำงานของเมนู **ตั้งค่าระบบ** (`saveAdminSettings`) ให้ `ADMIN` สามารถเปลี่ยน `ชื่อโครงการ / ชื่อระบบ`, `ชื่อย่อ` และ `คำอธิบาย` ได้เองตลอดเวลา พร้อมอัปเดตค่าใน `DBS_ITSD` (`APP_SETTINGS`) ทันที
+  - **Google Drive & `DBS_ITSD` Folder Sync**: สร้างโฟลเดอร์ `System Assets` (`1Y3V-YsmPBZyRDHPEZoJW3Y-jn32Vq_et`) ภายใต้โฟลเดอร์ `ITSD` (`1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk`) และอัปเดต `APP_SETTINGS` ใน `DBS_ITSD` (`1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`) ให้ชี้ไปยังโฟลเดอร์ `Backup Files`, `Documents`, `Pictures` และ `System Assets` ที่ใช้งานได้จริงครบทุกตัว
+  - **Full GitHub Documentation Suite**: จัดทำและอัปเดต [`README.md`](./README.md), [`MANUAL_USER.md`](./MANUAL_USER.md), [`INSTALL_GUIDE.md`](./INSTALL_GUIDE.md) และ [`DATA_DIAGRAM_AND_WORKFLOW.md`](./DATA_DIAGRAM_AND_WORKFLOW.md) (ER Diagram 26 ตาราง + Workflows หลักทั้งระบบ)
+
 ## V1.1.54 — 2026-11-11
 - **Modular Equipment Tabs & Independent Section Saving (ปรับหน้าต่าง/แถบรายละเอียดอุปกรณ์แยกแท็บและแยกบันทึกตามแท็บ)**:
   - **จัดเรียงลำดับแท็บใหม่ตามที่ระบุ**:

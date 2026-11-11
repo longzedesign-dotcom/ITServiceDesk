@@ -1,56 +1,71 @@
-# 🛠️ คู่มือการติดตั้งและตั้งค่าระบบ (Installation Guide)
+# 🛠️ คู่มือการติดตั้งและตั้งค่าระบบฉบับสมบูรณ์ (Installation Guide)
 ### ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
-**Version: ITSD V1.1.45 | Developer: Create by : LongZe Design**
+**Version: ITSD V1.1.59 | Developer: Create by : LongZe Design**
 
-คู่มือนี้จัดทำขึ้นเพื่อให้ผู้ดูแลระบบ (System Administrator) และนักพัฒนา สามารถติดตั้งและตั้งค่าระบบ ITSD ได้อย่างถูกต้อง สมบูรณ์ และพร้อมเปิดใช้งานจริง 100%
+คู่มือนี้จัดทำขึ้นเพื่อให้ผู้ดูแลระบบ (System Administrator) และนักพัฒนา สามารถติดตั้ง เชื่อมต่อ Google Drive, Google Sheets, Google Apps Script, GitHub และ Deploy ระบบขึ้นใช้งานจริงได้อย่างถูกต้อง 100%
 
 ---
 
 ## 📋 สารบัญ
-1. [สิ่งที่ต้องเตรียมล่วงหน้า (Prerequisites)](#1-สิ่งที่ต้องเตรียมล่วงหน้า-prerequisites)
-2. [วิธีที่ 1: การติดตั้งผ่าน Clasp CLI (แนะนำสำหรับนักพัฒนา)](#2-วิธีที่-1-การติดตั้งผ่าน-clasp-cli-แนะนำสำหรับนักพัฒนา)
-3. [วิธีที่ 2: การติดตั้งผ่าน Google Apps Script Editor (ผ่าน Web Browser)](#3-วิธีที่-2-การติดตั้งผ่าน-google-apps-script-editor-ผ่าน-web-browser)
-4. [การสั่งรันคำสั่งเริ่มต้นระบบและการเชื่อมโยงฐานข้อมูล (Database Binding)](#4-การสั่งรันคำสั่งเริ่มต้นระบบและการเชื่อมโยงฐานข้อมูล-database-binding)
-5. [การ Deploy เป็น Web App Production](#5-การ-deploy-เป็น-web-app-production)
-6. [การเชื่อมต่อ LINE Official Account Webhook (Optional)](#6-การเชื่อมต่อ-line-official-account-webhook-optional)
-7. [การตั้งค่าระบบสำรองข้อมูลอัตโนมัติ (Automatic Backup)](#7-การตั้งค่าระบบสำรองข้อมูลอัตโนมัติ-automatic-backup)
-8. [การตรวจสอบและแก้ไขปัญหาที่พบบ่อย (Troubleshooting)](#8-การตรวจสอบและแก้ไขปัญหาที่พบบ่อย-troubleshooting)
+1. [โครงสร้างทรัพยากรหลักของโครงการ (Project Bindings)](#1-โครงสร้างทรัพยากรหลักของโครงการ-project-bindings)
+2. [โครงสร้างโฟลเดอร์ Google Drive ที่ต้องใช้](#2-โครงสร้างโฟลเดอร์-google-drive-ที่ต้องใช้)
+3. [วิธีที่ 1: การติดตั้งและ Deploy ผ่าน Clasp CLI (แนะนำ)](#3-วิธีที่-1-การติดตั้งและ-deploy-ผ่าน-clasp-cli-แนะนำ)
+4. [วิธีที่ 2: การติดตั้งผ่าน Google Apps Script Editor บนเบราว์เซอร์](#4-วิธีที่-2-การติดตั้งผ่าน-google-apps-script-editor-บนเบราว์เซอร์)
+5. [การตั้งค่า Script Properties และการผูกฐานข้อมูล (Database Binding)](#5-การตั้งค่า-script-properties-และการผูกฐานข้อมูล-database-binding)
+6. [การ Deploy เป็น Web App Production](#6-การ-deploy-เป็น-web-app-production)
+7. [การตั้งค่าชื่อโครงการ โฟลเดอร์ Drive และ Branding หลังติดตั้ง (Admin Settings)](#7-การตั้งค่าชื่อโครงการ-โฟลเดอร์-drive-และ-branding-หลังติดตั้ง-admin-settings)
+8. [การเชื่อมต่อ LINE Official Account Webhook (Optional)](#8-การเชื่อมต่อ-line-official-account-webhook-optional)
+9. [การตรวจสอบและแก้ไขปัญหาที่พบบ่อย (Troubleshooting)](#9-การตรวจสอบและแก้ไขปัญหาที่พบบ่อย-troubleshooting)
 
 ---
 
-## 1. สิ่งที่ต้องเตรียมล่วงหน้า (Prerequisites)
+## 1. โครงสร้างทรัพยากรหลักของโครงการ (Project Bindings)
 
-ก่อนเริ่มการติดตั้ง ให้เตรียมทรัพยากรบน Google Workspace ดังต่อไปนี้:
-
-1. **Google Spreadsheet ID (ฐานข้อมูลหลัก 26 ตารางมาตรฐาน)**:  
-   - ไฟล์ฐานข้อมูลหลักชื่อ `DBS_ITSD`
-   - URL: `https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit`
-   - **ID**: `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`
-2. **Google Drive Folder ID (สำหรับจัดเก็บรูปภาพและเอกสารแนบ)**:  
-   - โฟลเดอร์ชื่อ `pic_itcare` (อยู่ภายในโฟลเดอร์โครงการ ITSD)
-   - URL: `https://drive.google.com/drive/folders/15w-DCPUL09HetfwsVzaWo6-5lxUH3xqZ`
-   - **ID**: `15w-DCPUL09HetfwsVzaWo6-5lxUH3xqZ`
-3. **Google Apps Script Project**:  
-   - โครงการ Apps Script ชื่อ `ITServiceDesk`
-   - **Script ID**: `1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg`
+| รายการ | ชื่อทรัพยากร | ID / URL หลักของโครงการ |
+| :--- | :--- | :--- |
+| **GitHub Repository** | `ITServiceDesk` | `https://github.com/longzedesign-dotcom/ITServiceDesk` |
+| **Local Workspace** | `ITSD` | `/Users/chaloem/Antigravity/ITSD` (Source Deploy อยู่ในโฟลเดอร์ `src/`) |
+| **Google Drive Root** | `ITSD` | ID: `1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk`<br>`https://drive.google.com/drive/folders/1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk` |
+| **Google Sheets (26 ตาราง)** | `DBS_ITSD` | ID: `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`<br>`https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit` |
+| **Google Apps Script** | `ITServiceDesk` | Script ID: `1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg`<br>`https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit` |
+| **Web App Production URL** | `ITSD Web App` | `https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec` |
 
 ---
 
-## 2. วิธีที่ 1: การติดตั้งผ่าน Clasp CLI (แนะนำสำหรับนักพัฒนา)
+## 2. โครงสร้างโฟลเดอร์ Google Drive ที่ต้องใช้
 
-### ขั้นตอนที่ 2.1: ตรวจสอบและติดตั้ง Clasp
+ระบบต้องการโครงสร้างโฟลเดอร์ย่อย 4 โฟลเดอร์ที่อยู่ **ภายใต้ Google Drive Root Folder (`ITSD`) โดยตรง** เพื่อให้เมนู **ตั้งค่าระบบ (Settings)** ตรวจสอบผ่าน `admin44ValidateFolderStructure_()` ได้อย่างสมบูรณ์:
+
+| Key ใน `APP_SETTINGS` | ชื่อโฟลเดอร์บน Google Drive | Folder ID ปัจจุบัน | หน้าที่ |
+| :--- | :--- | :--- | :--- |
+| `service_folder_id` | `ITSD` (Root Folder) | `1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk` | โฟลเดอร์แม่หลักของโครงการ |
+| `backup_folder_id` | `Backup Files` | `1ktb53nRIHmjQL0cdd0QIgsjA3BvtslUj` | เก็บไฟล์สำรองฐานข้อมูล `DBS_ITSD` |
+| `documents_folder_id` | `Documents` | `15w-DCPUL09HetfwsVzaWo6-5lxUH3xqZ` | เก็บเอกสารแนบ/PDF ใบงาน |
+| `pictures_folder_id` | `Pictures` | `10b1umrMgj70LRKdw8bFcZzdEZ3r_96mV` | เก็บภาพถ่ายอาการเสียและผลการซ่อม |
+| `system_assets_folder_id` | `System Assets` | `1Y3V-YsmPBZyRDHPEZoJW3Y-jn32Vq_et` | เก็บไอคอนระบบและไฟล์ Branding |
+
+> [!TIP]
+> หากติดตั้งบนสภาพแวดล้อมใหม่ ระบบสามารถกดสร้างหรือเชื่อมโฟลเดอร์ทั้ง 4 ภายใต้ Root Folder และบันทึกค่าลงในชีต `APP_SETTINGS` ได้โดยตรง
+
+---
+
+## 3. วิธีที่ 1: การติดตั้งและ Deploy ผ่าน Clasp CLI (แนะนำ)
+
+### ขั้นตอนที่ 3.1: โคลนโค้ดจาก GitHub
+```bash
+git clone https://github.com/longzedesign-dotcom/ITServiceDesk.git /Users/chaloem/Antigravity/ITSD
+cd /Users/chaloem/Antigravity/ITSD
+```
+
+### ขั้นตอนที่ 3.2: ติดตั้งและเข้าสู่ระบบ Clasp CLI
 ```bash
 npm install -g @google/clasp
 clasp -v
-```
-
-### ขั้นตอนที่ 2.2: เข้าสู่ระบบ Google
-```bash
 clasp login
 ```
 
-### ขั้นตอนที่ 2.3: ตรวจสอบไฟล์ `.clasp.json`
-ตรวจสอบให้มั่นใจว่าไฟล์ `.clasp.json` ที่ Root Directory มีการชี้ไปยัง Script ID และ Root Directory ที่ถูกต้อง:
+### ขั้นตอนที่ 3.3: ตรวจสอบไฟล์ `.clasp.json`
+ตรวจสอบให้แน่ใจว่าไฟล์ `.clasp.json` ที่ Root Directory ชี้ไปยัง `scriptId` และ `rootDir` ที่ถูกต้อง:
 ```json
 {
   "scriptId": "1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg",
@@ -58,100 +73,97 @@ clasp login
 }
 ```
 
-### ขั้นตอนที่ 2.4: สั่ง Push โค้ดทั้งหมดขึ้น Google Apps Script
+### ขั้นตอนที่ 3.4: ตรวจสอบ/ดึงโค้ดจาก Server (`clasp pull`) และอัปโหลด (`clasp push`)
+- **ดึงข้อมูลจาก Apps Script มาตรวจสอบที่ Local**:
+  ```bash
+  npx clasp pull
+  ```
+- **Push โค้ดจาก `src/` ขึ้น Google Apps Script**:
+  ```bash
+  npx clasp push --force
+  ```
+
+### ขั้นตอนที่ 3.5: สร้าง Version และ Deploy อัปเดต Web App
 ```bash
-clasp push --force
+npx clasp version "ITSD V1.1.59 - Unified Project & Admin Branding"
+npx clasp deploy -i AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3 -V <VERSION_NUMBER> -d "ITSD V1.1.59 Production Release"
 ```
 
-### ขั้นตอนที่ 2.5: สั่ง Deploy Web App
-```bash
-clasp deploy --description "v1.0.0 Deployment"
-```
+---
+
+## 4. วิธีที่ 2: การติดตั้งผ่าน Google Apps Script Editor บนเบราว์เซอร์
+
+1. เปิดโครงการ Apps Script:  
+   https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit
+2. ไปที่ **การตั้งค่าโครงการ (Project Settings)** ⚙️ แล้วเปิดใช้งาน **"แสดงไฟล์ Manifest 'appsscript.json' ในตัวแก้ไข"**
+3. อัปเดตไฟล์ในตัวแก้ไขให้ตรงกับไฟล์ทั้ง **8 ไฟล์** ในโฟลเดอร์ `src/`:
+   - `appsscript.json` (Manifest: Timezone `Asia/Bangkok`, `V8`, OAuth Scopes)
+   - `Entrypoints.js` (`doGet`, `doPost`)
+   - `Api.js` (Public RPC Facade)
+   - `Server.js` (Core Runtime Engine)
+   - `Index.html` (HTML Shell)
+   - `UI_Client.html` (Client Controllers)
+   - `UI_Styles.html` (Styles & Theme Palettes)
+   - `UI_Templates.html` (HTML Templates)
+4. กด **บันทึก (Save)** 💾
 
 ---
 
-## 3. วิธีที่ 2: การติดตั้งผ่าน Google Apps Script Editor (ผ่าน Web Browser)
+## 5. การตั้งค่า Script Properties และการผูกฐานข้อมูล (Database Binding)
 
-หากไม่สะดวกใช้งาน Command Line สามารถติดตั้งผ่านหน้าเว็บเบราว์เซอร์ได้โดยตรง:
-
-1. เปิดเบราว์เซอร์แล้วเข้าไปที่โครงการ Google Apps Script:  
-   [https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit](https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit)
-2. ไปที่เมนู **การตั้งค่าโครงการ (Project Settings)** ⚙️ ด้านซ้ายมือ  
-   - ติ๊กถูกที่ช่อง **"แสดงไฟล์ Manifest "appsscript.json" ในตัวแก้ไข"**
-3. กลับไปที่ **ตัวแก้ไข (Editor)** `<>`:
-   - เปิดไฟล์ `appsscript.json` แล้วแทนที่ด้วยเนื้อหาใน `src/appsscript.json`
-4. สร้างไฟล์ Script (`.gs`) และไฟล์ HTML (`.html`) ในโครงการให้ครบทั้ง 18 ไฟล์ตามรายชื่อในโฟลเดอร์ `src/`
-5. นำเนื้อหาโค้ดจากแต่ละไฟล์ไปวางลงในไฟล์ที่สร้างขึ้นให้ตรงกัน
-6. กดปุ่ม **บันทึก (Save)** 💾
+1. ใน Google Apps Script Editor ไปที่ **Project Settings (⚙️)** ➔ **Script Properties**
+2. ตรวจสอบหรือเพิ่ม Property หลักดังนี้:
+   - `SPREADSHEET_ID` = `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`
+   - `ITSD_TIMEZONE` = `Asia/Bangkok`
+   *(หากไม่ได้กำหนด `SPREADSHEET_ID` ใน Script Properties โค้ดใน `Server.js` มีค่า Fallback ชี้ไปยัง `1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs` ให้อัตโนมัติ)*
+3. กรณีติดตั้งฐานข้อมูลชุดใหม่ตั้งแต่ต้น สามารถกำหนด Script Properties เพิ่ม (`ITSD_PROJECT_ID`, `ITSD_ENVIRONMENT`, `ITSD_SETUP_PROJECT_NAME`, `ITSD_SETUP_ADMIN_USERNAME`, `ITSD_SETUP_ADMIN_NAME`, `ITSD_SETUP_ADMIN_PASSWORD`) แล้วสั่งรันฟังก์ชัน **`project70Bootstrap_()`** จาก Apps Script Editor และอนุญาตสิทธิ์ (Review Permissions) ให้บัญชีเจ้าของโครงการ
 
 ---
 
-## 4. การสั่งรันคำสั่งเริ่มต้นระบบ (Initial System Setup)
+## 6. การ Deploy เป็น Web App Production
 
-หลังจากวางโค้ดใน Apps Script ครบถ้วนแล้ว:
-
-1. ในหน้าตัวแก้ไข ให้เลือกไฟล์ `ConfigIssue.gs`
-2. ที่แถบเครื่องมือด้านบน เลือกฟังก์ชัน **`setupSystem`**
-3. กดปุ่ม **เรียกใช้ (Run)** ▶️
-4. ระบบจะแสดงหน้าต่างขอสิทธิ์การเข้าถึง (Authorization Required):
-   - คลิก **ตรวจสอบสิทธิ์ (Review Permissions)**
-   - เลือกบัญชี Google ของท่าน
-   - หากขึ้นหน้าต่างเตือน ให้คลิก **ขั้นสูง (Advanced)** แล้วคลิก **ไปยัง ITServiceDesk (ไม่ปลอดภัย)**
-   - คลิก **อนุญาต (Allow)**
-5. ฟังก์ชัน `setupSystem_` จะดำเนินการ:
-   - ตรวจสอบความถูกต้องของตารางฐานข้อมูลทั้ง 26 ตารางมาตรฐาน
-   - ตรวจสอบความสมบูรณ์ของชีต `MST_DEVICE_MODELS`, `INVENTORY`, `INCIDENT`, และ `APP_USERS`
-   - ตรวจสอบโฟลเดอร์ Google Drive สำหรับจัดเก็บไฟล์แนบ
+1. ใน Apps Script Editor มุมบนขวา คลิก **Deploy (ทำให้ใช้งานได้)** ➔ **Manage deployments (จัดการการทำให้ใช้งานได้)**
+2. กดแก้ไข (รูปดินสอ) บน Deployment ปัจจุบัน หรือสร้าง **New deployment** ประเภท **Web app**
+3. ตั้งค่าสิทธิ์การรัน:
+   - **Execute as (เรียกใช้ในฐานะ)**: `Me` (บัญชีเจ้าของสคริปต์และโฟลเดอร์ Drive)
+   - **Who has access (ผู้ที่มีสิทธิ์เข้าถึง)**: `Anyone` (ทุกคน)
+4. กด **Deploy** และเข้าทดสอบผ่าน URL:  
+   👉 `https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec`
 
 ---
 
-## 5. การ Deploy เป็น Web App Production
+## 7. การตั้งค่าชื่อโครงการ โฟลเดอร์ Drive และ Branding หลังติดตั้ง (Admin Settings)
 
-เพื่อให้ผู้ใช้งานทุกคนสามารถเข้าสู่ระบบผ่านลิงก์ได้:
-
-1. ในหน้า Google Apps Script Editor มุมบนขวา ให้คลิกปุ่ม **ทำให้ใช้งานได้ (Deploy)** ➡️ **การจัดการการทำให้ใช้งานได้ (Manage deployments)**
-2. คลิก **แก้ไข (Edit)** หรือคลิกไอคอนเครื่องหมายบวก ➕ เลือก **การทำให้ใช้งานได้ใหม่ (New deployment)**
-3. เลือกประเภท: **เว็บแอป (Web app)**
-4. ตั้งค่าตัวเลือกดังนี้:
-   - **คำอธิบาย (Description)**: `ITSD V1.1.45 Production Release`
-   - **เรียกใช้ในฐานะ (Execute as)**: `ฉัน (Me - บัญชีเจ้าของระบบ)`
-   - **ผู้ที่มีสิทธิ์เข้าถึง (Who has access)**: `ทุกคน (Anyone)`
-5. คลิก **ทำให้ใช้งานได้ (Deploy)**
-6. คัดลอก **URL ของเว็บแอป (Web app URL)** เพื่อแจกจ่ายให้ผู้ใช้งานในองค์กร:  
-   👉 `https://script.google.com/macros/s/AKfycbzmKNSf_9OLbN93OkJY6wf8JrQYuzLKGMvNvN0dXb-aE8zmopeUTHZydHKOxDtCxZjE/exec`
+ผู้ดูแลระบบ (`ADMIN`) สามารถเปลี่ยนชื่อโครงการและปรับตั้งค่าต่าง ๆ เองได้โดยไม่ต้องแก้ไขโค้ด:
+1. เข้าสู่ระบบด้วยบัญชีสิทธิ์ `ADMIN`
+2. ไปที่เมนู **ตั้งค่าระบบ (Settings)** ➔ แท็บ **ตั้งค่าทั่วไป**
+3. ปรับแก้ค่าที่ต้องการ:
+   - **ชื่อโครงการ / ชื่อระบบ** (`project_name`): แสดงในหน้าเข้าสู่ระบบ, รายงาน และชื่อไฟล์ Backup
+   - **ชื่อย่อ** (`system_short_name`) และ **คำอธิบาย** (`system_description`): แสดงใน Sidebar, Breadcrumb และ Title ของเบราว์เซอร์
+   - **Google Drive Folders**: ระบุ Folder ID ของ `Pictures`, `Documents`, `Backup Files`, `System Assets`
+4. กด **บันทึกการตั้งค่า** หรือ **บันทึก Branding** ระบบจะอัปเดตลงชีต `APP_SETTINGS` และเปลี่ยนหน้าจอทันที
 
 ---
 
-## 6. การเชื่อมต่อ LINE Official Account Webhook (Optional)
+## 8. การเชื่อมต่อ LINE Official Account Webhook (Optional)
 
-ระบบมีโมดูล LINE Integration รองรับการแจ้งซ่อมผ่าน LINE Messaging API:
-
-1. ใน LINE Developers Console สร้าง Messaging API Channel
-2. นำ Web App URL ไปใส่ในช่อง **Webhook URL** (ต่อท้ายด้วย `/exec` หรือใช้ POST Webhook)
-3. เมื่อผู้ใช้งานส่งข้อความหรือภาพถ่ายเข้ามา ข้อความจะถูกนำเข้าสู่ตาราง `LINE_INBOX`
-4. เจ้าหน้าที่สามารถใช้เมนู **LINE Inbox Review** เพื่อแปลงข้อความเข้าเป็น Ticket ได้ทันที
+1. นำ URL Web App (`/exec`) หรือ Cloudflare Worker Gateway ไปตั้งค่าใน LINE Developers Console เป็น Webhook URL
+2. ในหน้า Web App เมนู **ตั้งค่าระบบ** ➔ แท็บ **การเชื่อมต่อ LINE** ตรวจสอบสถานะการเชื่อมต่อ, `LINE_INBOX_SHEET_ID` และ `ALLOWED_GROUP_IDS`
+3. เมื่อมีข้อความส่งเข้ามา ระบบจะบันทึกเข้าสู่ชีต `LINE_INBOX` เพื่อรอเจ้าหน้าที่ตรวจรับในเมนู **LINE Inbox Review**
 
 ---
 
-## 7. การตั้งค่าระบบสำรองข้อมูลอัตโนมัติ (Automatic Backup)
+## 9. การตรวจสอบและแก้ไขปัญหาที่พบบ่อย (Troubleshooting)
 
-ระบบมีฟังก์ชัน `backupSpreadsheet()` ที่จะทำสำเนาของ Google Sheets ทั้งไฟล์ไปเก็บไว้ในโฟลเดอร์ Google Drive พร้อมประทับวันที่และเวลาให้อัตโนมัติ:
-
-- หากต้องการทดสอบรันการสำรองข้อมูลด้วยตนเอง สามารถเลือกฟังก์ชัน `backupSpreadsheet` ในตัวแก้ไขแล้วกดปุ่ม **Run**
-- ไฟล์สำรองจะถูกบันทึกในรูปแบบ: `Backup_DBS_ITSD_YYYY-MM-DD_HHmmss` ลงในโฟลเดอร์ `pic_itcare`
-
----
-
-## 8. การตรวจสอบและแก้ไขปัญหาที่พบบ่อย (Troubleshooting)
-
-| อาการที่พบ | สาเหตุ | วิธีแก้ไข |
+| อาการที่พบ | สาเหตุที่เป็นไปได้ | วิธีแก้ไข |
 | :--- | :--- | :--- |
-| **เข้าหน้าเว็บแล้วขึ้นว่าไม่ได้รับอนุญาต** | การตั้งค่าสิทธิ์ตอน Deploy Web App ผิดพลาด | ตรวจสอบการ Deploy ว่าตั้งค่า **Who has access** เป็น `Anyone` และ **Execute as** เป็น `Me` หรือไม่ |
-| **ล็อกอินไม่สำเร็จ / ไม่พบผู้ใช้** | ข้อมูลผู้ใช้ในตาราง `Users` ยังไม่ได้รับอนุมัติ | เข้า Google Sheets ตาราง `Users` ตรวจสอบสถานะว่าต้องเป็น `ใช้งาน` (หากเป็น `รออนุมัติ` ต้องให้ Admin อนุมัติก่อน) |
-| **อัปโหลดรูปภาพใบงานไม่ขึ้น** | สิทธิ์ในโฟลเดอร์ Google Drive ปิดกั้น | ตรวจสอบสิทธิ์ของโฟลเดอร์ `pic_itcare` ให้บัญชีเจ้าของ Script มีสิทธิ์เขียนไฟล์ (Editor) |
-| **เซสชันหลุด หรือหน้าขาว** | แคชในเบราว์เซอร์หรือ URL ขาด Token | เปิด URL ใหม่โดยต่อท้ายด้วย `?action=clearcache` เพื่อล้างแคชระบบแล้วเข้าสู่ระบบใหม่อีกครั้ง |
+| **บันทึกการตั้งค่าแล้วแจ้ง "ไม่สามารถเข้าถึง Google Drive ... Folder"** | Folder ID ใน `APP_SETTINGS` ชี้ไปโฟลเดอร์เก่าที่ถูกลบหรือไม่มีสิทธิ์ | ตรวจสอบ ID โฟลเดอร์ใน `APP_SETTINGS` ให้ตรงกับโฟลเดอร์ภายใต้ `1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk` และแชร์สิทธิ์ให้บัญชีเจ้าของ Script |
+| **เปิด Web App แล้วไม่เห็นเวอร์ชันใหม่** | เบราว์เซอร์แคชหน้าเก่า หรือเปิดลิงก์ Deployment เก่า | กด Hard Refresh (`Cmd+Shift+R` / `Ctrl+F5`) หรือเปิดในหน้าต่าง Incognito |
+| **เปิดลิงก์แล้วขึ้นหน้า Error Google / ไม่มีสิทธิ์** | ล็อกอิน Google หลายบัญชีในเบราว์เซอร์เดียว หรือ Deployment ไม่ได้ตั้ง `Anyone` | ทดสอบใน Incognito และตรวจ Deployment ว่าตั้งค่า `Execute as: Me` และ `Who has access: Anyone` |
+| **ล็อกอินไม่สำเร็จทั้งที่รหัสถูก** | บัญชีถูกปิด `active=false` หรือติด Lockout ชั่วคราว | ตรวจชีต `APP_USERS` หรือให้ ADMIN รีเซ็ตรหัสผ่านใหม่ (อย่างน้อย 12 ตัวอักษร) |
+| **Push GitHub ไม่ผ่านจาก Terminal** | Git Credential ของ macOS Keychain หรือสิทธิ์ Sandbox | ตรวจสอบด้วย `git ls-remote origin HEAD` และยืนยันบัญชี `longzedesign-dotcom` ใน Keychain |
 
 ---
 <div align="center">
-  <sub>คู่มือนี้เป็นส่วนหนึ่งของโครงการ ITSD : ITServiceDesk © 2026</sub>
+  <sub>ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที) — Version V1.1.59 | Create by : LongZe Design © 2026</sub>
 </div>
