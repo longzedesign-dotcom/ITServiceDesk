@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.65
+  Version: V1.1.66
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,6 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
+  - V1.1.66: In service70Edit modal remove บันทึก & พิมพ์ใบงาน (PDF) and reorder buttons as บันทึก, พิมพ์ใบงาน (PDF); in service70Html rename โทรศัพท์ภายใน -> โทร. and shrink ชั้น column width by 50% (0.62fr -> 0.31fr) added to โทร. (1fr -> 1.31fr).
   - V1.1.65: Refine CM Service Report A4 template (1cm side margins / 190mm sheet width, full unclipped JOB NO. field, auto-fitted single-line org/suborg display for สำนัก/กอง and กลุ่ม/ศูนย์).
   - V1.1.64: Add shared Inventory picker (by asset number or serial) in both อัปเดตสถานะ (statusForm) and สร้าง/แก้ไขข้อมูลใบงาน CM (service70Edit for job asset, sent equipment & replacement equipment) + fix horizontal grid columns in service70Edit.
   - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
@@ -6284,7 +6285,7 @@ function project70Render() {
   line.innerHTML = `<section><h2>LINE Settings</h2><p>ตั้งค่าตัวรับข้อมูลฝั่ง Apps Script แล้วใช้ค่าเดียวกันกับ Cloudflare Worker ข้อความจะเข้าคิวรอตรวจสอบก่อนอนุมัติแจ้งซ่อม</p><dl><dt>ตัวรับ Apps Script</dt><dd>${s.ready ? 'ตั้งค่าพร้อมรับข้อมูล' : 'ยังตั้งค่าไม่ครบ'}</dd><dt>กุญแจ HMAC</dt><dd>${d.line.signing_key_configured ? 'ตั้งค่าแล้ว — ไม่แสดงค่าเดิม' : 'ยังไม่ตั้งค่า'}</dd><dt>LINE_INBOX</dt><dd>${s.schemaReady ? 'โครงสร้างพร้อมใช้งาน' : 'ยังไม่มีชีตหรือหัวตารางไม่ตรง'}</dd><dt>ฐานข้อมูลตัวรับ</dt><dd>${d.line.database_matches ? 'ตรงกับโครงการนี้' : 'ไม่ตรงกับโครงการ — ต้องแก้ก่อนเปิดรับ'}</dd></dl><label class="project70-check"><input id="project70LineEnabled" type="checkbox" ${d.line.enabled ? 'checked' : ''}> เปิดรับข้อความแจ้งซ่อม</label><div class="project70-grid"><label class="project70-full">Group IDs ที่อนุญาต<textarea id="project70Groups" rows="3" maxlength="4000">${esc(d.line.groups.join('\n'))}</textarea><small>หนึ่งกลุ่มต่อบรรทัด หรือคั่นด้วย comma ต้องตั้ง ALLOWED_GROUP_IDS ฝั่ง Worker ให้ตรงกัน</small></label>${project70Input('project70Hmac', 'กุญแจ HMAC ใหม่ (เว้นว่างเพื่อคงเดิม)', '', 'ตั้งค่าเดียวกับ ITSD_LINE_GATEWAY_HMAC_KEY ที่ Cloudflare', 'password')}${project70Input('project70LinePassword', 'รหัสผ่าน ADMIN', '', 'ยืนยันตัวตนก่อนเปลี่ยนการรับข้อมูลหรือกุญแจ', 'password')}</div><div class="project70-actions"><button type="button" class="primary" id="project70SaveLine">บันทึก LINE ฝั่ง Apps Script</button><button type="button" class="outline" id="project70RefreshLine">ตรวจสถานะอีกครั้ง</button></div><div class="project70-status" id="project70LineResult" role="status"></div></section>
   <section><h2>เชื่อมต่อ Cloudflare และ LINE</h2><dl><dt>Webhook URL</dt><dd>${esc(d.gateway_url ? d.gateway_url + '/webhook/line' : 'บันทึก Worker URL ในแท็บโครงการก่อน')}</dd><dt>APP_SCRIPT_URL</dt><dd>${esc(d.deployment_url || 'บันทึก URL /exec ในแท็บโครงการก่อน')}</dd><dt>ITSD_DATABASE_ID</dt><dd><code>${esc(d.database_id)}</code></dd></dl><p>หน้านี้ไม่เปลี่ยน Cloudflare Secrets ให้โดยอัตโนมัติ ผู้ดูแลตั้งค่าผ่าน Cloudflare Dashboard หรือ Wrangler ที่ลงชื่อเข้าใช้แล้ว</p><details><summary>คำสั่งตั้งค่า Worker ทีละรายการ</summary><pre>${esc(project70WorkerText())}</pre></details><details><summary>เปลี่ยนกุญแจและตรวจสอบการรับข้อมูล</summary><ol><li>ปิดรับข้อมูลที่ Apps Script ชั่วคราว และตรวจคิว Cloudflare ก่อนเปลี่ยนกุญแจ</li><li>สร้างกุญแจสุ่มใหม่ที่แตกต่างจาก LINE Channel Secret ตั้งใน Cloudflare Secret ชื่อ ITSD_LINE_GATEWAY_HMAC_KEY</li><li>กรอกกุญแจเดียวกันในหน้านี้ บันทึกขณะยังปิดรับข้อมูล แล้วเปิดรับอีกครั้งเมื่อตั้งค่าทั้งสองฝั่งตรงกัน</li><li>ตั้ง ALLOWED_GROUP_IDS ทั้งสองฝั่งให้ตรงกัน และตั้ง Webhook URL /webhook/line ใน LINE Developers</li><li>ส่งข้อความแจ้งซ่อมจากกลุ่ม LINE ตรวจ Logs และตรวจว่ารายการใหม่ปรากฏในหน้าตรวจสอบข้อความจาก LINE</li><li>หากหยุดรับนานจนข้อความเข้าคิว failed ให้ตรวจและส่งซ้ำจากคิวหลังแก้การเชื่อมต่อ</li></ol></details><p>ผลตรวจ Gateway ยืนยันเพียงว่า Worker ตอบสนอง การรับข้อมูลครบทุกขั้นตอนต้องตรวจสอบด้วยข้อความจริงจากกลุ่ม LINE</p></section>`;
   const reportLogoUrl = d.report.report_logo_data_url || SERVICE_REPORT_DEFAULT_LOGO;
-  report.innerHTML = `<section><h2>แม่แบบใบงานบริการ (CM-Form_69)</h2><p>จัดหน้า A4 เหมือนต้นฉบับ Open Technology / สคบ. 100% ดึงข้อมูลจากใบแจ้งซ่อม ครุภัณฑ์ และผลการซ่อมหลังแก้ไขเสร็จอัตโนมัติ</p><div class="project70-report-logo-row"><div class="project70-report-logo-box"><img id="project70LogoImg" src="${reportLogoUrl}" alt="โลโก้หัวใบงาน"></div><div class="project70-report-logo-ctl"><label>โลโก้หัวใบงาน (PNG / JPG)<input id="project70LogoFile" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg"></label><div class="project70-actions"><button type="button" class="outline" id="project70UploadLogo">อัปโหลดโลโก้ใบงาน</button><button type="button" class="outline" id="project70ClearLogo">คืนค่าโลโก้ Open Technology</button></div><small>หากยังไม่เคยอัปโหลด ระบบจะใช้โลโก้ Open Technology มาตรฐานให้อัตโนมัติ</small></div></div><div class="project70-grid">${project70Input('project70Provider', 'ชื่อบริษัท / ผู้ให้บริการ', d.report.report_provider || SERVICE_REPORT_DEFAULTS.report_provider, 'เว้นว่างเพื่อใช้ค่าเริ่มต้น')}${project70Input('project70ReportTitle', 'ชื่อแบบฟอร์ม', d.report.report_title || SERVICE_REPORT_DEFAULTS.report_title, 'เว้นว่างเพื่อใช้ชื่อใบแจ้งซ่อมมาตรฐาน')}<label class="project70-full">ที่อยู่ / ข้อมูลติดต่อผู้ให้บริการ<textarea id="project70Address" rows="2" maxlength="500">${esc(d.report.report_provider_address || SERVICE_REPORT_DEFAULTS.report_provider_address)}</textarea></label><label class="project70-full">ชื่อโครงการในใบงาน<textarea id="project70ReportProject" rows="2" maxlength="240">${esc(d.report.report_project_description || SERVICE_REPORT_DEFAULTS.report_project_description)}</textarea></label></div><div class="project70-actions"><button type="button" class="primary" id="project70SaveReport">บันทึกแม่แบบใบงาน</button><button type="button" class="outline" id="project70FillDefaultReport">เติมค่ามาตรฐาน CM</button><button type="button" class="outline" id="project70PreviewPrint">พิมพ์ตัวอย่างใบงาน (PDF)</button></div><div class="project70-status" id="project70ReportResult" role="status"></div><h3>ตัวอย่างหน้าตาใบงาน A4 แบบเรียลไทม์</h3><div class="project70-report-preview-wrap"><iframe id="project70ReportPreview" class="project70-report-preview" title="ตัวอย่างแม่แบบใบงาน A4"></iframe></div><h3>ขั้นตอนการใช้งานใบงาน</h3><ol><li>เมื่อเจ้าหน้าที่เปลี่ยนสถานะงานเป็น <strong>รอยืนยันผล (แก้ไขเสร็จ)</strong> ระบบจะเปิดหน้าต่างบันทึกข้อมูลใบงานให้อัตโนมัติ เพื่อระบุสถานะงาน (เสร็จสิ้นเรียบร้อย / ส่งซ่อม / สำรองอุปกรณ์ / เปลี่ยนอุปกรณ์) และอุปกรณ์ส่งซ่อม/ทดแทน</li><li>กด <strong>บันทึก &amp; พิมพ์ใบงาน (PDF)</strong> เพื่อออกใบงาน A4 แล้วลงนามผู้ปฏิบัติงานและผู้ใช้งาน</li><li>แนบใบงานที่ลงนามแล้วในขั้นตอนยืนยันผลเพื่อปิดงาน</li></ol></section>`;
+  report.innerHTML = `<section><h2>แม่แบบใบงานบริการ (CM-Form_69)</h2><p>จัดหน้า A4 เหมือนต้นฉบับ Open Technology / สคบ. 100% ดึงข้อมูลจากใบแจ้งซ่อม ครุภัณฑ์ และผลการซ่อมหลังแก้ไขเสร็จอัตโนมัติ</p><div class="project70-report-logo-row"><div class="project70-report-logo-box"><img id="project70LogoImg" src="${reportLogoUrl}" alt="โลโก้หัวใบงาน"></div><div class="project70-report-logo-ctl"><label>โลโก้หัวใบงาน (PNG / JPG)<input id="project70LogoFile" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg"></label><div class="project70-actions"><button type="button" class="outline" id="project70UploadLogo">อัปโหลดโลโก้ใบงาน</button><button type="button" class="outline" id="project70ClearLogo">คืนค่าโลโก้ Open Technology</button></div><small>หากยังไม่เคยอัปโหลด ระบบจะใช้โลโก้ Open Technology มาตรฐานให้อัตโนมัติ</small></div></div><div class="project70-grid">${project70Input('project70Provider', 'ชื่อบริษัท / ผู้ให้บริการ', d.report.report_provider || SERVICE_REPORT_DEFAULTS.report_provider, 'เว้นว่างเพื่อใช้ค่าเริ่มต้น')}${project70Input('project70ReportTitle', 'ชื่อแบบฟอร์ม', d.report.report_title || SERVICE_REPORT_DEFAULTS.report_title, 'เว้นว่างเพื่อใช้ชื่อใบแจ้งซ่อมมาตรฐาน')}<label class="project70-full">ที่อยู่ / ข้อมูลติดต่อผู้ให้บริการ<textarea id="project70Address" rows="2" maxlength="500">${esc(d.report.report_provider_address || SERVICE_REPORT_DEFAULTS.report_provider_address)}</textarea></label><label class="project70-full">ชื่อโครงการในใบงาน<textarea id="project70ReportProject" rows="2" maxlength="240">${esc(d.report.report_project_description || SERVICE_REPORT_DEFAULTS.report_project_description)}</textarea></label></div><div class="project70-actions"><button type="button" class="primary" id="project70SaveReport">บันทึกแม่แบบใบงาน</button><button type="button" class="outline" id="project70FillDefaultReport">เติมค่ามาตรฐาน CM</button><button type="button" class="outline" id="project70PreviewPrint">พิมพ์ตัวอย่างใบงาน (PDF)</button></div><div class="project70-status" id="project70ReportResult" role="status"></div><h3>ตัวอย่างหน้าตาใบงาน A4 แบบเรียลไทม์</h3><div class="project70-report-preview-wrap"><iframe id="project70ReportPreview" class="project70-report-preview" title="ตัวอย่างแม่แบบใบงาน A4"></iframe></div><h3>ขั้นตอนการใช้งานใบงาน</h3><ol><li>เมื่อเจ้าหน้าที่เปลี่ยนสถานะงานเป็น <strong>รอยืนยันผล (แก้ไขเสร็จ)</strong> ระบบจะเปิดหน้าต่างบันทึกข้อมูลใบงานให้อัตโนมัติ เพื่อระบุสถานะงาน (เสร็จสิ้นเรียบร้อย / ส่งซ่อม / สำรองอุปกรณ์ / เปลี่ยนอุปกรณ์) และอุปกรณ์ส่งซ่อม/ทดแทน</li><li>กด <strong>บันทึก</strong> แล้วกด <strong>พิมพ์ใบงาน (PDF)</strong> เพื่อออกใบงาน A4 แล้วลงนามผู้ปฏิบัติงานและผู้ใช้งาน</li><li>แนบใบงานที่ลงนามแล้วในขั้นตอนยืนยันผลเพื่อปิดงาน</li></ol></section>`;
   const bind = (id, handler) => {
     const el = $(id);
     if (el) el.onclick = (event) => handler(event.currentTarget);
@@ -6806,7 +6807,7 @@ function service70Html(data, logo = '') {
   .row{display:grid;gap:3mm;margin-bottom:2.6mm;align-items:baseline}
   .r2{grid-template-columns:1fr 1fr}
   .r2.org-row{grid-template-columns:1fr 1fr;gap:3.2mm}
-  .r4{grid-template-columns:1.45fr 1fr .62fr .95fr}
+  .r4{grid-template-columns:1.45fr 1.31fr .31fr .95fr}
   .field{display:flex;align-items:baseline;gap:1.6mm;min-width:0}
   .field .lbl{white-space:nowrap;flex-shrink:0}
   .dots{flex:1;min-width:0;min-height:4.8mm;border-bottom:.25mm dotted #444;padding:0 1.5mm;font-weight:400;line-height:1.25;overflow-wrap:anywhere}
@@ -6850,7 +6851,7 @@ function service70Html(data, logo = '') {
   <h1 class="title">${e(title)}</h1>
   <div class="project">${e(project)}</div>
   <div class="row r2 org-row">${orgField('สำนัก/กอง', t.org)}${orgField('กลุ่ม/ศูนย์', t.suborg)}</div>
-  <div class="row r4">${field('ชื่อผู้ใช้งาน', t.reporter)}${field('โทรศัพท์ภายใน', t.phone)}${field('ชั้น', t.floor)}${field('วันที่', reportDate)}</div>
+  <div class="row r4">${field('ชื่อผู้ใช้งาน', t.reporter)}${field('โทร.', t.phone)}${field('ชั้น', t.floor)}${field('วันที่', reportDate)}</div>
   <div class="row r2">${field('หมายเลขครุภัณฑ์', t.asset_no)}${field('หมายเลขเครื่อง', t.serial)}</div>
   <div class="row r2">${field('ยี่ห้อ', t.brand)}${field('รุ่น', t.model)}</div>
   <div class="types-row"><span class="lbl">ประเภทอุปกรณ์</span><div class="types-list">${types.map(([name, rx]) => checkMark(rx.test(t.device || ''), name)).join('')}</div></div>
@@ -7029,8 +7030,8 @@ async function service70Edit(id) {
           <label>หมายเหตุ<input id="service70Note" maxlength="500" value="${escAttr(t.note)}" placeholder="ระบุหมายเหตุเพิ่มเติมในใบงาน (ถ้ามี)" ${disabled}></label>
         </div>
         <div class="asset-action-bar">
+          ${data.can_edit ? '<button class="primary" type="submit">บันทึก</button>' : ''}
           <button type="button" class="outline" id="service70Print">พิมพ์ใบงาน (PDF)</button>
-          ${data.can_edit ? '<button class="outline" type="submit">บันทึกข้อมูลใบงาน</button><button class="primary" type="button" id="service70SaveAndPrint">บันทึก &amp; พิมพ์ใบงาน (PDF)</button>' : ''}
         </div>
       </form>`,
       'asset-compact-dialog',
@@ -7141,22 +7142,6 @@ async function service70Edit(id) {
       return result;
     };
     $('service70Print').onclick = (event) => service70Print(id, event.currentTarget);
-    if ($('service70SaveAndPrint')) {
-      $('service70SaveAndPrint').onclick = async (event) => {
-        const btn = event.currentTarget;
-        if (btn.disabled) return;
-        btn.disabled = true;
-        try {
-          await saveReport();
-          await refresh();
-          await service70Print(id, btn);
-        } catch (e) {
-          fail(e);
-        } finally {
-          if (btn.isConnected) btn.disabled = false;
-        }
-      };
-    }
     $('service70Form').onsubmit = async (event) => {
       event.preventDefault();
       const form = event.currentTarget,
