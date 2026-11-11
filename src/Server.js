@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.63
+ * Version: V1.1.64
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,7 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
- * - V1.1.63: Support line_inbox_id / line_review_revision linkage directly inside createTicket so approving LINE requests populates New Ticket form and marks LINE_INBOX CREATED on save without jumping to Tracking prematurely.
+ * - V1.1.64: Add shared ticketApplyDevicePatch_ helper so both changeStatus and saveServiceReportDetails can update asset_id, asset_no, brand, model, serial, and device cleanly from Inventory lookups or edits.
  * - V1.1.60: Compact single-screen modal layout for Equipment General Edit & Create dialogs (multi-column groups, tightened spacing, zero vertical scroll on desktop).
  * - V1.1.59: Rewrite project header & branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); keep ADMIN project-name customization via System Settings.
  * - V1.1.58: Synchronized deployment across both Script IDs, modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม), database resilience fallback.
@@ -43,7 +43,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.63';
+const APP_VERSION = 'V1.1.64';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
@@ -2478,6 +2478,7 @@ function ticketPayload_(x, reportedRaw, byId, u) {
     phone: x['เบอร์โทร'],
     device: x['ประเภทอุปกรณ์'],
     asset_no: x['เลขครุภัณฑ์'],
+    serial: x['หมายเลขซีเรียล'] || '',
     brand: x['ยี่ห้อ'] || '',
     model: x['รุ่น'] || '',
     description: x['รายละเอียดคำขอ / อาการเสีย'],
@@ -2654,6 +2655,42 @@ function itsdImpl_createTicket_(token, data) {
 }
 
 // apps/webapp/src/server/features/tickets/ticket-service.js
+function ticketApplyDevicePatch_(raw, patch, metaPatch) {
+  if (!raw || typeof raw !== 'object') return false;
+  const has = (k) => Object.prototype.hasOwnProperty.call(raw, k);
+  if (!['asset_id', 'asset_no', 'brand', 'model', 'serial', 'device'].some(has)) return false;
+  let asset = null;
+  if (has('asset_id')) {
+    const aid = boundedText_(raw.asset_id, 'รหัสอุปกรณ์', SECURITY_LIMITS.ASSET_ID, true);
+    if (aid) {
+      asset = find_('INVENTORY', 'รหัสอุปกรณ์', aid);
+      if (!asset) throw Error('ไม่พบรหัสอุปกรณ์ที่เลือก');
+      metaPatch.asset_id = aid;
+    } else {
+      metaPatch.asset_id = '';
+    }
+  }
+  const readVal = (k, max, invCol, label) => {
+    if (has(k)) {
+      const explicit = boundedText_(raw[k], label, max, true);
+      return explicit || (asset ? String(asset[invCol] || '').trim() : '');
+    }
+    return asset ? String(asset[invCol] || '').trim() : undefined;
+  };
+  const assetNo = readVal('asset_no', 120, 'เลขครุภัณฑ์', 'เลขครุภัณฑ์');
+  const brand = readVal('brand', 120, 'ยี่ห้อ', 'ยี่ห้อ');
+  const model = readVal('model', 120, 'รุ่น', 'รุ่น');
+  const serial = readVal('serial', 120, 'หมายเลขซีเรียล', 'หมายเลขซีเรียล');
+  const device = readVal('device', SECURITY_LIMITS.DEVICE, 'ประเภทอุปกรณ์', 'ประเภทอุปกรณ์');
+  if (assetNo !== undefined) patch['เลขครุภัณฑ์'] = assetNo;
+  if (brand !== undefined) patch['ยี่ห้อ'] = brand;
+  if (model !== undefined) patch['รุ่น'] = model;
+  if (serial !== undefined) patch['หมายเลขซีเรียล'] = serial;
+  if (device !== undefined && device !== '') patch['ประเภทอุปกรณ์'] = device;
+  return true;
+}
+
+// apps/webapp/src/server/features/tickets/ticket-service.js
 function itsdImpl_changeStatus_(token, id, to, detail) {
   const u = require_(token);
   if (!hasPermissionForUser_(u, 'TICKETS', ticketPermission_isRequesterOnly_(u) ? 'VIEW' : 'EDIT'))
@@ -2673,6 +2710,12 @@ function itsdImpl_changeStatus_(token, id, to, detail) {
       confirmed_by: boundedText_(raw.confirmed_by, 'ผู้ยืนยัน', SECURITY_LIMITS.DISPLAY_NAME, true),
       service_file_id: boundedText_(raw.service_file_id, 'รหัสไฟล์', SECURITY_LIMITS.FILE_ID, true),
     };
+  const canEditDevice =
+    !ticketPermission_isRequesterOnly_(u) && !['REQUESTER', 'USER'].includes(roleKey_(u));
+  const rawDevicePatch =
+    canEditDevice && raw.device_patch !== undefined
+      ? plainObject_(raw.device_patch, 'ข้อมูลอุปกรณ์')
+      : null;
   if (!STATUS.includes(to)) throw Error('สถานะไม่ถูกต้อง');
   return lock_(() => {
     const ticket = ownTicket_(u, id),
@@ -2693,7 +2736,9 @@ function itsdImpl_changeStatus_(token, id, to, detail) {
       if (!file || file.ticket_id !== id) throw Error('ไม่พบเอกสารแนบของงานนี้');
     }
     const date = now_(),
-      patch = { สถานะการแจ้งซ่อม: to };
+      patch = { สถานะการแจ้งซ่อม: to },
+      mp = { updated_at: date };
+    if (rawDevicePatch) ticketApplyDevicePatch_(rawDevicePatch, patch, mp);
     if (to === 'รับแจ้ง') patch['ผู้รับแจ้ง'] = u.display_name || u.username || u.user_id;
     const working = ['กำลังดำเนินการ', 'รอยืนยันผล', 'ปิดงาน'];
     if (working.includes(to) && !ticket['วันที่และเวลาเข้าแก้ไข'])
@@ -2713,7 +2758,6 @@ function itsdImpl_changeStatus_(token, id, to, detail) {
       append_('INCIDENT_META', { ticket_id: id });
       meta = find_('INCIDENT_META', 'ticket_id', id);
     }
-    const mp = { updated_at: date };
     if (assignee) mp.assigned_to = assignee;
     if (to === 'ปิดงาน') {
       mp.closed_at = date;
@@ -10207,6 +10251,7 @@ function itsdImpl_getServiceReport_(token, id) {
     phone: t['เบอร์โทร'],
     org: t['หน่วยงานหลัก'] || (asset && asset['หน่วยงานหลัก']) || '',
     suborg: t['หน่วยงานย่อย'] || (asset && asset['หน่วยงานย่อย']) || '',
+    asset_id: meta.asset_id || (asset && asset['รหัสอุปกรณ์']) || '',
     floor: (asset && asset['ชั้น']) || '',
     asset_no: t['เลขครุภัณฑ์'] || (asset && asset['เลขครุภัณฑ์']) || '',
     serial: t['หมายเลขซีเรียล'] || (asset && asset['หมายเลขซีเรียล']) || '',
@@ -10275,6 +10320,8 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
   ].forEach((k) => (patch[k] = boundedText_(input[k], k, 160, true)));
   const hasNote = Object.prototype.hasOwnProperty.call(input, 'note');
   const noteText = hasNote ? boundedText_(input.note, 'หมายเหตุ', 500, true) : '';
+  const rawDevicePatch =
+    input.device_patch !== undefined ? plainObject_(input.device_patch, 'ข้อมูลอุปกรณ์') : null;
   if (!Number.isSafeInteger(input.revision) || input.revision < 0)
     throw Error('กรุณาโหลดใบงานใหม่ก่อนบันทึก');
   return lock_(() => {
@@ -10285,6 +10332,13 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
     const old = serviceReportRecord_(id);
     if (Number(old.revision || 0) !== input.revision)
       throw Error('ใบงานถูกแก้ไขแล้ว กรุณาโหลดใหม่');
+    const ticketPatch = {},
+      metaPatch = { updated_at: now_() };
+    let deviceUpdated = false;
+    if (rawDevicePatch) {
+      deviceUpdated = ticketApplyDevicePatch_(rawDevicePatch, ticketPatch, metaPatch);
+    }
+    if (hasNote) ticketPatch['หมายเหตุ'] = noteText;
     serviceReportSheet_(true);
     Object.assign(patch, {
       ticket_id: id,
@@ -10294,8 +10348,16 @@ function itsdImpl_saveServiceReportDetails_(token, id, input) {
     });
     if (old.__row) update_('TICKET_SERVICE_REPORT', old.__row, patch);
     else append_('TICKET_SERVICE_REPORT', patch);
-    if (hasNote && ticket.__row) {
-      update_('INCIDENT', ticket.__row, { หมายเหตุ: noteText });
+    if (ticket.__row && Object.keys(ticketPatch).length) {
+      update_('INCIDENT', ticket.__row, ticketPatch);
+    }
+    if (deviceUpdated && Object.prototype.hasOwnProperty.call(metaPatch, 'asset_id')) {
+      let targetMeta = meta;
+      if (!targetMeta.__row) {
+        append_('INCIDENT_META', { ticket_id: id });
+        targetMeta = find_('INCIDENT_META', 'ticket_id', id);
+      }
+      if (targetMeta && targetMeta.__row) update_('INCIDENT_META', targetMeta.__row, metaPatch);
     }
     writeAudit_(
       actor,

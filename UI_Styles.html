@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.63
+ * Version: V1.1.64
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,7 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
- * - V1.1.63: Add .line78-prefill-notice banner styles for LINE-to-New-Ticket prefill workflow.
+ * - V1.1.64: Add inventory picker & status device grid styles, plus .asset-grid-2 for side-by-side CM service report rows.
   - V1.1.60: Add compact .asset-compact-form single-screen modal grid & tight vertical spacing.
   - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที).
   - V1.1.43: Place high-contrast save-result messages above dialogs and style inline inventory errors.
@@ -10928,7 +10928,89 @@ html[data-theme] :is(.badge, .ui-badge) {
   gap: 8px;
   flex-wrap: wrap;
 }
+.status-device-section {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--theme-border);
+}
+.status-device-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.status-device-head > strong {
+  font-size: 13px;
+}
+.status-device-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px 10px !important;
+}
+.ui-picker-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ui-picker-bar input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ui-picker-bar button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.ui-picker-results {
+  margin: 0 0 8px;
+  border: 1px solid var(--theme-border);
+  border-radius: 8px;
+  background: var(--theme-surface);
+  max-height: 152px;
+  overflow-y: auto;
+  display: grid;
+}
+.ui-picker-results[hidden] {
+  display: none;
+}
+.ui-picker-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 10px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--theme-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--theme-text);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.ui-picker-item:last-child {
+  border-bottom: 0;
+}
+.ui-picker-item:hover {
+  background: color-mix(in srgb, var(--theme-teal, #008585) 12%, transparent);
+}
+.ui-picker-item small {
+  color: var(--theme-muted);
+  font-size: 11.5px;
+}
+.ui-picker-empty {
+  padding: 8px 10px;
+  color: var(--theme-muted);
+  font-size: 12px;
+}
 @media (max-width: 700px) {
+  .status-device-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .ui-picker-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .project70-report-logo-row,
   .service70-summary {
     grid-template-columns: 1fr;
@@ -12740,6 +12822,9 @@ html[data-theme='dark'] .ux-profile-actions button.ux124-logout:focus-visible { 
   .asset-compact-form .asset-grid-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  .asset-compact-form .asset-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .asset-compact-form .asset-span2 {
     grid-column: span 2;
   }
@@ -12831,7 +12916,8 @@ html[data-theme='dark'] .ux-profile-actions button.ux124-logout:focus-visible { 
     color: var(--theme-heading, inherit);
   }
   .asset-compact-form .asset-grid-4,
-  .asset-compact-form .asset-grid-3 {
+  .asset-compact-form .asset-grid-3,
+  .asset-compact-form .asset-grid-2 {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }

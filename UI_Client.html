@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.63
+  Version: V1.1.64
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,7 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
-  - V1.1.63: Clicking อนุมัติแจ้งซ่อม in LINE Inbox panel now transfers inspected LINE/review data directly into #ticketForm on แจ้งซ่อมใหม่ so operators complete all required fields & attachments and save cleanly without prematurely switching to ติดตามงาน.
+  - V1.1.64: Add shared Inventory picker (by asset number or serial) in both อัปเดตสถานะ (statusForm) and สร้าง/แก้ไขข้อมูลใบงาน CM (service70Edit for job asset, sent equipment & replacement equipment) + fix horizontal grid columns in service70Edit.
   - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
   - V1.1.59: Rewrite project header & client branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); retain ADMIN branding settings controls.
   - V1.1.43: Show clear success/error messages and keep inventory save failures visible in the editor.
@@ -3316,6 +3316,61 @@ async function submitAsset(id) {
 }
 
 // apps/webapp/src/client/features/tickets/status-form.js
+function uiAttachInventoryPicker(config) {
+  const search = $(config?.searchId),
+    results = $(config?.resultsId);
+  if (!search || !results) return;
+  const norm = (v) =>
+    String(v || '')
+      .normalize('NFKC')
+      .replace(/[๐-๙]/g, (c) => String(c.charCodeAt(0) - 3664))
+      .replace(/[\s\-–—/\.]/g, '')
+      .toLowerCase();
+  const clear = () => {
+    results.innerHTML = '';
+    results.hidden = true;
+  };
+  let listed = [];
+  search.addEventListener('input', () => {
+    const q = norm(search.value);
+    if (!q) {
+      clear();
+      return;
+    }
+    listed = (state.inventory || [])
+      .filter((a) =>
+        [a.asset_no, a.serial, a.id, a.brand, a.model, a.type, a.owner, a.org].some((v) =>
+          norm(v).includes(q),
+        ),
+      )
+      .slice(0, 8);
+    results.hidden = false;
+    results.innerHTML = listed.length
+      ? listed
+          .map(
+            (a, idx) =>
+              `<button type="button" class="ui-picker-item" data-inv-idx="${idx}"><strong>${esc(a.asset_no || a.id)}</strong> · ${esc([a.type, a.brand, a.model].filter(Boolean).join(' '))}<small>S/N: ${esc(a.serial || '—')}${a.owner ? ' · ' + esc(a.owner) : ''}${a.floor ? ' · ชั้น ' + esc(a.floor) : ''}</small></button>`,
+          )
+          .join('')
+      : `<div class="ui-picker-empty">${esc(config.emptyText || 'ไม่พบครุภัณฑ์หรือซีเรียลที่ตรงกันใน Inventory')}</div>`;
+  });
+  results.addEventListener('click', (event) => {
+    const btn = event.target.closest('button[data-inv-idx]');
+    if (!btn) return;
+    const asset = listed[Number(btn.dataset.invIdx)];
+    if (!asset) return;
+    clear();
+    search.value = '';
+    if (typeof config.onPick === 'function') config.onPick(asset);
+  });
+  search.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !results.hidden) {
+      event.stopPropagation();
+      clear();
+    }
+  });
+}
+
 async function statusForm(id) {
   const t = state.tickets.find((x) => x.id === id);
   if (!t) return;
@@ -3333,10 +3388,40 @@ async function statusForm(id) {
     return;
   }
   if (page !== originPage) return;
+  const canEditDevice = !isRequesterRoleForClient();
+  const deviceBlock = canEditDevice
+    ? `<div class="status-device-section"><div class="status-device-head"><strong>ข้อมูลอุปกรณ์ / ครุภัณฑ์ (ค้นหาจาก Inventory หรือแก้ไขเพิ่มเติม)</strong><div class="ui-picker-bar"><input id="sAssetSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ ซีเรียล จาก Inventory" autocomplete="off"><button type="button" class="outline" id="sAssetClear">ล้างข้อมูลอุปกรณ์</button></div><div id="sAssetResults" class="ui-picker-results" hidden></div></div><input id="sAssetId" type="hidden" value="${escAttr(t.asset_id || '')}"><input id="sDevice" type="hidden" value="${escAttr(t.device || '')}"><div class="form-grid status-device-grid"><label>เลขครุภัณฑ์<input id="sAssetNo" maxlength="120" value="${escAttr(t.asset_no || '')}" placeholder="ระบุหรือค้นหาจาก Inventory"></label><label>ยี่ห้อ<input id="sBrand" maxlength="120" value="${escAttr(t.brand || '')}"></label><label>รุ่น<input id="sModel" maxlength="120" value="${escAttr(t.model || '')}"></label><label>หมายเลขซีเรียล<input id="sSerial" maxlength="120" value="${escAttr(t.serial || '')}"></label></div></div>`
+    : '';
   openModal(
     'อัปเดตสถานะ ' + id,
-    `<form class="status-compact-form" onsubmit="event.preventDefault();submitStatus('${escAttr(id)}')"><p class="ui-note">สถานะปัจจุบัน: ${badge(t.status)} • รายการสถานะกำหนดโดยสิทธิ์จริงของบัญชี</p><section class="status125-request" aria-labelledby="sRequestTitle"><h3 id="sRequestTitle">รายละเอียดคำขอ / อาการเสีย</h3><div id="sRequestDescription" class="status125-description" tabindex="0">${esc(t.description) || 'ไม่ระบุรายละเอียดคำขอ / อาการเสีย'}</div></section><div class="form-grid"><label>สถานะใหม่ *<select id="sTo" required onchange="uiStatusHint()"><option value="" selected disabled>เลือกสถานะใหม่</option>${next.map((x) => `<option>${esc(x)}</option>`).join('')}</select></label><label>ผู้ดำเนินการ <span id="sAssigneeReq"></span><input id="sAssignee" value="${esc(t.technician || state.user.display_name)}" placeholder="ชื่อเจ้าหน้าที่"></label><label class="span2">รายละเอียดการดำเนินงาน / วิธีแก้ไข <span id="sResolutionReq"></span><textarea id="sResolution" rows="3">${esc(t.resolution)}</textarea></label><label class="span2">หมายเหตุ / เหตุผล <span id="sNoteReq"></span><textarea id="sNote" rows="2"></textarea></label><label>ผู้ใช้ที่ยืนยันผล (ถ้ามี)<input id="sConfirmed" value="${isRequesterRoleForClient() ? esc(state.user.display_name) : ''}" placeholder="ชื่อผู้ใช้ที่ยืนยัน"></label><label>หลักฐานที่แนบไว้ (ถ้ามี)<select id="sExisting"><option value="">ยังไม่เลือก</option>${files.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</select></label></div><div id="sHint" class="ui-note" style="margin-top:12px"></div><div class="status-action-bar"><label class="status-attachment">หรือแนบใบ Service ใหม่ (ถ้ามี)<input id="sFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"><small class="hint">PDF, PNG, JPEG, DOC, DOCX ไม่เกิน 10 MB</small></label><div class="form-actions"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button class="primary">บันทึกสถานะ</button></div></div></form>`,
+    `<form class="status-compact-form" onsubmit="event.preventDefault();submitStatus('${escAttr(id)}')"><p class="ui-note">สถานะปัจจุบัน: ${badge(t.status)} • รายการสถานะกำหนดโดยสิทธิ์จริงของบัญชี</p><section class="status125-request" aria-labelledby="sRequestTitle"><h3 id="sRequestTitle">รายละเอียดคำขอ / อาการเสีย</h3><div id="sRequestDescription" class="status125-description" tabindex="0">${esc(t.description) || 'ไม่ระบุรายละเอียดคำขอ / อาการเสีย'}</div></section><div class="form-grid"><label>สถานะใหม่ *<select id="sTo" required onchange="uiStatusHint()"><option value="" selected disabled>เลือกสถานะใหม่</option>${next.map((x) => `<option>${esc(x)}</option>`).join('')}</select></label><label>ผู้ดำเนินการ <span id="sAssigneeReq"></span><input id="sAssignee" value="${esc(t.technician || state.user.display_name)}" placeholder="ชื่อเจ้าหน้าที่"></label><label class="span2">รายละเอียดการดำเนินงาน / วิธีแก้ไข <span id="sResolutionReq"></span><textarea id="sResolution" rows="3">${esc(t.resolution)}</textarea></label><label class="span2">หมายเหตุ / เหตุผล <span id="sNoteReq"></span><textarea id="sNote" rows="2"></textarea></label><label>ผู้ใช้ที่ยืนยันผล (ถ้ามี)<input id="sConfirmed" value="${isRequesterRoleForClient() ? esc(state.user.display_name) : ''}" placeholder="ชื่อผู้ใช้ที่ยืนยัน"></label><label>หลักฐานที่แนบไว้ (ถ้ามี)<select id="sExisting"><option value="">ยังไม่เลือก</option>${files.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</select></label></div>${deviceBlock}<div id="sHint" class="ui-note" style="margin-top:12px"></div><div class="status-action-bar"><label class="status-attachment">หรือแนบใบ Service ใหม่ (ถ้ามี)<input id="sFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"><small class="hint">PDF, PNG, JPEG, DOC, DOCX ไม่เกิน 10 MB</small></label><div class="form-actions"><button type="button" class="outline" onclick="closeModal()">ยกเลิก</button><button class="primary">บันทึกสถานะ</button></div></div></form>`,
   );
+  if (canEditDevice) {
+    uiAttachInventoryPicker({
+      searchId: 'sAssetSearch',
+      resultsId: 'sAssetResults',
+      onPick: (asset) => {
+        uiSetValue('sAssetId', asset.id || '');
+        uiSetValue('sAssetNo', asset.asset_no || '');
+        uiSetValue('sBrand', asset.brand || '');
+        uiSetValue('sModel', asset.model || '');
+        uiSetValue('sSerial', asset.serial || '');
+        uiSetValue('sDevice', asset.type || '');
+        toast('ดึงข้อมูลครุภัณฑ์ ' + (asset.asset_no || asset.serial || asset.id) + ' แล้ว');
+      },
+    });
+    if ($('sAssetClear')) {
+      $('sAssetClear').onclick = () => {
+        ['sAssetId', 'sAssetNo', 'sBrand', 'sModel', 'sSerial', 'sAssetSearch'].forEach((k) =>
+          uiSetValue(k, ''),
+        );
+        if ($('sAssetResults')) {
+          $('sAssetResults').innerHTML = '';
+          $('sAssetResults').hidden = true;
+        }
+      };
+    }
+  }
   uiStatusHint();
 }
 
@@ -3383,13 +3468,24 @@ async function submitStatus(id) {
       },
       file = uiFile('sFile');
     const attached = file ? await uiUpload(id, file, 'Service') : null;
-    await call('changeStatus', token, id, payload.to, {
+    const statusBody = {
       assigned_to: payload.assigned_to,
       resolution: payload.resolution,
       note: payload.note,
       confirmed_by: payload.confirmed_by,
       service_file_id: attached?.id || payload.existing,
-    });
+    };
+    if ($('sAssetNo')) {
+      statusBody.device_patch = {
+        asset_id: uiValue('sAssetId'),
+        asset_no: uiValue('sAssetNo', true),
+        brand: uiValue('sBrand', true),
+        model: uiValue('sModel', true),
+        serial: uiValue('sSerial', true),
+        device: uiValue('sDevice', true),
+      };
+    }
+    await call('changeStatus', token, id, payload.to, statusBody);
     closeModal();
     await refresh();
     ui.ticket = id;
@@ -6848,52 +6944,179 @@ async function service70Edit(id) {
       outcomeDate = d.outcome_date || service70IsoDate(t.finished_at) || '';
     const sumItem = (label, value) =>
       `<div><small>${label}</small><strong>${esc(value || '-')}</strong></div>`;
+    const renderSummary = () => `
+      ${sumItem('JOB NO.', t.id)}
+      ${sumItem('สำนัก/กอง · กลุ่ม/ศูนย์', [t.org, t.suborg].filter(Boolean).join(' · '))}
+      ${sumItem('ผู้ใช้งาน · โทร · ชั้น', [t.reporter, t.phone, t.floor ? 'ชั้น ' + t.floor : ''].filter(Boolean).join(' · '))}
+      ${sumItem('วันที่แจ้ง · ผู้ดำเนินการ', [service70DateOnly(t.reported_at), t.technician].filter(Boolean).join(' · '))}
+      ${sumItem('เลขครุภัณฑ์ · หมายเลขเครื่อง', [t.asset_no, t.serial].filter(Boolean).join(' · '))}
+      ${sumItem('อุปกรณ์ · ยี่ห้อ · รุ่น', [t.device, t.brand, t.model].filter(Boolean).join(' · '))}
+      ${sumItem('ปัญหา', t.description)}
+      ${sumItem('วิธีการแก้ไข', t.resolution)}`;
     openModal(
       'สร้าง / แก้ไขข้อมูลใบงาน (CM) ' + id,
       `<form id="service70Form" class="asset-compact-form">
-        <div class="asset-compact-head">ข้อมูลเชื่อมโยงจากรายการแจ้งซ่อมและครุภัณฑ์</div>
-        <div class="service70-summary">
-          ${sumItem('JOB NO.', t.id)}
-          ${sumItem('สำนัก/กอง · กลุ่ม/ศูนย์', [t.org, t.suborg].filter(Boolean).join(' · '))}
-          ${sumItem('ผู้ใช้งาน · โทร · ชั้น', [t.reporter, t.phone, t.floor ? 'ชั้น ' + t.floor : ''].filter(Boolean).join(' · '))}
-          ${sumItem('วันที่แจ้ง · ผู้ดำเนินการ', [service70DateOnly(t.reported_at), t.technician].filter(Boolean).join(' · '))}
-          ${sumItem('เลขครุภัณฑ์ · หมายเลขเครื่อง', [t.asset_no, t.serial].filter(Boolean).join(' · '))}
-          ${sumItem('อุปกรณ์ · ยี่ห้อ · รุ่น', [t.device, t.brand, t.model].filter(Boolean).join(' · '))}
-          ${sumItem('ปัญหา', t.description)}
-          ${sumItem('วิธีการแก้ไข', t.resolution)}
+        <div class="asset-compact-section">
+          <h3>ข้อมูลเชื่อมโยงจากรายการแจ้งซ่อมและครุภัณฑ์</h3>
+          <div id="service70Summary" class="service70-summary">${renderSummary()}</div>
         </div>
-        <div class="asset-compact-head">สถานะของงานและวันที่</div>
-        <div class="asset-compact-row c2">
-          <label>สถานะของงาน<select id="service70Outcome" ${disabled}>${service70Outcomes.map(([k, n]) => `<option value="${k}" ${k === d.outcome ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
-          <label>วันที่<input id="service70Date" type="date" value="${escAttr(outcomeDate)}" ${disabled}></label>
+        <div class="asset-compact-section">
+          <h3>ข้อมูลครุภัณฑ์ของงานนี้ (ค้นหาจาก Inventory เพื่อป้องกันพิมพ์ผิด)</h3>
+          <div class="ui-picker-bar">
+            <input id="service70JobSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ ซีเรียล จาก Inventory" autocomplete="off" ${disabled}>
+            ${data.can_edit ? '<button type="button" class="outline" id="service70JobClear">ล้างครุภัณฑ์</button>' : ''}
+          </div>
+          <div id="service70JobResults" class="ui-picker-results" hidden></div>
+          <input id="service70_job_asset_id" type="hidden" value="${escAttr(t.asset_id || '')}">
+          <input id="service70_job_device" type="hidden" value="${escAttr(t.device || '')}">
+          <div class="form-grid asset-grid-4">
+            <label>เลขครุภัณฑ์<input id="service70_job_asset_no" maxlength="120" value="${escAttr(t.asset_no || '')}" placeholder="ดึงจาก Inventory หรือระบุ" ${disabled}></label>
+            <label>ยี่ห้อ<input id="service70_job_brand" maxlength="120" value="${escAttr(t.brand || '')}" ${disabled}></label>
+            <label>รุ่น<input id="service70_job_model" maxlength="120" value="${escAttr(t.model || '')}" ${disabled}></label>
+            <label>หมายเลขซีเรียล<input id="service70_job_serial" maxlength="120" value="${escAttr(t.serial || '')}" ${disabled}></label>
+          </div>
         </div>
-        <div class="asset-compact-head">อุปกรณ์ส่งซ่อม</div>
-        <div class="asset-compact-row c3">
-          <label>ชื่ออุปกรณ์<input id="service70_sent_name" maxlength="160" value="${escAttr(d.sent_name)}" ${disabled}></label>
-          <label>รุ่นของอุปกรณ์<input id="service70_sent_model" maxlength="160" value="${escAttr(d.sent_model)}" ${disabled}></label>
-          <label>หมายเลขอุปกรณ์<input id="service70_sent_serial" maxlength="160" value="${escAttr(d.sent_serial)}" ${disabled}></label>
+        <div class="asset-compact-section">
+          <h3>สถานะของงานและวันที่</h3>
+          <div class="form-grid asset-grid-2">
+            <label>สถานะของงาน<select id="service70Outcome" ${disabled}>${service70Outcomes.map(([k, n]) => `<option value="${k}" ${k === d.outcome ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+            <label>วันที่<input id="service70Date" type="date" value="${escAttr(outcomeDate)}" ${disabled}></label>
+          </div>
         </div>
-        <div class="asset-compact-head">อุปกรณ์ทดแทน</div>
-        <div class="asset-compact-row c3">
-          <label>ชื่ออุปกรณ์<input id="service70_replacement_name" maxlength="160" value="${escAttr(d.replacement_name)}" ${disabled}></label>
-          <label>รุ่นของอุปกรณ์<input id="service70_replacement_model" maxlength="160" value="${escAttr(d.replacement_model)}" ${disabled}></label>
-          <label>หมายเลขอุปกรณ์<input id="service70_replacement_serial" maxlength="160" value="${escAttr(d.replacement_serial)}" ${disabled}></label>
+        <div class="asset-compact-section">
+          <h3>อุปกรณ์ส่งซ่อม</h3>
+          <div class="ui-picker-bar">
+            <input id="service70SentSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ ซีเรียล จาก Inventory เพื่อกรอกอุปกรณ์ส่งซ่อม" autocomplete="off" ${disabled}>
+            ${data.can_edit ? '<button type="button" class="outline" id="service70SentFromJob">ใช้เครื่องเดียวกับงานนี้</button>' : ''}
+          </div>
+          <div id="service70SentResults" class="ui-picker-results" hidden></div>
+          <div class="form-grid asset-grid-3">
+            <label>ชื่ออุปกรณ์<input id="service70_sent_name" maxlength="160" value="${escAttr(d.sent_name)}" ${disabled}></label>
+            <label>รุ่นของอุปกรณ์<input id="service70_sent_model" maxlength="160" value="${escAttr(d.sent_model)}" ${disabled}></label>
+            <label>หมายเลขอุปกรณ์<input id="service70_sent_serial" maxlength="160" value="${escAttr(d.sent_serial)}" ${disabled}></label>
+          </div>
         </div>
-        <div class="asset-compact-head">หมายเหตุท้ายใบงาน</div>
-        <label>หมายเหตุ<input id="service70Note" maxlength="500" value="${escAttr(t.note)}" placeholder="ระบุหมายเหตุเพิ่มเติมในใบงาน (ถ้ามี)" ${disabled}></label>
-        <div class="form-actions">
+        <div class="asset-compact-section">
+          <h3>อุปกรณ์ทดแทน</h3>
+          <div class="ui-picker-bar">
+            <input id="service70ReplSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ ซีเรียล จาก Inventory เพื่อกรอกอุปกรณ์ทดแทน" autocomplete="off" ${disabled}>
+          </div>
+          <div id="service70ReplResults" class="ui-picker-results" hidden></div>
+          <div class="form-grid asset-grid-3">
+            <label>ชื่ออุปกรณ์<input id="service70_replacement_name" maxlength="160" value="${escAttr(d.replacement_name)}" ${disabled}></label>
+            <label>รุ่นของอุปกรณ์<input id="service70_replacement_model" maxlength="160" value="${escAttr(d.replacement_model)}" ${disabled}></label>
+            <label>หมายเลขอุปกรณ์<input id="service70_replacement_serial" maxlength="160" value="${escAttr(d.replacement_serial)}" ${disabled}></label>
+          </div>
+        </div>
+        <div class="asset-compact-section">
+          <h3>หมายเหตุท้ายใบงาน</h3>
+          <label>หมายเหตุ<input id="service70Note" maxlength="500" value="${escAttr(t.note)}" placeholder="ระบุหมายเหตุเพิ่มเติมในใบงาน (ถ้ามี)" ${disabled}></label>
+        </div>
+        <div class="asset-action-bar">
           <button type="button" class="outline" id="service70Print">พิมพ์ใบงาน (PDF)</button>
           ${data.can_edit ? '<button class="outline" type="submit">บันทึกข้อมูลใบงาน</button><button class="primary" type="button" id="service70SaveAndPrint">บันทึก &amp; พิมพ์ใบงาน (PDF)</button>' : ''}
         </div>
       </form>`,
       'asset-compact-dialog',
     );
+    const fillEquipGroup = (prefix, asset) => {
+      uiSetValue('service70_' + prefix + '_name', asset.type || asset.brand || '');
+      uiSetValue(
+        'service70_' + prefix + '_model',
+        [asset.brand, asset.model].filter(Boolean).join(' '),
+      );
+      uiSetValue('service70_' + prefix + '_serial', asset.serial || asset.asset_no || '');
+    };
+    const syncSummaryFromJobInputs = () => {
+      t.asset_no = uiValue('service70_job_asset_no', true);
+      t.brand = uiValue('service70_job_brand', true);
+      t.model = uiValue('service70_job_model', true);
+      t.serial = uiValue('service70_job_serial', true);
+      t.device = uiValue('service70_job_device', true) || t.device;
+      t.asset_id = uiValue('service70_job_asset_id');
+      if ($('service70Summary')) $('service70Summary').innerHTML = renderSummary();
+    };
+    if (data.can_edit) {
+      uiAttachInventoryPicker({
+        searchId: 'service70JobSearch',
+        resultsId: 'service70JobResults',
+        onPick: (asset) => {
+          uiSetValue('service70_job_asset_id', asset.id || '');
+          uiSetValue('service70_job_asset_no', asset.asset_no || '');
+          uiSetValue('service70_job_brand', asset.brand || '');
+          uiSetValue('service70_job_model', asset.model || '');
+          uiSetValue('service70_job_serial', asset.serial || '');
+          uiSetValue('service70_job_device', asset.type || '');
+          t.floor = asset.floor || t.floor;
+          syncSummaryFromJobInputs();
+          toast('ดึงข้อมูลครุภัณฑ์ของงานนี้จาก Inventory แล้ว');
+        },
+      });
+      uiAttachInventoryPicker({
+        searchId: 'service70SentSearch',
+        resultsId: 'service70SentResults',
+        onPick: (asset) => {
+          fillEquipGroup('sent', asset);
+          toast('ดึงข้อมูลอุปกรณ์ส่งซ่อมจาก Inventory แล้ว');
+        },
+      });
+      uiAttachInventoryPicker({
+        searchId: 'service70ReplSearch',
+        resultsId: 'service70ReplResults',
+        onPick: (asset) => {
+          fillEquipGroup('replacement', asset);
+          toast('ดึงข้อมูลอุปกรณ์ทดแทนจาก Inventory แล้ว');
+        },
+      });
+      if ($('service70JobClear')) {
+        $('service70JobClear').onclick = () => {
+          [
+            'service70_job_asset_id',
+            'service70_job_asset_no',
+            'service70_job_brand',
+            'service70_job_model',
+            'service70_job_serial',
+            'service70JobSearch',
+          ].forEach((k) => uiSetValue(k, ''));
+          t.floor = '';
+          syncSummaryFromJobInputs();
+        };
+      }
+      if ($('service70SentFromJob')) {
+        $('service70SentFromJob').onclick = () => {
+          syncSummaryFromJobInputs();
+          fillEquipGroup('sent', {
+            type: t.device,
+            brand: t.brand,
+            model: t.model,
+            serial: t.serial,
+            asset_no: t.asset_no,
+          });
+          toast('ดึงข้อมูลเครื่องของใบงานใส่ช่องอุปกรณ์ส่งซ่อมแล้ว');
+        };
+      }
+      [
+        'service70_job_asset_no',
+        'service70_job_brand',
+        'service70_job_model',
+        'service70_job_serial',
+      ].forEach((fid) => $(fid)?.addEventListener('input', syncSummaryFromJobInputs));
+    }
     const saveReport = async () => {
+      syncSummaryFromJobInputs();
       const input = {
         revision: data.revision,
         outcome: uiValue('service70Outcome'),
         outcome_date: uiValue('service70Date'),
         note: uiValue('service70Note', true),
+        device_patch: {
+          asset_id: uiValue('service70_job_asset_id'),
+          asset_no: uiValue('service70_job_asset_no', true),
+          brand: uiValue('service70_job_brand', true),
+          model: uiValue('service70_job_model', true),
+          serial: uiValue('service70_job_serial', true),
+          device: uiValue('service70_job_device', true),
+        },
       };
       service70Fields.forEach(([k]) => (input[k] = uiValue('service70_' + k, true)));
       const result = await call('saveServiceReportDetails', token, id, input);
