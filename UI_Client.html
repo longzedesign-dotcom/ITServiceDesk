@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.64
+  Version: V1.1.65
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,6 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
+  - V1.1.65: Refine CM Service Report A4 template (1cm side margins / 190mm sheet width, full unclipped JOB NO. field, auto-fitted single-line org/suborg display for สำนัก/กอง and กลุ่ม/ศูนย์).
   - V1.1.64: Add shared Inventory picker (by asset number or serial) in both อัปเดตสถานะ (statusForm) and สร้าง/แก้ไขข้อมูลใบงาน CM (service70Edit for job asset, sent equipment & replacement equipment) + fix horizontal grid columns in service70Edit.
   - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
   - V1.1.59: Rewrite project header & client branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); retain ADMIN branding settings controls.
@@ -6762,8 +6763,18 @@ function service70Html(data, logo = '') {
   const address = b.address || SERVICE_REPORT_DEFAULTS.report_provider_address;
   const title = b.title || SERVICE_REPORT_DEFAULTS.report_title;
   const project = b.project || SERVICE_REPORT_DEFAULTS.report_project_description;
+  const baseLen = (v) =>
+    String(v || '').replace(/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g, '').length;
   const field = (label, value, cls = '') =>
     `<div class="field ${cls}"><span class="lbl">${label}</span><b class="dots">${e(value || '')}</b></div>`;
+  const orgField = (label, value) => {
+    const n = baseLen(value);
+    const fs = n > 48 ? '7.8pt' : n > 42 ? '8.4pt' : n > 35 ? '8.9pt' : n > 28 ? '9.4pt' : '10.2pt';
+    const wrapCls = n > 54 ? 'org-val wrap' : 'org-val';
+    return `<div class="field"><span class="lbl">${label}</span><b class="dots ${wrapCls}" style="font-size:${fs}">${e(value || '')}</b></div>`;
+  };
+  const jobIdLen = String(t.id || '').length;
+  const jobNoSize = jobIdLen > 24 ? '8pt' : jobIdLen > 20 ? '8.5pt' : '9pt';
   const checkMark = (checked, label) =>
     `<span class="check"><i class="box">${checked ? '✓' : ''}</i><span>${label}</span></span>`;
   const types = [
@@ -6776,26 +6787,31 @@ function service70Html(data, logo = '') {
   const reportDate = service70DateOnly(t.reported_at);
   const outcomeDate = service70DateOnly(d.outcome_date);
   return `<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Service_${e(t.id)}</title><link rel="stylesheet" href="https:\/\/fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap"><style>
-  @page{size:A4 portrait;margin:11mm 14mm 10mm}
+  @page{size:A4 portrait;margin:10mm}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:#fff;color:#111;font:10.5pt/1.45 'Sarabun','Noto Sans Thai',Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .sheet{width:100%;max-width:182mm;margin:0 auto}
+  @media screen{body{padding:10mm}}
+  @media print{body{padding:0}}
+  .sheet{width:100%;max-width:190mm;margin:0 auto}
   .head-wrap{display:grid;grid-template-columns:${logoSrc ? '22mm 1fr' : '1fr'};gap:.5mm 3mm;align-items:start;border-bottom:.35mm solid #222;padding-bottom:2.2mm;margin-bottom:2.8mm}
   .logo{grid-row:1/span 2;width:22mm;height:11mm;object-fit:contain;align-self:center}
-  .head-top{display:flex;align-items:flex-end;justify-content:space-between;gap:2.5mm}
-  .co-name{color:#1f4e8c;font-weight:700;font-size:10.2pt;line-height:1.15;white-space:nowrap}
-  .sr-box{border:.4mm solid #111;padding:.8mm 5.5mm;font-weight:700;font-size:13pt;line-height:1.1;letter-spacing:.35px;white-space:nowrap;background:#fff;margin:0 auto}
-  .job-no{display:flex;align-items:baseline;gap:1.5mm;font-size:9.5pt;white-space:nowrap;min-width:41mm}
-  .job-no .dots{flex:1;border-bottom:.25mm dotted #333;min-height:4.2mm;padding:0 1.2mm;text-align:center;font-weight:600;font-size:9.5pt}
+  .head-top{display:flex;align-items:flex-end;justify-content:space-between;gap:2.5mm;min-width:0}
+  .co-name{color:#1f4e8c;font-weight:700;font-size:9.8pt;line-height:1.15;white-space:nowrap;flex-shrink:0}
+  .sr-box{border:.4mm solid #111;padding:.8mm 4.5mm;font-weight:700;font-size:12.2pt;line-height:1.1;letter-spacing:.35px;white-space:nowrap;background:#fff;margin:0 auto;flex-shrink:0}
+  .job-no{display:inline-flex;align-items:baseline;gap:1.5mm;font-size:9pt;white-space:nowrap;flex:0 0 auto;min-width:50mm}
+  .job-no .dots{flex:1 0 auto;min-width:36mm;border-bottom:.25mm dotted #333;min-height:4.2mm;padding:0 1.8mm;text-align:center;font-weight:600;font-size:${jobNoSize};white-space:nowrap;overflow-wrap:normal}
   .co-addr{color:#1f4e8c;font-size:8.2pt;line-height:1.25}
   .title{text-align:center;font-size:11.5pt;font-weight:700;margin:2.5mm 0 .8mm;line-height:1.3}
   .project{text-align:center;font-size:9.6pt;font-weight:400;margin:0 0 6mm;line-height:1.35}
   .row{display:grid;gap:3mm;margin-bottom:2.6mm;align-items:baseline}
   .r2{grid-template-columns:1fr 1fr}
+  .r2.org-row{grid-template-columns:1fr 1fr;gap:3.2mm}
   .r4{grid-template-columns:1.45fr 1fr .62fr .95fr}
-  .field{display:flex;align-items:baseline;gap:1.8mm;min-width:0}
+  .field{display:flex;align-items:baseline;gap:1.6mm;min-width:0}
   .field .lbl{white-space:nowrap;flex-shrink:0}
   .dots{flex:1;min-width:0;min-height:4.8mm;border-bottom:.25mm dotted #444;padding:0 1.5mm;font-weight:400;line-height:1.25;overflow-wrap:anywhere}
+  .dots.org-val{padding:0 1.2mm;white-space:nowrap;overflow-wrap:normal;line-height:1.3}
+  .dots.org-val.wrap{white-space:normal;overflow-wrap:break-word}
   .dots.center{text-align:center}
   .types-row{display:flex;align-items:center;gap:4.5mm;margin:3.5mm 0 4.5mm;flex-wrap:wrap}
   .types-row .lbl{white-space:nowrap;margin-right:1mm}
@@ -6833,7 +6849,7 @@ function service70Html(data, logo = '') {
   </header>
   <h1 class="title">${e(title)}</h1>
   <div class="project">${e(project)}</div>
-  <div class="row r2">${field('สำนัก/กอง', t.org)}${field('กลุ่ม/ศูนย์', t.suborg)}</div>
+  <div class="row r2 org-row">${orgField('สำนัก/กอง', t.org)}${orgField('กลุ่ม/ศูนย์', t.suborg)}</div>
   <div class="row r4">${field('ชื่อผู้ใช้งาน', t.reporter)}${field('โทรศัพท์ภายใน', t.phone)}${field('ชั้น', t.floor)}${field('วันที่', reportDate)}</div>
   <div class="row r2">${field('หมายเลขครุภัณฑ์', t.asset_no)}${field('หมายเลขเครื่อง', t.serial)}</div>
   <div class="row r2">${field('ยี่ห้อ', t.brand)}${field('รุ่น', t.model)}</div>
