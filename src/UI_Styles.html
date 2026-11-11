@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.62
+ * Version: V1.1.63
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,7 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
- * - V1.1.62: Add CM-Form_69 Service Report logo upload, live A4 preview frame, and cardless ticket-linked summary styles.
+ * - V1.1.63: Add .line78-prefill-notice banner styles for LINE-to-New-Ticket prefill workflow.
   - V1.1.60: Add compact .asset-compact-form single-screen modal grid & tight vertical spacing.
   - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที).
   - V1.1.43: Place high-contrast save-result messages above dialogs and style inline inventory errors.
@@ -10907,6 +10907,26 @@ html[data-theme] :is(.badge, .ui-badge) {
   font-weight: 600;
   color: var(--theme-text);
   overflow-wrap: anywhere;
+}
+.line78-prefill-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--theme-teal, #008585);
+}
+.line78-prefill-notice[hidden] {
+  display: none;
+}
+.line78-prefill-notice.is-success {
+  border-left-color: #15803d;
+}
+.line78-prefill-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 @media (max-width: 700px) {
   .project70-report-logo-row,

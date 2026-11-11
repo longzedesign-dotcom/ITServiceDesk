@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.62
+ * Version: V1.1.63
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,7 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-11
  * Change History:
- * - V1.1.62: Match CM-Form_69.pdf Service Report 100% (Open Technology logo, header, 5 device checkboxes, dotted ruled lines, 2-row job status, equipment rows, signatures), add report logo upload/reset & live A4 preview in Settings, and auto-open service report modal after marking repair finished.
+ * - V1.1.63: Support line_inbox_id / line_review_revision linkage directly inside createTicket so approving LINE requests populates New Ticket form and marks LINE_INBOX CREATED on save without jumping to Tracking prematurely.
  * - V1.1.60: Compact single-screen modal layout for Equipment General Edit & Create dialogs (multi-column groups, tightened spacing, zero vertical scroll on desktop).
  * - V1.1.59: Rewrite project header & branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); keep ADMIN project-name customization via System Settings.
  * - V1.1.58: Synchronized deployment across both Script IDs, modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม), database resilience fallback.
@@ -43,7 +43,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.62';
+const APP_VERSION = 'V1.1.63';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
@@ -2528,6 +2528,11 @@ function itsdImpl_createTicket_(token, data) {
   if (!hasPermissionForUser_(u, 'NEW_TICKET', 'CREATE'))
     throw Error('ไม่มีสิทธิ์สร้างรายการแจ้งซ่อม');
   data = plainObject_(data || {}, 'ข้อมูลคำขอ');
+  const lineInboxId = boundedText_(data.line_inbox_id, 'รหัสข้อความ LINE', 80, true);
+  if (lineInboxId) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(lineInboxId)) throw Error('INVALID_LINE_INBOX_ID');
+    lineLegacyRequire_(token, 'approve');
+  }
     const reporter = (['ADMIN', 'MANAGER', 'TECHNICIAN', 'ITSUPPORT'].includes(roleKey_(u)) || permission_hasAction_(u, 'ticket.create_for_user'))
       ? boundedText_(
           data.reporter || u.display_name,
@@ -2568,13 +2573,38 @@ function itsdImpl_createTicket_(token, data) {
   if (!priority)
     throw Error('ระดับความเร่งด่วนไม่ถูกต้อง กรุณาเลือก Normal, Low, Medium, High หรือ Critical');
   return lock_(() => {
+    let lineRow = null;
+    if (lineInboxId) {
+      lineRow = lineLegacyFind_(lineInboxId);
+      if (!lineRow) throw Error('LINE_INBOX_NOT_FOUND');
+      if (lineRow.ticket_id || lineRow.review_status === 'CREATED')
+        throw Error('LINE_INBOX_ALREADY_CREATED');
+      if (lineRow.review_status === 'CREATING') throw Error('LINE_INBOX_RECONCILIATION_REQUIRED');
+      if (lineRow.review_status === 'REJECTED') throw Error('LINE_INBOX_REJECTED');
+      if (
+        !['PENDING_REVIEW', 'IN_REVIEW', 'APPROVED', 'FAILED'].includes(
+          lineRow.review_status || 'PENDING_REVIEW',
+        )
+      )
+        throw Error('LINE_INBOX_NOT_APPROVABLE');
+      if (
+        data.line_review_revision !== undefined &&
+        data.line_review_revision !== null &&
+        data.line_review_revision !== ''
+      ) {
+        const rev = lineLegacyGetReview_(lineInboxId);
+        if (Number(data.line_review_revision) !== Number(rev ? rev.revision : 0))
+          throw Error('LINE_REVIEW_STALE');
+      }
+    }
     let asset = null;
     if (assetId) {
       asset = find_('INVENTORY', 'รหัสอุปกรณ์', assetId);
       if (!asset) throw Error('ไม่พบรหัสอุปกรณ์');
     }
     const id = nextTicket_(),
-      date = now_();
+      date = now_(),
+      sourceChannel = lineInboxId ? 'LINE' : channel;
     append_('INCIDENT', {
       เลขที่แจ้งปัญหา: id,
       วันที่และเวลาที่แจ้ง: date,
@@ -2589,7 +2619,7 @@ function itsdImpl_createTicket_(token, data) {
       หน่วยงานหลัก: asset ? asset['หน่วยงานหลัก'] : org,
       หน่วยงานย่อย: asset ? asset['หน่วยงานย่อย'] : suborg,
       ระดับความเร่งด่วน: priority,
-      ช่องทางรับแจ้ง: channel,
+      ช่องทางรับแจ้ง: sourceChannel,
       ผู้รับแจ้ง: '',
       ประเภทปัญหาการแจ้งซ่อม: type,
       สถานะการแจ้งซ่อม: 'แจ้งเรื่อง',
@@ -2607,8 +2637,18 @@ function itsdImpl_createTicket_(token, data) {
       to_status: 'แจ้งเรื่อง',
       actor_id: u.user_id,
       event_at: date,
-      note: 'สร้างรายการ',
+      note: lineInboxId ? 'สร้างรายการจาก LINE (' + lineInboxId + ')' : 'สร้างรายการ',
     });
+    if (lineInboxId && lineRow) {
+      lineLegacyUpdate_(lineRow.__row, { review_status: 'CREATED', ticket_id: id });
+      lineLegacyAudit_(
+        u,
+        'LINE_TICKET_CREATED',
+        lineInboxId,
+        'SUCCESS',
+        id + ' (via New Ticket Form)',
+      );
+    }
     return id;
   });
 }

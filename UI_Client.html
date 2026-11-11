@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.62
+  Version: V1.1.63
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -10,7 +10,7 @@
   - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
   Modified: 2026-11-11
   Change History:
-  - V1.1.62: Rewrite CM-Form_69 A4 service report layout (100% match to Open Technology / สคบ. PDF), embed Open Technology logo default, add live A4 preview & logo controls in Settings, link ticket+inventory fields + note edit + auto-prompt after technician marks repair finished.
+  - V1.1.63: Clicking อนุมัติแจ้งซ่อม in LINE Inbox panel now transfers inspected LINE/review data directly into #ticketForm on แจ้งซ่อมใหม่ so operators complete all required fields & attachments and save cleanly without prematurely switching to ติดตามงาน.
   - V1.1.60: Compact single-screen layout for Equipment General Edit, Specs Edit & Create dialogs via shared helpers.
   - V1.1.59: Rewrite project header & client branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); retain ADMIN branding settings controls.
   - V1.1.43: Show clear success/error messages and keep inventory save failures visible in the editor.
@@ -2117,7 +2117,7 @@ function newTicket() {
       'แจ้งซ่อมใหม่',
       'กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข',
     ) +
-    `<div class="ui-steps-form"><form id="ticketForm" onsubmit="event.preventDefault();submitTicket()"><section class="ui-panel ui-form-section"><h3><span>1</span> ข้อมูลผู้แจ้ง</h3><div class="form-grid"><label>ผู้แจ้งปัญหา *<input id="fReporter" required value="${esc(!hasAction('ticket.create_for_user') ? state.user.display_name : '')}" ${!hasAction('ticket.create_for_user') ? 'readonly' : ''}></label><label>เบอร์โทร *<input id="fPhone" inputmode="tel" required minlength="8"></label><label>หน่วยงานหลัก *<select id="fOrg" required onchange="uiSubOptions()"><option value="">เลือกหน่วยงานหลัก</option>${master.map((x) => `<option value="${esc(x.name)}" data-code="${esc(x.first)}">${esc(x.name)}</option>`).join('')}</select></label><label>หน่วยงานย่อย<select id="fSuborg"><option value="">เลือกหน่วยงานย่อย</option></select></label></div></section><section class="ui-panel ui-form-section"><h3><span>2</span> ข้อมูลอุปกรณ์</h3><label>เลขครุภัณฑ์ / รหัสอุปกรณ์<input id="assetSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ INV-TOR70-0001" oninput="uiFindAssets()"></label><div id="assetResults"></div><div id="chosenAsset" class="ui-note" style="margin-top:10px">ยังไม่เลือกอุปกรณ์ สามารถแจ้งปัญหาระบบหรือซอฟต์แวร์ได้</div><input id="fAsset" type="hidden"><label style="margin-top:11px"><input id="fNoAsset" type="checkbox" style="width:auto" onchange="uiNoAsset()"> ไม่มีเลขครุภัณฑ์ / แจ้งปัญหาซอฟต์แวร์</label><label>ประเภทอุปกรณ์ / ระบบ<select id="fDevice"><option value="">เลือกประเภท</option>${(state.devices || DEVICE_FALLBACK).map((x) => `<option>${esc(x)}</option>`).join('')}</select></label></section><section class="ui-panel ui-form-section"><h3><span>3</span> รายละเอียดการแจ้งซ่อม</h3><div class="form-grid"><label>ประเภทปัญหาการแจ้งซ่อม *<select id="fType" required><option value="">เลือกประเภทปัญหา</option>${state.types.map((x) => `<option>${esc(x)}</option>`).join('')}</select></label><label>ระดับความเร่งด่วน *<select id="fPriority" required onchange="uiPriorityHint()"><option value="ปกติ (Normal)" selected>ปกติ (Normal)</option><option value="ต่ำ (Low)">ต่ำ (Low)</option><option value="ปานกลาง (Medium)">ปานกลาง (Medium)</option><option value="สูง (High)">สูง (High)</option><option value="วิกฤต (Critical)">วิกฤต (Critical)</option></select><div id="priorityHint" class="ui-note" style="margin-top:8px"></div></label><label class="span2">รายละเอียดคำขอ / อาการเสีย *<textarea id="fDescription" maxlength="1000" rows="4" required placeholder="ระบุอาการที่พบ ข้อความแจ้งเตือน และขั้นตอนที่เกิดปัญหา"></textarea><small class="hint">สูงสุด 1,000 ตัวอักษร</small></label><label class="span2">เอกสารประกอบ (ถ้ามี)<div class="ui-drop"><span><span class="material-symbols-rounded" aria-hidden="true">cloud</span>️ ลากไฟล์หรือเลือกไฟล์</span><input id="fFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"><small class="hint">PDF, PNG, JPG, DOC, DOCX ไม่เกิน 10 MB</small></div></label></div><div class="form-actions"><button type="reset" class="outline">ล้างข้อมูล</button><button class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกคำขอ</button></div></section></form><aside class="ui-panel ui-hint-panel"><div class="ui-panel-title"><span class="material-symbols-rounded" aria-hidden="true">info</span> ขั้นตอนหลังส่งคำขอ</div><ol style="padding:0">${[
+    `<div class="ui-steps-form"><form id="ticketForm" onsubmit="event.preventDefault();submitTicket()"><div id="linePrefillNotice" class="ui-note line78-prefill-notice" hidden></div><input id="fLineInboxId" type="hidden"><input id="fLineRevision" type="hidden"><section class="ui-panel ui-form-section"><h3><span>1</span> ข้อมูลผู้แจ้ง</h3><div class="form-grid"><label>ผู้แจ้งปัญหา *<input id="fReporter" required value="${esc(!hasAction('ticket.create_for_user') ? state.user.display_name : '')}" ${!hasAction('ticket.create_for_user') ? 'readonly' : ''}></label><label>เบอร์โทร *<input id="fPhone" inputmode="tel" required minlength="8"></label><label>หน่วยงานหลัก *<select id="fOrg" required onchange="uiSubOptions()"><option value="">เลือกหน่วยงานหลัก</option>${master.map((x) => `<option value="${esc(x.name)}" data-code="${esc(x.first)}">${esc(x.name)}</option>`).join('')}</select></label><label>หน่วยงานย่อย<select id="fSuborg"><option value="">เลือกหน่วยงานย่อย</option></select></label></div></section><section class="ui-panel ui-form-section"><h3><span>2</span> ข้อมูลอุปกรณ์</h3><label>เลขครุภัณฑ์ / รหัสอุปกรณ์<input id="assetSearch" placeholder="ค้นหาเลขครุภัณฑ์ หรือ INV-TOR70-0001" oninput="uiFindAssets()"></label><div id="assetResults"></div><div id="chosenAsset" class="ui-note" style="margin-top:10px">ยังไม่เลือกอุปกรณ์ สามารถแจ้งปัญหาระบบหรือซอฟต์แวร์ได้</div><input id="fAsset" type="hidden"><label style="margin-top:11px"><input id="fNoAsset" type="checkbox" style="width:auto" onchange="uiNoAsset()"> ไม่มีเลขครุภัณฑ์ / แจ้งปัญหาซอฟต์แวร์</label><label>ประเภทอุปกรณ์ / ระบบ<select id="fDevice"><option value="">เลือกประเภท</option>${(state.devices || DEVICE_FALLBACK).map((x) => `<option>${esc(x)}</option>`).join('')}</select></label></section><section class="ui-panel ui-form-section"><h3><span>3</span> รายละเอียดการแจ้งซ่อม</h3><div class="form-grid"><label>ประเภทปัญหาการแจ้งซ่อม *<select id="fType" required><option value="">เลือกประเภทปัญหา</option>${state.types.map((x) => `<option>${esc(x)}</option>`).join('')}</select></label><label>ระดับความเร่งด่วน *<select id="fPriority" required onchange="uiPriorityHint()"><option value="ปกติ (Normal)" selected>ปกติ (Normal)</option><option value="ต่ำ (Low)">ต่ำ (Low)</option><option value="ปานกลาง (Medium)">ปานกลาง (Medium)</option><option value="สูง (High)">สูง (High)</option><option value="วิกฤต (Critical)">วิกฤต (Critical)</option></select><div id="priorityHint" class="ui-note" style="margin-top:8px"></div></label><label class="span2">รายละเอียดคำขอ / อาการเสีย *<textarea id="fDescription" maxlength="1000" rows="4" required placeholder="ระบุอาการที่พบ ข้อความแจ้งเตือน และขั้นตอนที่เกิดปัญหา"></textarea><small class="hint">สูงสุด 1,000 ตัวอักษร</small></label><label class="span2">เอกสารประกอบ (ถ้ามี)<div class="ui-drop"><span><span class="material-symbols-rounded" aria-hidden="true">cloud</span>️ ลากไฟล์หรือเลือกไฟล์</span><input id="fFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"><small class="hint">PDF, PNG, JPG, DOC, DOCX ไม่เกิน 10 MB</small></div></label></div><div class="form-actions"><button type="reset" class="outline" onclick="uiResetTicketState()">ล้างข้อมูล</button><button class="primary"><span class="material-symbols-rounded" aria-hidden="true">save</span> บันทึกคำขอ</button></div></section></form><aside class="ui-panel ui-hint-panel"><div class="ui-panel-title"><span class="material-symbols-rounded" aria-hidden="true">info</span> ขั้นตอนหลังส่งคำขอ</div><ol style="padding:0">${[
       ['แจ้งเรื่อง', 'ระบบออกเลขที่แจ้งปัญหา'],
       ['รับแจ้ง', 'เจ้าหน้าที่รับเรื่องแล้ว'],
       ['มอบหมาย', 'กำหนดผู้รับผิดชอบ'],
@@ -2252,9 +2252,29 @@ function uiPriorityHint() {
     : '';
 }
 
+function uiResetTicketState(keepNotice = false) {
+  uiSetValue('fLineInboxId', '');
+  uiSetValue('fLineRevision', '');
+  uiSetValue('fAsset', '');
+  uiSetValue('assetSearch', '');
+  if ($('assetSearch')) $('assetSearch').disabled = false;
+  if ($('assetResults')) $('assetResults').innerHTML = '';
+  if ($('chosenAsset'))
+    $('chosenAsset').textContent = 'ยังไม่เลือกอุปกรณ์ สามารถแจ้งปัญหาระบบหรือซอฟต์แวร์ได้';
+  if ($('fSuborg')) $('fSuborg').innerHTML = '<option value="">เลือกหน่วยงานย่อย</option>';
+  const notice = $('linePrefillNotice');
+  if (notice && !keepNotice) {
+    notice.hidden = true;
+    notice.classList.remove('is-success');
+    notice.replaceChildren();
+  }
+  setTimeout(uiPriorityHint, 0);
+}
+
 async function submitTicket() {
   loading(true);
   let id = '';
+  const lineInboxId = uiValue('fLineInboxId');
   try {
     const d = {
         reporter: uiValue('fReporter', true),
@@ -2268,16 +2288,40 @@ async function submitTicket() {
         description: uiValue('fDescription', true),
       },
       file = uiFile('fFile');
+    if (lineInboxId) {
+      d.line_inbox_id = lineInboxId;
+      d.line_review_revision = Number(uiValue('fLineRevision') || 0);
+    }
     if (!d.asset_id && !d.device) throw Error('กรุณาระบุประเภทอุปกรณ์ / ระบบ');
     id = await call('createTicket', token, d);
     if (file) await uiUpload(id, file, 'REQUEST');
     await refresh();
+    if (lineInboxId) {
+      $('ticketForm')?.reset();
+      uiResetTicketState(true);
+      const notice = $('linePrefillNotice');
+      if (notice) {
+        notice.hidden = false;
+        notice.classList.add('is-success');
+        notice.innerHTML = `<div><strong>บันทึกใบแจ้งซ่อม ${esc(id)} จาก LINE สำเร็จ</strong><br><small>คิวข้อความ LINE อัปเดตแล้ว สามารถตรวจสอบรายการถัดไปต่อได้ทันที</small></div><div class="line78-prefill-actions"><button type="button" class="outline" onclick="ui.ticket='${escAttr(id)}';nav('tickets')">เปิดดูที่ติดตามงาน</button><button type="button" class="outline" onclick="uiResetTicketState()">ซ่อน</button></div>`;
+      }
+      document.getElementById('itsd65LineInbox')?.dispatchEvent(new CustomEvent('itsd:reload'));
+      toast('บันทึก ' + id + ' จาก LINE สำเร็จ');
+      return;
+    }
     ui.ticket = id;
     nav('tickets');
     toast('บันทึก ' + id + ' สำเร็จ');
   } catch (e) {
     if (id) {
       await refresh();
+      if (lineInboxId) {
+        $('ticketForm')?.reset();
+        uiResetTicketState();
+        document.getElementById('itsd65LineInbox')?.dispatchEvent(new CustomEvent('itsd:reload'));
+        fail(Error('สร้าง ' + id + ' แล้ว แต่แนบไฟล์ไม่สำเร็จ: ' + e.message));
+        return;
+      }
       ui.ticket = id;
       nav('tickets');
       fail(Error('สร้าง ' + id + ' แล้ว แต่แนบไฟล์ไม่สำเร็จ: ' + e.message));
@@ -8883,8 +8927,119 @@ const PMPL_EXPORT_HEADS = [
       finally { saving = false; }
     });
   }
+  function line78Norm(v) {
+    return String(v || '')
+      .normalize('NFKC')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+  function line78MatchSelect(selectEl, value) {
+    if (!selectEl || !value) return false;
+    var norm = line78Norm(value),
+      opts = Array.from(selectEl.options || []);
+    var exact = opts.find(function (o) {
+      return line78Norm(o.value) === norm || line78Norm(o.text) === norm;
+    });
+    if (exact) {
+      selectEl.value = exact.value;
+      return true;
+    }
+    var partial = opts.find(function (o) {
+      var ov = line78Norm(o.value);
+      return ov && (ov.includes(norm) || norm.includes(ov));
+    });
+    if (partial) {
+      selectEl.value = partial.value;
+      return true;
+    }
+    return false;
+  }
+  function line78PrefillTicketForm(item) {
+    if (!$('ticketForm')) {
+      nav('new');
+      setTimeout(function () {
+        line78PrefillTicketForm(item);
+      }, 60);
+      return;
+    }
+    var form = $('ticketForm'),
+      review = item.review || {},
+      inventory = state.inventory || [];
+    form.reset();
+    uiResetTicketState(true);
+    uiSetValue('fLineInboxId', item.id || '');
+    uiSetValue('fLineRevision', String(item.review_revision || 0));
+    uiSetValue('fReporter', review.reporter || item.reporter || '');
+    uiSetValue('fPhone', review.phone || item.phone || '');
+    var rawOrg = review.department || item.department || '';
+    var rawSuborg = review.suborg || '';
+    var noAsset =
+      review.no_asset === 'TRUE' || (!item.review && !line78HasAssetCode(item.asset_code));
+    var assetId = review.asset_id || '';
+    if (!assetId && !noAsset && line78HasAssetCode(item.asset_code)) {
+      var codeNorm = line78Norm(item.asset_code).replace(/[\s\-–—/\.]/g, '');
+      var matches = inventory.filter(function (a) {
+        return [a.id, a.asset_no, a.serial].some(function (v) {
+          return v && line78Norm(v).replace(/[\s\-–—/\.]/g, '') === codeNorm;
+        });
+      });
+      if (matches.length === 1) assetId = matches[0].id;
+    }
+    if (!noAsset && assetId && inventory.some(function (a) { return a.id === assetId; })) {
+      uiChooseAsset(assetId);
+      if (rawOrg && !uiValue('fOrg')) {
+        line78MatchSelect($('fOrg'), rawOrg);
+        uiSubOptions();
+      }
+      if (rawSuborg && !uiValue('fSuborg')) line78MatchSelect($('fSuborg'), rawSuborg);
+    } else {
+      line78MatchSelect($('fOrg'), rawOrg);
+      uiSubOptions();
+      if (rawSuborg) line78MatchSelect($('fSuborg'), rawSuborg);
+      uiSetChecked('fNoAsset', !!noAsset);
+      uiNoAsset();
+      if (!noAsset && line78HasAssetCode(item.asset_code)) {
+        uiSetValue('assetSearch', item.asset_code);
+        uiFindAssets();
+      }
+      var devCandidate = review.device || '';
+      if (devCandidate && !line78MatchSelect($('fDevice'), devCandidate)) {
+        if (/notebook|laptop/i.test(devCandidate)) line78MatchSelect($('fDevice'), 'Notebook');
+        else if (/pc|desktop/i.test(devCandidate)) line78MatchSelect($('fDevice'), 'Computer PC');
+      }
+    }
+    if (review.problem_type) line78MatchSelect($('fType'), review.problem_type);
+    if (review.priority) line78MatchSelect($('fPriority'), review.priority);
+    uiPriorityHint();
+    uiSetValue(
+      'fDescription',
+      review.issue_detail || item.issue_detail || item.text || '',
+    );
+    var notice = $('linePrefillNotice');
+    if (notice) {
+      notice.hidden = false;
+      notice.classList.remove('is-success');
+      notice.innerHTML = `<div><strong>กำลังสร้างใบแจ้งซ่อมจาก LINE (${esc(String(item.id || '').slice(0, 8))}…)</strong><br><small>กรุณาตรวจสอบและกรอกข้อมูลให้ครบทุกขั้นตอน จากนั้นกดปุ่ม <b>บันทึกคำขอ</b></small></div><div class="line78-prefill-actions"><button type="button" class="outline" onclick="uiResetTicketState()">ยกเลิกการเชื่อมโยง LINE</button></div>`;
+    }
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var nextMissing = ['fReporter', 'fPhone', 'fOrg', 'fDevice', 'fType', 'fDescription']
+      .map(function (id) {
+        return $(id);
+      })
+      .find(function (node) {
+        return node && !node.disabled && !String(node.value || '').trim();
+      });
+    setTimeout(function () {
+      (nextMissing || $('fPhone') || $('fReporter'))?.focus({ preventScroll: true });
+    }, 180);
+    toast('ส่งข้อมูลจาก LINE เข้าสู่หน้าแจ้งซ่อมใหม่แล้ว โปรดตรวจสอบให้ครบและกดบันทึกคำขอ');
+  }
   function line78Decision(item, action, refresh) {
-    if (action === 'APPROVE' && line78Missing(item).length) { line78Edit(item, refresh); return; }
+    if (action === 'APPROVE') {
+      line78PrefillTicketForm(item);
+      return;
+    }
     var reject = action === 'REJECT';
     var dialog = line78Dialog(reject ? 'ปฏิเสธรายการแจ้งซ่อมจาก LINE' : 'ยืนยันสร้างใบแจ้งซ่อมจาก LINE');
     var summary = el('dl', 'line78-summary');
@@ -9200,7 +9355,7 @@ const PMPL_EXPORT_HEADS = [
               var actions = el('div', 'itsd65-actions');
               var editable = ['PENDING_REVIEW','IN_REVIEW','APPROVED','FAILED'].includes(item.status);
               if (line78Can('review')) actions.appendChild(btn('ตรวจสอบ / แก้ไขข้อมูล', 'outline', function() { line78Edit(item, refresh); }, !editable));
-              if (line78Can('approve')) actions.appendChild(btn('อนุมัติแจ้งซ่อม', 'primary', function() { line78Decision(item, 'APPROVE', refresh); }, !editable || ((item.missing || []).length > 0 && !line78Can('review'))));
+              if (line78Can('approve')) actions.appendChild(btn('อนุมัติแจ้งซ่อม', 'primary', function() { line78Decision(item, 'APPROVE', refresh); }, !editable));
               if (line78Can('reject')) actions.appendChild(btn('ปฏิเสธแจ้งซ่อม', 'danger', function() { line78Decision(item, 'REJECT', refresh); }, !editable));
               card.appendChild(actions);
               body.appendChild(card);
@@ -9217,6 +9372,7 @@ const PMPL_EXPORT_HEADS = [
         });
     }
     refresh();
+    panel.addEventListener('itsd:reload', refresh);
   }
   var queued = false;
   function schedule() {
