@@ -3,6 +3,10 @@
 ใช้ลำดับเวอร์ชันตามที่ผู้ใช้กำหนด: V1.0.99 → V1.1.01 → V1.1.02 → … → V1.1.10 → …
 เลข Patch หลังจุดสุดท้ายใช้สองหลัก เช่น 01, 02, 10
 
+## V1.1.70 — 2026-11-12
+- **Borderless Compact Form Sections ([`UI_Styles.html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Styles.html))**:
+  - นำกรอบการ์ดและพื้นหลังซ้ำซ้อนออกจาก `.asset-compact-section` ภายในหน้าต่าง `.asset-compact-form` (เช่น หน้าต่าง **`สร้าง / แก้ไขข้อมูลใบงาน (CM)`** ทั้ง 6 กลุ่ม: `ข้อมูลเชื่อมโยงจากรายการแจ้งซ่อมและครุภัณฑ์`, `ข้อมูลครุภัณฑ์ของงานนี้`, `สถานะของงานและวันที่`, `อุปกรณ์ส่งซ่อม`, `อุปกรณ์ทดแทน`, `หมายเหตุท้ายใบงาน` และหน้าต่างจัดการครุภัณฑ์) ให้เหลือเฉพาะหัวข้อกลุ่มที่ชัดเจน ช่วยลดความซ้ำซ้อนและทำให้ปุ่มด้านล่างแสดงครบพอดีหน้าจอ
+
 ## V1.1.69 — 2026-11-12
 - **Dark Theme Admin Dashboard Full UI Overhaul ([`UI_Styles.html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Styles.html), [`Index.html`](file:///Users/chaloem/Antigravity/ITSD/src/Index.html), [`UI_Client.html`](file:///Users/chaloem/Antigravity/ITSD/src/UI_Client.html))**:
   - **Obsidian Carbon Surfaces & Hierarchy**: เปลี่ยนพื้นหลังหลักเป็น Obsidian Carbon Gradient (`#0a0a0a` → `#151515` → `#0a0a0a`), Sidebar & Topbar (`#0d0d0d` + hairline border `#1a1a1a`), การ์ด/ตาราง/Modal/Drawer (`#0d0d0d`), และองค์ประกอบโต้ตอบ/อินพุต (`#141414`/`#1a1a1a` border `#2a2a2a`) พร้อม Light Mode ที่สอดคล้องกัน

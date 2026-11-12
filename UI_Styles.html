@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.69
+ * Version: V1.1.70
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-12
  * Change History:
+ * - V1.1.70: Remove redundant card borders and dark fills from .asset-compact-section inside .asset-compact-form dialogs (CM Service Report & Equipment editors) so section headings separate groups cleanly.
  * - V1.1.69: Full Dark Theme Admin Dashboard design system overhaul — Obsidian Carbon (#0a0a0a/#0d0d0d/#1a1a1a), Orange (#f97316) / Teal (#14b8a6) / Blue (#3b82f6) / Purple / Rose glassmorphic KPI cards with ambient glow shadows, unified button states & focus-visible rings, dark Login, Table, Drawer, Modal, PM Calendar, and clean Light Mode counterpart.
  * - V1.1.68: Align version to V1.1.68 for sequential Inventory ID auto-increment.
  * - V1.1.67: Align version to V1.1.67 for CM A4 service report โทร. alignment.
@@ -13492,7 +13493,6 @@ html[data-theme='dark'] :is(
   .ux-account-grid,
   .ux-password-box,
   .ux-profile-identity,
-  .asset-compact-section,
   .itsd65-item,
   .itsd65-help-popover,
   .admin36-rights,
@@ -13505,6 +13505,15 @@ html[data-theme='dark'] :is(
   border: 1px solid var(--ds-border-muted) !important;
   border-radius: 12px;
   color: var(--ds-text-primary) !important;
+}
+
+/* Keep form sections borderless inside compact dialogs since section headings already separate groups. */
+html[data-theme] .asset-compact-form .asset-compact-section {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 html[data-theme='dark'] :is(.table-wrap, .admin35-table-wrap, .admin36-matrix-wrap) {
