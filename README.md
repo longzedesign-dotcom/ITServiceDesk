@@ -4,7 +4,7 @@
 
 ### Next-Gen Serverless IT Service Desk, Asset Inventory Management & Automated Workflow Suite
 
-[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.71-F97316?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.72-F97316?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Theme](https://img.shields.io/badge/Theme-Dark%20Theme%20Admin%20Dashboard-0D0D0D?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Developer](https://img.shields.io/badge/Developer-LongZe%20Design-purple?style=flat-square)](https://github.com/longzedesign-dotcom)
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20%7C%20Web%20App-34A853?style=flat-square&logo=google)](https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit)
@@ -26,7 +26,7 @@
 | **Google Drive Root** | `ITSD` (`1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk`) | https://drive.google.com/drive/folders/1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk |
 | **Google Sheets Database** | `DBS_ITSD` (`1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`) | https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit |
 | **Apps Script Project (Edit)** | `ITServiceDesk` (`1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg`) | https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit |
-| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.1.71` · Deployment `@33`) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
+| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.1.72` · Deployment `@34`) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
 
 ---
 
@@ -45,7 +45,8 @@
 
 **ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)** พัฒนาขึ้นด้วยสถาปัตยกรรม **100% Serverless** บน Google Workspace โดยใช้ **Google Apps Script (V8)** ขับเคลื่อน Single Page Application (SPA) เชื่อมต่อกับ **Google Sheets (`DBS_ITSD`)** เป็นฐานข้อมูลหลัก และจัดเก็บเอกสาร/รูปภาพ/ไฟล์สำรองข้อมูลบน **Google Drive (`ITSD`)**
 
-**จุดเด่นสำคัญใน V1.1.71:**
+**จุดเด่นสำคัญใน V1.1.72:**
+- **Role Panel Alignment (V1.1.72)**: ปรับความกว้างแผงรายการบทบาทให้เท่ากับการ์ด Role ด้านบน ทั้ง desktop และ tablet เพื่อให้แนวคอลัมน์ตรงกัน
 - **Role Permission Layout (V1.1.71)**: จัดแนวรายการบทบาทให้สอดคล้องกับการ์ด ADMIN แยกพื้นที่จำนวนคนกับเมนูการทำงาน และกำหนดวงกลมปุ่มสิทธิ์ให้มีขนาดเท่ากันพร้อมเส้นขอบสีเทา
 - **Dark Theme Admin Dashboard (V1.1.69–V1.1.70)**: ยกเครื่องดีไซน์เป็น Obsidian Carbon (`#0a0a0a` / `#0d0d0d` / `#1a1a1a`) พร้อมปุ่มหลักสีส้มเรืองแสง (`#f97316` → `#ea580c`), การ์ด KPI แบบ Glassmorphic แยกโทนสี, ฟอร์ม `asset-compact-form` ไร้กรอบการ์ดซ้อน, และสลับเป็น Light Mode ได้สมบูรณ์ตามมาตรฐาน WCAG 2.2 AA
 - **Auto-Increment Inventory Code (V1.1.68)**: สร้างรหัสอุปกรณ์ใหม่เรียงลำดับจากรหัสล่าสุดอัตโนมัติ (เช่น `INV-TOR70-1651` ➔ `INV-TOR70-1652`) พร้อม LockService ป้องกันรหัสซ้ำซ้อน

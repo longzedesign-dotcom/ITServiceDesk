@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.71
+ * Version: V1.1.72
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-12
  * Change History:
+ * - V1.1.72: Match the Role permissions panel width to the top Role card grid at desktop and tablet breakpoints.
  * - V1.1.71: Align Role permissions columns, prevent role count/action overlap, and standardize gray permission circles.
  * - V1.1.70: Remove redundant card borders and dark fills from .asset-compact-section inside .asset-compact-form dialogs (CM Service Report & Equipment editors) so section headings separate groups cleanly.
  * - V1.1.69: Full Dark Theme Admin Dashboard design system overhaul — Obsidian Carbon (#0a0a0a/#0d0d0d/#1a1a1a), Orange (#f97316) / Teal (#14b8a6) / Blue (#3b82f6) / Purple / Rose glassmorphic KPI cards with ambient glow shadows, unified button states & focus-visible rings, dark Login, Table, Drawer, Modal, PM Calendar, and clean Light Mode counterpart.
@@ -7342,7 +7343,7 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
 /* Permission shell */
 .admin36-perm-shell {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: minmax(0, calc((100% - 40px) / 5)) minmax(0, 1fr);
   gap: 14px;
 }
 .admin36-role-panel,
@@ -7739,7 +7740,7 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .admin36-perm-shell {
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: minmax(0, calc((100% - 10px) / 2)) minmax(0, 1fr);
   }
 }
 @media (max-width: 980px) {

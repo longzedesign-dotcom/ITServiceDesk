@@ -1,7 +1,7 @@
 /**
  * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
  * File: Server.js
- * Version: V1.1.71
+ * Version: V1.1.72
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-12
  * Change History:
+ * - V1.1.72: Match the Role permissions panel width to the top Role card grid at desktop and tablet breakpoints.
  * - V1.1.71: Align Role permissions layout, reserve the role action area, and standardize permission control circles.
  * - V1.1.70: Bump APP_VERSION to V1.1.70 for borderless compact form sections in CM Service Report & Equipment dialogs.
  * - V1.1.69: Bump APP_VERSION to V1.1.69 for Dark Theme Admin Dashboard full UI overhaul.
@@ -50,7 +51,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.71';
+const APP_VERSION = 'V1.1.72';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
