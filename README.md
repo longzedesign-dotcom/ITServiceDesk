@@ -4,8 +4,8 @@
 
 ### Next-Gen Serverless IT Service Desk, Asset Inventory Management & Automated Workflow Suite
 
-[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.59-C7522A?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
-[![Theme](https://img.shields.io/badge/Theme-Clay%20and%20Sea-008585?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Version](https://img.shields.io/badge/Version-ITSD%20V1.1.70-F97316?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Theme](https://img.shields.io/badge/Theme-Dark%20Theme%20Admin%20Dashboard-0D0D0D?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Developer](https://img.shields.io/badge/Developer-LongZe%20Design-purple?style=flat-square)](https://github.com/longzedesign-dotcom)
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20%7C%20Web%20App-34A853?style=flat-square&logo=google)](https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit)
 [![Database](https://img.shields.io/badge/Database-Google%20Sheets%20(DBS__ITSD%2026%20Tables)-0F9D58?style=flat-square&logo=googlesheets)](https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit)
@@ -26,7 +26,7 @@
 | **Google Drive Root** | `ITSD` (`1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk`) | https://drive.google.com/drive/folders/1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk |
 | **Google Sheets Database** | `DBS_ITSD` (`1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`) | https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit |
 | **Apps Script Project (Edit)** | `ITServiceDesk` (`1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg`) | https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit |
-| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.1.59`) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
+| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.1.70` · Deployment `@32`) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
 
 ---
 
@@ -45,7 +45,10 @@
 
 **ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)** พัฒนาขึ้นด้วยสถาปัตยกรรม **100% Serverless** บน Google Workspace โดยใช้ **Google Apps Script (V8)** ขับเคลื่อน Single Page Application (SPA) เชื่อมต่อกับ **Google Sheets (`DBS_ITSD`)** เป็นฐานข้อมูลหลัก และจัดเก็บเอกสาร/รูปภาพ/ไฟล์สำรองข้อมูลบน **Google Drive (`ITSD`)**
 
-**จุดเด่นสำคัญใน V1.1.59:**
+**จุดเด่นสำคัญใน V1.1.70:**
+- **Dark Theme Admin Dashboard (V1.1.69–V1.1.70)**: ยกเครื่องดีไซน์เป็น Obsidian Carbon (`#0a0a0a` / `#0d0d0d` / `#1a1a1a`) พร้อมปุ่มหลักสีส้มเรืองแสง (`#f97316` → `#ea580c`), การ์ด KPI แบบ Glassmorphic แยกโทนสี, ฟอร์ม `asset-compact-form` ไร้กรอบการ์ดซ้อน, และสลับเป็น Light Mode ได้สมบูรณ์ตามมาตรฐาน WCAG 2.2 AA
+- **Auto-Increment Inventory Code (V1.1.68)**: สร้างรหัสอุปกรณ์ใหม่เรียงลำดับจากรหัสล่าสุดอัตโนมัติ (เช่น `INV-TOR70-1651` ➔ `INV-TOR70-1652`) พร้อม LockService ป้องกันรหัสซ้ำซ้อน
+- **CM Service Report A4 & Modal Refinement (V1.1.64–V1.1.67)**: ปรับระยะขอบพิมพ์ A4 (`1 cm`), แสดง `JOB NO.` และชื่อหน่วยงานครบถ้วน, จัดตำแหน่งช่อง `โทร.` / `ชั้น`, ค้นหาครุภัณฑ์จาก Inventory และจัดปุ่ม `บันทึก`, `พิมพ์ใบงาน (PDF)`
 - **Customizable Project Branding**: ชื่อโครงการ ชื่อย่อ คำอธิบาย และไอคอนระบบ **สามารถแก้ไขได้เองผ่านเมนูตั้งค่าระบบโดย `ADMIN`** (จัดเก็บใน `APP_SETTINGS` และอัปเดตทันทีโดยไม่ต้องแก้โค้ด)
 - **Modular 4-Tab Equipment Editing**: จัดเรียงแท็บทะเบียนครุภัณฑ์ (`ข้อมูลทั่วไป` ➔ `คุณลักษณะ` ➔ `การสำรวจ` ➔ `ประวัติแจ้งซ่อม`) พร้อม Modal แก้ไขและบันทึกแยกส่วนอิสระ
 - **Unified Google Drive Integration**: เชื่อมโยงโครงสร้างโฟลเดอร์ (`Backup Files`, `Documents`, `Pictures`, `System Assets`) ภายใต้ `1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk` ครบถ้วน
@@ -60,7 +63,7 @@
 flowchart TD
     User(["ผู้ใช้งาน / ช่างเทคนิค / ADMIN"]) -->|HTTPS| WebApp["ITSD Web App SPA (Index.html + UI_Client.html)"]
     WebApp -->|google.script.run| Facade["Api.js / Entrypoints.js"]
-    Facade --> Core["Server.js Engine (V1.1.59)"]
+    Facade --> Core["Server.js Engine (V1.1.70)"]
 
     subgraph Google["Google Workspace Cloud"]
         Core <-->|Session & Icon Cache| Cache[("CacheService")]
@@ -142,10 +145,10 @@ ITSD/
     ├── appsscript.json              # Manifest (Asia/Bangkok, V8, OAuth Scopes)
     ├── Entrypoints.js               # doGet() และ doPost()
     ├── Api.js                       # Public API Facade (google.script.run)
-    ├── Server.js                    # Core Enterprise Engine (V1.1.59)
+    ├── Server.js                    # Core Enterprise Engine (V1.1.70)
     ├── Index.html                   # Web App Shell & Login Layout
     ├── UI_Client.html               # Client Controllers & SPA Views
-    ├── UI_Styles.html               # Theme Tokens (Clay and Sea / Light & Dark)
+    ├── UI_Styles.html               # Theme Tokens (Dark Theme Admin Dashboard / Dark & Light)
     └── UI_Templates.html            # HTML Templates
 ```
 
