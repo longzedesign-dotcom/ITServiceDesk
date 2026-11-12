@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Client.html
-  Version: V1.1.69
+  Version: V1.1.71
   Stage: production
   Purpose: Client controllers and explicit initialization order
   Notes:
@@ -4752,7 +4752,8 @@ function admin36RoleSummary(r, selected) {
 
 function admin36RoleListItem(r, selected) {
   const v = admin36RoleVisual(r.code);
-  return `<button class="admin36-role-list-item ${selected ? 'active' : ''}" onclick="admin35SelectRole('${escAttr(r.code)}')"><span class="admin36-role-mini-icon tone-${v.tone}"><span class="material-symbols-rounded">${v.fallback}</span></span><span><b>${esc(r.code)}</b><small>${esc(r.name || v.desc)}</small></span><em>${esc(r.user_count || 0)} คน</em>${admin35.permissions.can_manage && r.code !== 'ADMIN' ? `<span class="admin36-role-more material-symbols-rounded" onclick="event.stopPropagation();admin36RoleForm('${escAttr(r.code)}')">more_vert</span>` : ''}</button>`;
+  const canEditRole = admin35.permissions.can_manage && r.code !== 'ADMIN';
+  return `<button class="admin36-role-list-item ${selected ? 'active' : ''}" onclick="admin35SelectRole('${escAttr(r.code)}')"><span class="admin36-role-mini-icon tone-${v.tone}"><span class="material-symbols-rounded">${v.fallback}</span></span><span class="admin36-role-list-copy"><b>${esc(r.code)}</b><small>${esc(r.name || v.desc)}</small></span><span class="admin36-role-list-meta"><em>${esc(r.user_count || 0)} คน</em>${canEditRole ? `<span class="admin36-role-more material-symbols-rounded" onclick="event.stopPropagation();admin36RoleForm('${escAttr(r.code)}')" aria-label="แก้ไขบทบาท ${escAttr(r.code)}">more_vert</span>` : ''}</span></button>`;
 }
 
 function admin36ResetPermissions() {

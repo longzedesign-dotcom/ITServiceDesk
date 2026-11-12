@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.70
+ * Version: V1.1.71
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-12
  * Change History:
+ * - V1.1.71: Align Role permissions columns, prevent role count/action overlap, and standardize gray permission circles.
  * - V1.1.70: Remove redundant card borders and dark fills from .asset-compact-section inside .asset-compact-form dialogs (CM Service Report & Equipment editors) so section headings separate groups cleanly.
  * - V1.1.69: Full Dark Theme Admin Dashboard design system overhaul — Obsidian Carbon (#0a0a0a/#0d0d0d/#1a1a1a), Orange (#f97316) / Teal (#14b8a6) / Blue (#3b82f6) / Purple / Rose glassmorphic KPI cards with ambient glow shadows, unified button states & focus-visible rings, dark Login, Table, Drawer, Modal, PM Calendar, and clean Light Mode counterpart.
  * - V1.1.68: Align version to V1.1.68 for sequential Inventory ID auto-increment.
@@ -7393,9 +7394,9 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   border: 1px solid #e3eaf3;
   background: #fff;
   border-radius: 9px;
-  padding: 9px 38px 9px 9px;
+  padding: 9px;
   display: grid;
-  grid-template-columns: 45px 1fr auto;
+  grid-template-columns: 45px minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
   text-align: left;
@@ -7416,6 +7417,9 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
 .admin36-role-mini-icon .material-symbols-rounded {
   font-size: 25px;
 }
+.admin36-role-list-copy {
+  min-width: 0;
+}
 .admin36-role-list-item b {
   display: block;
   font-size: 12px;
@@ -7426,6 +7430,14 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   color: #6f849d;
   margin-top: 2px;
 }
+.admin36-role-list-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 64px;
+  white-space: nowrap;
+}
 .admin36-role-list-item em {
   font-style: normal;
   font-size: 10px;
@@ -7435,11 +7447,12 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   border-radius: 999px;
 }
 .admin36-role-more {
-  position: absolute;
-  right: 9px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 19px;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 28px;
+  flex: none;
+  font-size: 18px;
   color: #4f6580;
 }
 .admin36-matrix-panel {
@@ -7559,9 +7572,12 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   color: #7137d8;
 }
 .admin36-perm-cell {
-  border: 0;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
   background: transparent;
-  padding: 3px;
+  padding: 0;
   border-radius: 50%;
   display: inline-grid;
   place-items: center;
