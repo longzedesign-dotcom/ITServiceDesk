@@ -1,7 +1,7 @@
 <!--
   Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
   File: UI_Styles.html
- * Version: V1.1.72
+ * Version: V1.1.73
  * Stage: production
  * Purpose: Ordered feature styles and shared Light/Dark tokens
  * Notes:
@@ -10,6 +10,7 @@
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
  * Modified: 2026-11-12
  * Change History:
+ * - V1.1.73: Align role user-count columns and lock permission control circles to equal dimensions.
  * - V1.1.72: Match the Role permissions panel width to the top Role card grid at desktop and tablet breakpoints.
  * - V1.1.71: Align Role permissions columns, prevent role count/action overlap, and standardize gray permission circles.
  * - V1.1.70: Remove redundant card borders and dark fills from .asset-compact-section inside .asset-compact-form dialogs (CM Service Report & Equipment editors) so section headings separate groups cleanly.
@@ -7432,14 +7433,18 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   margin-top: 2px;
 }
 .admin36-role-list-meta {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 50px 24px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: end;
   gap: 6px;
-  min-width: 64px;
+  width: 80px;
+  min-width: 80px;
   white-space: nowrap;
 }
 .admin36-role-list-item em {
+  grid-column: 1;
+  justify-self: end;
   font-style: normal;
   font-size: 10px;
   background: #f0f4f8;
@@ -7448,6 +7453,7 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
   border-radius: 999px;
 }
 .admin36-role-more {
+  grid-column: 2;
   display: inline-grid;
   place-items: center;
   width: 24px;
@@ -7575,6 +7581,8 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
 .admin36-perm-cell {
   width: 30px;
   height: 30px;
+  min-width: 30px;
+  min-height: 30px;
   box-sizing: border-box;
   border: 1px solid #cbd5e1;
   background: transparent;
@@ -7592,6 +7600,9 @@ body.ui-theme-dark.ux8-manage-modal-open .ux8-manage-actions {
 .admin36-perm-state {
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex: none;
   border-radius: 50%;
   display: inline-grid;
   place-items: center;
