@@ -3,3 +3,7 @@ scratch/
 *.log
 .clasprc.json
 Server.zip
+*.dmg
+*.zip
+*.webp
+*.jpg

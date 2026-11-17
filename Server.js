@@ -1,21 +1,38 @@
 /**
- * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
+ * Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
  * File: Server.js
- * Version: V1.1.70
+ * Version: V1.2.08
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
  * - No secrets in source code
  * - Preserve existing data and backward compatibility
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-12
+ * Modified: 2026-11-17
  * Change History:
- * - V1.1.70: Bump APP_VERSION to V1.1.70 for borderless compact form sections in CM Service Report & Equipment dialogs.
- * - V1.1.69: Bump APP_VERSION to V1.1.69 for Dark Theme Admin Dashboard full UI overhaul.
- * - V1.1.68: Replace UUID fallback in itsdImpl_saveInventory_ with nextInventoryId_() reading latest INVENTORY code (e.g. INV-TOR70-1651 -> INV-TOR70-1652).
- * - V1.1.67: Bump APP_VERSION to V1.1.67 for CM A4 service report โทร. column alignment.
- * - V1.1.66: Bump APP_VERSION to V1.1.66 matching CM modal button bar & A4 report โทร./ชั้น updates.
- * - V1.1.65: Bump APP_VERSION to V1.1.65 matching CM Service Report A4 layout refinement.
+ * - V1.2.08: Add Thai official holidays auto-import (2569-2573), PM calendar holiday auto-seed, and ITSUPPORT purple role pill badge.
+ * - V1.2.07: Add Sticker Template (แม่แบบสติ๊กเกอร์) tab and batch A4 sheet printing for equipment maintenance labels.
+ * - V1.2.06: Bright green background for form section step numbers (1, 2, 3).
+ * - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).
+ * - V1.2.04: Enable XFrameOptionsMode.ALLOWALL to allow embedding in Google Sites and external iframes without warning banner.
+ * - V1.2.03: Style Choose File button with blue pill capsule and align desktop file upload with action buttons.
+ * - V1.2.02: Compact ticket repair detail fields and file upload zone for single screen fit without scrolling.
+ * - V1.2.01: Update LINE inbox icon to official iOS rounded squircle and enable message scrolling with sticky new ticket form.
+ * - V1.2.00: Add forgot password email verification service and user profile lookup.
+ * - V1.1.99: Replace social login buttons with circular LINE and Google popup login.
+ * - V1.1.98: Fix service report KPI cards dark mode tinted backgrounds; system settings tabs remove thick border and apply soft purple/indigo tinted background only when selected.
+ * - V1.1.97: Apply soft tinted backgrounds and clean borders across all KPI cards (tracking, service reports, inventory survey, master data, users, permissions, audit log).
+ * - V1.1.96: Sidebar nav buttons match profile pill radius; overview KPI cards remove colored border and apply tinted background.
+ * - V1.1.95: Light mode neutral clean background and natural card borders; darker text tab selection.
+ * - V1.1.94: Apply Soft Curved rounded design (14px) across buttons and form input elements.
+ * - V1.1.93: Center Grouped layout for dashboard status donut chart & legend.
+ * - V1.1.92: Apply Modern Balanced rounded design (11px) across buttons, line inbox, and form input elements.
+ * - V1.1.91: Keep password visibility toggle strictly inside input container without jumping or outer focus ring.
+ * - V1.1.90: Standardize patch version format ITSD V1.1.90 and resolve Gas template parser comment bug.
+ * - V1.1.88: Add user profile picture upload to Google Drive folder and camera/file selection.
+ * - V1.1.87: Make sidebar profile button pill-shaped matching settings button.
+ * - V1.1.69: Add ADMIN/MANAGER-only, on-demand SOFTWARE_LICENSES lookup matched to Inventory by exact normalized serial number.
+ * - V1.1.68: Add sequential inventory IDs with collision protection, finalize CM-Form_69 layout/actions, and retain the confirmed production binding.
  * - V1.1.64: Add shared ticketApplyDevicePatch_ helper so both changeStatus and saveServiceReportDetails can update asset_id, asset_no, brand, model, serial, and device cleanly from Inventory lookups or edits.
  * - V1.1.60: Compact single-screen modal layout for Equipment General Edit & Create dialogs (multi-column groups, tightened spacing, zero vertical scroll on desktop).
  * - V1.1.59: Rewrite project header & branding defaults to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที); keep ADMIN project-name customization via System Settings.
@@ -49,12 +66,30 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.1.70';
+const APP_VERSION = 'V1.2.08';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
   PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') ||
   '1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs';
+
+// License data stays in its dedicated workbook (Full_Data tab). Configure the Script
+// Property in production; the confirmed workbook ID is only a non-secret compatibility fallback.
+const SOFTWARE_LICENSE_SPREADSHEET_ID_ =
+  PropertiesService.getScriptProperties().getProperty('SOFTWARE_LICENSE_SPREADSHEET_ID') ||
+  '1ZiBugthGA-lD8KTAqntK6ckboTLlqoU61X-FpBdEIL4';
+const SOFTWARE_LICENSE_SHEET_NAME_ =
+  PropertiesService.getScriptProperties().getProperty('SOFTWARE_LICENSE_SHEET_NAME') ||
+  'Full_Data';
+const SOFTWARE_LICENSE_HEADERS_ = Object.freeze([
+  'ลำดับ',
+  'Serial Number Notebook',
+  'Product Key Windows',
+  'Product Key Microsoft Office',
+  'E-mail Account Microsoft',
+  'Password',
+  'Product Key Antivirus',
+]);
 
 // apps/webapp/src/server/platform/environment.js
 const TZ = PropertiesService.getScriptProperties().getProperty('ITSD_TIMEZONE') || 'Asia/Bangkok';
@@ -230,6 +265,30 @@ const COL = {
     'client_info',
     'session_ref',
   ],
+  SOFTWARE_LICENSES: [
+    'รหัส License',
+    'รหัสอุปกรณ์',
+    'หมายเลขซีเรียล',
+    'หมายเลขสินทรัพย์',
+    'ประเภท License',
+    'ชื่อซอฟต์แวร์',
+    'รุ่น/Edition',
+    'เวอร์ชัน',
+    'Product Key_Masked',
+    'Product Key_SecretRef',
+    'Account_Email_Masked',
+    'Account_SecretRef',
+    'สถานะ License',
+    'สถานะ Activation',
+    'วันที่ซื้อ/เริ่มใช้',
+    'วันหมดอายุ',
+    'แหล่งข้อมูล',
+    'หลักฐานรูปภาพ1_URL',
+    'หลักฐานรูปภาพ2_URL',
+    'หมายเหตุ',
+    'วันที่อัปเดต',
+    'ผู้บันทึก/ผู้แก้ไข',
+  ],
 };
 
 // apps/webapp/src/server/features/tickets/ticket-workflow.js
@@ -286,13 +345,14 @@ const SECURITY_LIMITS = Object.freeze({
   INVENTORY_TEXT: 200,
   SETTING_VALUE: 220,
   REPORT_DATE: 10,
+  IMPORT_ROWS: 500,
 });
 
 // apps/webapp/src/server/features/branding/branding-service.js
 const SYSTEM_BRANDING_DEFAULTS = Object.freeze({
-  project_name: 'ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)',
-  short_name: 'ITSD : ITServiceDesk',
-  description: 'ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที',
+  project_name: 'IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์',
+  short_name: 'IT Service Desk',
+  description: 'ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์',
 });
 
 // apps/webapp/src/server/platform/drive/folder-service.js
@@ -315,7 +375,7 @@ const TRANSITIONS = Object.freeze({
 });
 
 // apps/webapp/src/server/platform/sheets/sheet-repository.js
-const RUNTIME_CACHE_ = { book: null, sheets: {}, headers: {}, rows: {} };
+const RUNTIME_CACHE_ = { book: null, sheets: {}, headers: {}, rows: {}, rawCols: {} };
 
 // apps/webapp/src/server/features/tickets/ticket-service.js
 const TRACKING_QUEUE_STATUSES = Object.freeze([
@@ -497,6 +557,58 @@ const PERMISSION_LINE_ACTION_DEFAULTS_ = Object.freeze([
     'FALSE',
     'ADMIN',
     'LINE review queue access',
+  ],
+]);
+
+// apps/webapp/src/server/features/permissions/license-permissions.js
+const PERMISSION_LICENSE_ACTION_DEFAULTS_ = Object.freeze([
+  [
+    'PERM-ACT-055',
+    'ADMIN',
+    'license',
+    'license.view',
+    'ดูข้อมูล License แบบปกปิด',
+    'TRUE',
+    'exact_serial_only',
+    'FALSE',
+    'ADMIN',
+    'แสดงเฉพาะข้อมูลที่ปกปิดแล้ว',
+  ],
+  [
+    'PERM-ACT-056',
+    'ADMIN',
+    'license',
+    'license.reveal_secret',
+    'เปิดดู License Key',
+    'TRUE',
+    'reauth_exact_serial_only',
+    'FALSE',
+    'ADMIN',
+    'ต้องยืนยันรหัสผ่านและบันทึก Audit Log',
+  ],
+  [
+    'PERM-ACT-057',
+    'MANAGER',
+    'license',
+    'license.view',
+    'ดูข้อมูล License แบบปกปิด',
+    'TRUE',
+    'exact_serial_only',
+    'FALSE',
+    'ADMIN',
+    'เฉพาะ ADMIN และ MANAGER สำหรับอุปกรณ์ที่จับคู่ได้เท่านั้น',
+  ],
+  [
+    'PERM-ACT-058',
+    'MANAGER',
+    'license',
+    'license.reveal_secret',
+    'เปิดดู License Key',
+    'TRUE',
+    'reauth_exact_serial_only',
+    'FALSE',
+    'ADMIN',
+    'ต้องยืนยันรหัสผ่านและบันทึก Audit Log',
   ],
 ]);
 
@@ -1311,12 +1423,10 @@ const PM_STATES_ = ['รอดำเนินการ', 'กำลังดำ�
 const PM_SOFT_DELETED_ = 'ลบแล้ว';
 
 // apps/webapp/src/server/features/projects/project-binding.js
-const PROJECT70_LEGACY_DB_ = '1i-yE0Lg2gILkLENEpk8t1Q9OSVlGpOoximunZwbxF4c';
-const PROJECT70_TARGET_DB_ = '1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs';
+const PROJECT70_CONFIRMED_DB_ = '1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs';
 
 // apps/webapp/src/server/features/projects/project-binding.js
-const PROJECT70_LEGACY_SCRIPT_ = '1drKyOpXXRBkf9s9uFXZi6h3PoSy1Ud-SfqMkx8xPyDNNl1XWxcGiVUF7';
-const PROJECT70_TARGET_SCRIPT_ = '1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg';
+const PROJECT70_CONFIRMED_SCRIPT_ = '1drKyOpXXRBkf9s9uFXZi6h3PoSy1Ud-SfqMkx8xPyDNNl1XWxcGiVUF7';
 
 // apps/webapp/src/server/features/projects/project-binding.js
 const PROJECT70_TIMEZONES_ = ['Asia/Bangkok', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta'];
@@ -1425,6 +1535,337 @@ function boundedText_(value, label, max, trim) {
   if (trim) text = text.trim();
   if (text.length > max) throw Error((label || 'ข้อมูล') + 'ยาวเกิน ' + max + ' ตัวอักษร');
   return text;
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseNormalizeSerial_(value) {
+  return String(value == null ? '' : value)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseMaskSecret_(value) {
+  const text = String(value == null ? '' : value).trim();
+  if (!text) return '';
+  let remaining = Math.min(5, text.replace(/[^A-Za-z0-9]/g, '').length);
+  const chars = text.split('');
+  for (let i = chars.length - 1; i >= 0; i--) {
+    if (!/[A-Za-z0-9]/.test(chars[i])) continue;
+    if (remaining > 0) {
+      remaining--;
+      continue;
+    }
+    chars[i] = '•';
+  }
+  return chars.join('');
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseFindMatch_(inventoryRows, licenseRows, assetId) {
+  const asset = (inventoryRows || []).find(
+    (row) => String(row['รหัสอุปกรณ์'] || '').trim() === String(assetId || '').trim(),
+  );
+  if (!asset) return { status: 'asset_not_found' };
+  const serial = licenseNormalizeSerial_(asset['หมายเลขซีเรียล']);
+  if (!serial) return { status: 'missing_serial', asset };
+  const inventoryMatches = (inventoryRows || []).filter(
+    (row) => licenseNormalizeSerial_(row['หมายเลขซีเรียล']) === serial,
+  );
+  if (inventoryMatches.length !== 1)
+    return { status: 'duplicate_inventory_serial', asset, serial };
+  const licenseMatches = (licenseRows || []).filter(
+    (row) => licenseNormalizeSerial_(row['Serial Number Notebook']) === serial,
+  );
+  if (!licenseMatches.length) return { status: 'not_found', asset, serial };
+  if (licenseMatches.length !== 1)
+    return { status: 'duplicate_license_serial', asset, serial };
+  return { status: 'matched', asset, serial, license: licenseMatches[0] };
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseMaskAccount_(value) {
+  const text = String(value == null ? '' : value).trim();
+  const at = text.indexOf('@');
+  if (at <= 0) return licenseMaskSecret_(text);
+  return text.slice(0, 1) + '•••' + text.slice(at);
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseReadRows_() {
+  try {
+    const licenseBook = SpreadsheetApp.openById(SOFTWARE_LICENSE_SPREADSHEET_ID_);
+    const sheet =
+      licenseBook.getSheetByName(SOFTWARE_LICENSE_SHEET_NAME_) ||
+      licenseBook.getSheetByName('Full_Data') ||
+      licenseBook.getSheetByName('SOFTWARE_LICENSES');
+    if (!sheet) throw Error('SHEET_NOT_FOUND');
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 1) throw Error('EMPTY_SHEET');
+    const values = sheet
+      .getRange(1, 1, Math.max(1, lastRow), SOFTWARE_LICENSE_HEADERS_.length)
+      .getDisplayValues();
+    const headers = values.shift() || [];
+    if (headers.join('|') !== SOFTWARE_LICENSE_HEADERS_.join('|')) throw Error('HEADER_MISMATCH');
+    return values
+      .map((row) =>
+        Object.fromEntries(SOFTWARE_LICENSE_HEADERS_.map((header, index) => [header, row[index] || ''])),
+      )
+      .filter((row) => String(row['Serial Number Notebook'] || '').trim());
+  } catch (error) {
+    console.error('[LICENSE_SOURCE_UNAVAILABLE]', error && error.message ? error.message : error);
+    throw Error('ระบบข้อมูล License ไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
+  }
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function dbsLicenseReadRows_() {
+  try {
+    const sheet = book_().getSheetByName('SOFTWARE_LICENSES');
+    if (!sheet) return [];
+    return rows_('SOFTWARE_LICENSES');
+  } catch (error) {
+    console.warn('[DBS_LICENSE_READ_SKIPPED]', error && error.message ? error.message : error);
+    return [];
+  }
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function dbsLicenseRowsForAsset_(dbsRows, assetId, serial) {
+  const cleanId = String(assetId || '').trim();
+  const cleanSerial = licenseNormalizeSerial_(serial);
+  return (dbsRows || []).filter((row) => {
+    const rowId = String(row['รหัสอุปกรณ์'] || '').trim();
+    const rowSerial = licenseNormalizeSerial_(row['หมายเลขซีเรียล']);
+    if (cleanId && rowId) return rowId === cleanId;
+    return Boolean(cleanSerial && rowSerial && rowSerial === cleanSerial);
+  });
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function dbsLicenseHasQcWarning_(note) {
+  const text = String(note || '');
+  return (
+    text.includes('ไม่ครบมาตรฐาน') ||
+    text.includes('ซ้ำทั้ง 95 เครื่อง') ||
+    text.includes('QC ต้นทาง') ||
+    text.includes('แก้ SN')
+  );
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function dbsLicenseByFieldKey_(dbsRecords) {
+  const byType = {};
+  (dbsRecords || []).forEach((row) => {
+    const type = String(row['ประเภท License'] || '').trim().toLowerCase();
+    const meta = {
+      license_id: String(row['รหัส License'] || '').trim(),
+      masked_key: String(row['Product Key_Masked'] || '').trim(),
+      masked_account: String(row['Account_Email_Masked'] || '').trim(),
+      license_status: String(row['สถานะ License'] || '').trim(),
+      activation_status: String(row['สถานะ Activation'] || '').trim(),
+      note: String(row['หมายเหตุ'] || '').trim(),
+      has_warning: dbsLicenseHasQcWarning_(row['หมายเหตุ']),
+    };
+    if (type === 'windows') byType.windows_key = meta;
+    else if (type === 'microsoft office') byType.office_key = meta;
+    else if (type === 'antivirus') byType.antivirus_key = meta;
+  });
+  return byType;
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseMergeDbsMetadata_(result, dbsRecords, asset) {
+  const byType = dbsLicenseByFieldKey_(dbsRecords);
+  const accountMeta = byType.windows_key || byType.office_key || null;
+  if (result && result.status === 'matched') {
+    const items = (result.items || []).map((item) => {
+      const meta =
+        item.key === 'microsoft_account' || item.key === 'microsoft_password'
+          ? accountMeta
+          : byType[item.key];
+      if (!meta) return item;
+      const note = item.key === 'microsoft_account' || item.key === 'microsoft_password' ? '' : meta.note;
+      return {
+        ...item,
+        license_status: meta.license_status,
+        activation_status: meta.activation_status,
+        note,
+        has_warning: Boolean(note && dbsLicenseHasQcWarning_(note)),
+      };
+    });
+    return { ...result, items, reveal_enabled: true };
+  }
+  if (
+    (!result || result.status === 'not_found' || result.status === 'source_unavailable') &&
+    Array.isArray(dbsRecords) &&
+    dbsRecords.length
+  ) {
+    const items = licenseFieldDefinitions_()
+      .filter((def) => def.key !== 'microsoft_password')
+      .map((def) => {
+        const meta = def.key === 'microsoft_account' ? accountMeta : byType[def.key];
+        const masked = def.key === 'microsoft_account' ? meta?.masked_account || '' : meta?.masked_key || '';
+        const note = def.key === 'microsoft_account' ? '' : meta?.note || '';
+        return {
+          key: def.key,
+          label: def.label,
+          available: false,
+          masked,
+          license_status: meta?.license_status || '',
+          activation_status: meta?.activation_status || '',
+          note,
+          has_warning: Boolean(note && dbsLicenseHasQcWarning_(note)),
+        };
+      });
+    return {
+      status: 'masked_only',
+      message:
+        result && result.status === 'source_unavailable'
+          ? 'ฐาน License ต้นทางไม่พร้อมใช้งาน แสดงเฉพาะข้อมูลปกปิดใน DBS (ไม่สามารถเปิดดูค่าจริงได้)'
+          : 'พบข้อมูลปกปิดในแท็บ SOFTWARE_LICENSES (DBS) แต่ยังไม่พบ Serial ตรงกันในฐาน License ต้นทาง จึงยังไม่สามารถเปิดดูค่าจริงได้',
+      serial: (asset && asset['หมายเลขซีเรียล']) || (result && result.serial) || '',
+      reveal_enabled: false,
+      items,
+    };
+  }
+  return result;
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseFieldDefinitions_() {
+  return [
+    { key: 'windows_key', label: 'Windows Product Key', header: 'Product Key Windows' },
+    {
+      key: 'office_key',
+      label: 'Microsoft Office Product Key',
+      header: 'Product Key Microsoft Office',
+    },
+    {
+      key: 'microsoft_account',
+      label: 'Microsoft Account',
+      header: 'E-mail Account Microsoft',
+      account: true,
+    },
+    { key: 'microsoft_password', label: 'Microsoft Account Password', header: 'Password' },
+    { key: 'antivirus_key', label: 'Antivirus Product Key', header: 'Product Key Antivirus' },
+  ];
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licensePublicMatch_(match) {
+  const statusMessages = {
+    asset_not_found: 'ไม่พบอุปกรณ์ในทะเบียน',
+    missing_serial: 'อุปกรณ์นี้ไม่มีหมายเลขซีเรียล จึงยังจับคู่ License ไม่ได้',
+    duplicate_inventory_serial: 'พบหมายเลขซีเรียลซ้ำในทะเบียน กรุณาตรวจสอบข้อมูลก่อนเปิดดู License',
+    not_found: 'ยังไม่พบ License ที่ตรงกับหมายเลขซีเรียลของอุปกรณ์นี้',
+    duplicate_license_serial: 'พบ License ซ้ำมากกว่าหนึ่งรายการ กรุณาตรวจสอบฐานข้อมูลต้นทาง',
+  };
+  if (!match || match.status !== 'matched')
+    return {
+      status: (match && match.status) || 'not_found',
+      message: statusMessages[(match && match.status) || 'not_found'],
+      serial: (match && match.asset && match.asset['หมายเลขซีเรียล']) || '',
+      items: [],
+    };
+  return {
+    status: 'matched',
+    message: 'จับคู่ License ด้วยหมายเลขซีเรียลเรียบร้อย',
+    serial: match.asset['หมายเลขซีเรียล'] || '',
+    items: licenseFieldDefinitions_().map((definition) => {
+      const value = String(match.license[definition.header] || '').trim();
+      return {
+        key: definition.key,
+        label: definition.label,
+        available: Boolean(value),
+        masked: value
+          ? definition.account
+            ? licenseMaskAccount_(value)
+            : licenseMaskSecret_(value)
+          : '',
+      };
+    }),
+  };
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function licenseRequireAuthorizedRole_(actor) {
+  const role = roleKey_(actor);
+  if (!['ADMIN', 'MANAGER'].includes(role))
+    throw Error('ข้อมูล License จำกัดเฉพาะ ADMIN และ MANAGER');
+  return role;
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function itsdImpl_getAssetLicenses_(token, assetId) {
+  const actor = require_(token);
+  licenseRequireAuthorizedRole_(actor);
+  if (!permission_hasAction_(actor, 'license.view')) throw Error('ไม่มีสิทธิ์ดูข้อมูล License');
+  assetId = boundedText_(assetId, 'รหัสอุปกรณ์', 80, true);
+  const inventoryRows = rows_('INVENTORY');
+  const asset = inventoryRows.find(
+    (row) => String(row['รหัสอุปกรณ์'] || '').trim() === String(assetId || '').trim(),
+  );
+  const dbsRecords = dbsLicenseRowsForAsset_(
+    dbsLicenseReadRows_(),
+    assetId,
+    asset ? asset['หมายเลขซีเรียล'] : '',
+  );
+  let licenseRows = null;
+  try {
+    licenseRows = licenseReadRows_();
+  } catch (error) {
+    if (dbsRecords.length) {
+      return licenseMergeDbsMetadata_(
+        { status: 'source_unavailable', serial: asset ? asset['หมายเลขซีเรียล'] : '' },
+        dbsRecords,
+        asset,
+      );
+    }
+    throw error;
+  }
+  const match = licenseFindMatch_(inventoryRows, licenseRows, assetId);
+  return licenseMergeDbsMetadata_(licensePublicMatch_(match), dbsRecords, asset);
+}
+
+// apps/webapp/src/server/features/licenses/license-service.js
+function itsdImpl_revealAssetLicenseSecret_(token, assetId, fieldKey, currentPassword) {
+  const actor = require_(token);
+  licenseRequireAuthorizedRole_(actor);
+  if (!permission_hasAction_(actor, 'license.reveal_secret'))
+    throw Error('ไม่มีสิทธิ์เปิดดูข้อมูล License');
+  assetId = boundedText_(assetId, 'รหัสอุปกรณ์', 80, true);
+  fieldKey = boundedText_(fieldKey, 'ชนิดข้อมูล License', 60, true);
+  const definition = licenseFieldDefinitions_().find((item) => item.key === fieldKey);
+  if (!definition) throw Error('ชนิดข้อมูล License ไม่ถูกต้อง');
+  project70Reauthenticate_(actor, currentPassword);
+  const match = licenseFindMatch_(rows_('INVENTORY'), licenseReadRows_(), assetId);
+  if (match.status !== 'matched') {
+    writeAudit_(
+      actor,
+      'LICENSE_SECRET_VIEW',
+      'LICENSE',
+      'INVENTORY',
+      assetId,
+      'BLOCKED',
+      'ไม่อนุญาตให้เปิดข้อมูล: ' + match.status,
+    );
+    throw Error(licensePublicMatch_(match).message);
+  }
+  const value = String(match.license[definition.header] || '').trim();
+  if (!value) throw Error('ไม่พบข้อมูล ' + definition.label + ' สำหรับอุปกรณ์นี้');
+  const auditSaved = writeAudit_(
+    actor,
+    'LICENSE_SECRET_VIEW',
+    'LICENSE',
+    'INVENTORY',
+    assetId,
+    'SUCCESS',
+    'เปิดดู ' + definition.key + ' หลังยืนยันรหัสผ่าน',
+  );
+  if (!auditSaved) throw Error('ไม่สามารถบันทึก Audit Log จึงยังไม่เปิดเผยข้อมูล License');
+  return { field: definition.key, value, expires_in_seconds: 60 };
 }
 
 // apps/webapp/src/server/shared/validation.js
@@ -1545,6 +1986,10 @@ function serviceUploadFolder_(mime) {
 }
 
 // apps/webapp/src/server/features/auth/auth-service.js
+function itsdActiveBool_(val) {
+  return val === true || String(val || '').trim().toUpperCase() === 'TRUE';
+}
+
 function normalizeUsername_(value) {
   return boundedText_(value, 'ชื่อผู้ใช้', SECURITY_LIMITS.USERNAME, true).toUpperCase();
 }
@@ -1580,12 +2025,12 @@ function require_(token, admin, allowPasswordChange) {
   const session = find_('APP_SESSIONS', 'token_hash', digest_(token));
   if (
     !session ||
-    session.revoked === 'TRUE' ||
+    itsdActiveBool_(session.revoked) ||
     Date.parse(session.expires_at.replace(' ', 'T') + '+07:00') < Date.now()
   )
     throw Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');
   const user = find_('APP_USERS', 'user_id', session.user_id);
-  if (!user || user.active !== 'TRUE') throw Error('บัญชีไม่พร้อมใช้งาน');
+  if (!user || !itsdActiveBool_(user.active)) throw Error('บัญชีไม่พร้อมใช้งาน');
   if (!allowPasswordChange && nist118Status_(user).required)
     throw Error('PASSWORD_CHANGE_REQUIRED: กรุณาเปลี่ยนรหัสผ่านก่อนใช้งานระบบ');
   if (admin && !['ADMIN', 'TECHNICIAN', 'ITSUPPORT'].includes(String(user.role || '').toUpperCase()))
@@ -1658,14 +2103,31 @@ function createUser_(username, display, role, password) {
 function itsdImpl_login_(username, password) {
   username = normalizeUsername_(username);
   password = boundedText_(password, 'รหัสผ่าน', SECURITY_LIMITS.PASSWORD, false);
+  const rlKey = 'ITSD_LOGIN_RL_' + digest_(username).slice(0, 24);
+  try {
+    const attempts = Number(CacheService.getScriptCache().get(rlKey) || 0);
+    if (attempts >= 12) throw Error('ลองเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่');
+  } catch (e) {
+    if (String(e && e.message || '').includes('บ่อยเกินไป')) throw e;
+  }
   return lock_(() => {
     const matches = usersByUsername_(username),
       u = matches.length === 1 ? matches[0] : null;
-    if (!u || u.active !== 'TRUE') throw Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+    if (!u || !itsdActiveBool_(u.active)) {
+      try {
+        const cache = CacheService.getScriptCache();
+        cache.put(rlKey, String(Number(cache.get(rlKey) || 0) + 1), 300);
+      } catch (_) {}
+      throw Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+    }
     if (u.locked_until && Date.parse(u.locked_until.replace(' ', 'T') + '+07:00') > Date.now())
       throw Error('บัญชีถูกพักชั่วคราว');
     if (pwHash_(password, u.password_salt) !== u.password_hash) {
       const n = Number(u.failed_count || 0) + 1;
+      try {
+        const cache = CacheService.getScriptCache();
+        cache.put(rlKey, String(Number(cache.get(rlKey) || 0) + 1), 300);
+      } catch (_) {}
       update_('APP_USERS', u.__row, {
         failed_count: n,
         locked_until:
@@ -1677,6 +2139,9 @@ function itsdImpl_login_(username, password) {
       throw Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     }
     update_('APP_USERS', u.__row, { failed_count: 0, locked_until: '' });
+    try {
+      CacheService.getScriptCache().remove(rlKey);
+    } catch (_) {}
     const token = random_(),
       expiry = Utilities.formatDate(new Date(Date.now() + 8 * 3600000), TZ, 'yyyy-MM-dd HH:mm:ss');
     append_('APP_SESSIONS', {
@@ -1688,6 +2153,83 @@ function itsdImpl_login_(username, password) {
     auditAuth_(u, 'LOGIN_SUCCESS', 'SUCCESS', 'เข้าสู่ระบบสำเร็จ', digest_(token).slice(0, 16));
     return { token, user: publicUser_(u) };
   });
+}
+
+// apps/webapp/src/server/features/auth/auth-service.js
+function itsdImpl_verifyForgotPasswordEmail_(email) {
+  const emailClean = String(email || '').trim().toLowerCase();
+  if (!emailClean) {
+    throw Error('กรุณากรอกอีเมล');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
+    throw Error('รูปแบบอีเมลไม่ถูกต้อง กรุณาตรวจสอบและกรอกใหม่อีกครั้ง');
+  }
+  const rlKey = 'ITSD_FORGOT_RL_' + digest_(emailClean).slice(0, 24);
+  try {
+    const attempts = Number(CacheService.getScriptCache().get(rlKey) || 0);
+    if (attempts >= 10) throw Error('ทำรายการบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่');
+  } catch (e) {
+    if (String(e && e.message || '').includes('บ่อยเกินไป')) throw e;
+  }
+
+  // 1. ค้นหาจาก APP_USER_PROFILE ก่อน
+  const profiles = rows_('APP_USER_PROFILE');
+  let matchedUserId = null;
+  for (let i = 0; i < profiles.length; i++) {
+    const p = profiles[i];
+    if (String(p.email || '').trim().toLowerCase() === emailClean) {
+      matchedUserId = p.user_id;
+      break;
+    }
+  }
+
+  // 2. ค้นหาใน APP_USERS (หากพบจาก profile หรือ username ตรงกับ email)
+  let matchedUser = null;
+  if (matchedUserId) {
+    matchedUser = find_('APP_USERS', 'user_id', matchedUserId);
+  } else {
+    const allUsers = rows_('APP_USERS');
+    for (let j = 0; j < allUsers.length; j++) {
+      const u = allUsers[j];
+      if (String(u.username || '').trim().toLowerCase() === emailClean) {
+        matchedUser = u;
+        break;
+      }
+    }
+  }
+
+  if (!matchedUser || !itsdActiveBool_(matchedUser.active)) {
+    try {
+      const cache = CacheService.getScriptCache();
+      cache.put(rlKey, String(Number(cache.get(rlKey) || 0) + 1), 300);
+    } catch (_) {}
+    throw Error('ไม่พบข้อมูลผู้ใช้งานที่ตรงกับอีเมลนี้ในระบบ (กรุณาใช้อีเมลเดียวกับที่บันทึกไว้ในข้อมูลผู้ใช้)');
+  }
+
+  try {
+    CacheService.getScriptCache().remove(rlKey);
+  } catch (_) {}
+
+  // 3. บันทึก audit log
+  try {
+    writeAudit_(
+      { user_id: matchedUser.user_id, username: matchedUser.username },
+      'FORGOT_PASSWORD_REQUEST',
+      'AUTH',
+      'APP_USERS',
+      matchedUser.user_id,
+      'SUCCESS',
+      'ตรวจสอบอีเมลสำหรับรีเซ็ตรหัสผ่านสำเร็จ: ' + emailClean
+    );
+  } catch (_) {}
+
+  return {
+    success: true,
+    found: true,
+    username: matchedUser.username,
+    display_name: matchedUser.display_name || matchedUser.username,
+    email: emailClean,
+  };
 }
 
 // apps/webapp/src/server/features/auth/auth-service.js
@@ -1877,10 +2419,98 @@ function safeSheetValue_(value) {
   return /^[\u0000-\u0020]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text) ? "'" + text : text;
 }
 
+// V1.1.80: Compressed cross-request ScriptCache for read-heavy sheets (instant invalidation on write)
+const SHEET_CACHE_TTL_SEC_ = 600;
+const SHEET_CACHE_CHUNK_CHARS_ = 80000;
+const SHEET_CACHEABLE_ = {
+  INVENTORY: true,
+  INCIDENT: true,
+  INCIDENT_META: true,
+  MST_ORG_UNITS: true,
+  APP_SETTINGS: true,
+  APP_ROLES: true,
+  APP_ROLE_PERMISSIONS: true,
+  APP_ROLE_ACTION_PERMISSIONS: true,
+  MST_LOOKUP: true,
+  MST_DEVICE_MODELS: true,
+};
+
+function sheetCacheKey_(kind, name) {
+  return 'ITSD_SC_' + APP_VERSION + '_' + kind + '_' + String(name || '');
+}
+
+function sheetCacheGetJson_(key) {
+  try {
+    const cache = CacheService.getScriptCache();
+    const rawManifest = cache.get(key);
+    if (!rawManifest) return null;
+    const manifest = JSON.parse(rawManifest);
+    if (!manifest) return null;
+    let b64 = '';
+    if (typeof manifest.d === 'string') {
+      b64 = manifest.d;
+    } else if (manifest.n > 0) {
+      const chunkKeys = [];
+      for (let i = 0; i < manifest.n; i++) chunkKeys.push(key + '_c' + i);
+      const chunks = cache.getAll(chunkKeys);
+      for (let i = 0; i < chunkKeys.length; i++) {
+        if (typeof chunks[chunkKeys[i]] !== 'string') return null;
+        b64 += chunks[chunkKeys[i]];
+      }
+    } else {
+      return null;
+    }
+    const blob = Utilities.newBlob(Utilities.base64Decode(b64), 'application/x-gzip');
+    const json = Utilities.ungzip(blob).getDataAsString('UTF-8');
+    return JSON.parse(json);
+  } catch (_) {
+    return null;
+  }
+}
+
+function sheetCachePutJson_(key, value, ttlSec) {
+  try {
+    const ttl = ttlSec || SHEET_CACHE_TTL_SEC_;
+    const json = JSON.stringify(value);
+    const gz = Utilities.gzip(Utilities.newBlob(json, 'application/json', 'cache.json'));
+    const b64 = Utilities.base64Encode(gz.getBytes());
+    const cache = CacheService.getScriptCache();
+    if (b64.length <= SHEET_CACHE_CHUNK_CHARS_) {
+      cache.put(key, JSON.stringify({ d: b64 }), ttl);
+      return;
+    }
+    const totalChunks = Math.ceil(b64.length / SHEET_CACHE_CHUNK_CHARS_);
+    if (totalChunks > 20) return;
+    const entries = {};
+    for (let i = 0; i < totalChunks; i++) {
+      entries[key + '_c' + i] = b64.slice(
+        i * SHEET_CACHE_CHUNK_CHARS_,
+        (i + 1) * SHEET_CACHE_CHUNK_CHARS_,
+      );
+    }
+    entries[key] = JSON.stringify({ n: totalChunks });
+    cache.putAll(entries, ttl);
+  } catch (_) {}
+}
+
+function sheetCacheInvalidate_(name) {
+  if (!SHEET_CACHEABLE_[name]) return;
+  try {
+    const keys = [sheetCacheKey_('ROWS', name), sheetCacheKey_('HDR', name)];
+    if (name === 'INCIDENT') {
+      keys.push(sheetCacheKey_('RAW_วันที่และเวลาที่แจ้ง', name));
+      keys.push(sheetCacheKey_('RAW_วันที่และเวลาเข้าแก้ไข', name));
+    }
+    CacheService.getScriptCache().removeAll(keys);
+  } catch (_) {}
+}
+
 // apps/webapp/src/server/platform/sheets/sheet-repository.js
 function resetRows_(name) {
   delete RUNTIME_CACHE_.headers[name];
   delete RUNTIME_CACHE_.rows[name];
+  if (RUNTIME_CACHE_.rawCols) delete RUNTIME_CACHE_.rawCols[name];
+  sheetCacheInvalidate_(name);
   if (name === 'APP_ROLE_ACTION_PERMISSIONS' && typeof permission_resetActionIndex_ === 'function')
     permission_resetActionIndex_();
   if (typeof admin35ResetPermissionCache_ === 'function') admin35ResetPermissionCache_(name);
@@ -1905,8 +2535,19 @@ function sheet_(name) {
 // apps/webapp/src/server/platform/sheets/sheet-repository.js
 function header_(name) {
   if (!RUNTIME_CACHE_.headers[name]) {
+    if (SHEET_CACHEABLE_[name]) {
+      const cachedHdr = sheetCacheGetJson_(sheetCacheKey_('HDR', name));
+      if (Array.isArray(cachedHdr) && cachedHdr.length) {
+        RUNTIME_CACHE_.headers[name] = cachedHdr;
+        return RUNTIME_CACHE_.headers[name];
+      }
+    }
     const s = sheet_(name);
-    RUNTIME_CACHE_.headers[name] = s.getRange(1, 1, 1, s.getLastColumn()).getDisplayValues()[0];
+    const hdr = s.getRange(1, 1, 1, s.getLastColumn()).getDisplayValues()[0];
+    RUNTIME_CACHE_.headers[name] = hdr;
+    if (SHEET_CACHEABLE_[name] && hdr.length) {
+      sheetCachePutJson_(sheetCacheKey_('HDR', name), hdr, SHEET_CACHE_TTL_SEC_);
+    }
   }
   return RUNTIME_CACHE_.headers[name];
 }
@@ -1914,6 +2555,13 @@ function header_(name) {
 // apps/webapp/src/server/platform/sheets/sheet-repository.js
 function rows_(name) {
   if (!RUNTIME_CACHE_.rows[name]) {
+    if (SHEET_CACHEABLE_[name]) {
+      const cachedRows = sheetCacheGetJson_(sheetCacheKey_('ROWS', name));
+      if (Array.isArray(cachedRows)) {
+        RUNTIME_CACHE_.rows[name] = cachedRows;
+        return RUNTIME_CACHE_.rows[name];
+      }
+    }
     const v = sheet_(name).getDataRange().getDisplayValues();
     if (!v.length) {
       RUNTIME_CACHE_.rows[name] = [];
@@ -1921,6 +2569,10 @@ function rows_(name) {
     }
     const h = v.shift(),
       out = [];
+    if (SHEET_CACHEABLE_[name] && h.length) {
+      RUNTIME_CACHE_.headers[name] = h;
+      sheetCachePutJson_(sheetCacheKey_('HDR', name), h, SHEET_CACHE_TTL_SEC_);
+    }
     for (let i = 0; i < v.length; i++) {
       const r = v[i],
         o = { __row: i + 2 };
@@ -1933,6 +2585,9 @@ function rows_(name) {
       if (hasValue) out.push(o);
     }
     RUNTIME_CACHE_.rows[name] = out;
+    if (SHEET_CACHEABLE_[name]) {
+      sheetCachePutJson_(sheetCacheKey_('ROWS', name), out, SHEET_CACHE_TTL_SEC_);
+    }
   }
   return RUNTIME_CACHE_.rows[name];
 }
@@ -1988,14 +2643,43 @@ function find_(name, key, value) {
 
 // apps/webapp/src/server/platform/sheets/sheet-repository.js
 function rawColumnByRow_(sheetName, headerName) {
+  if (!RUNTIME_CACHE_.rawCols) RUNTIME_CACHE_.rawCols = {};
+  if (!RUNTIME_CACHE_.rawCols[sheetName]) RUNTIME_CACHE_.rawCols[sheetName] = {};
+  if (RUNTIME_CACHE_.rawCols[sheetName][headerName]) {
+    return RUNTIME_CACHE_.rawCols[sheetName][headerName];
+  }
+  if (SHEET_CACHEABLE_[sheetName]) {
+    const cachedRaw = sheetCacheGetJson_(sheetCacheKey_('RAW_' + headerName, sheetName));
+    if (cachedRaw && typeof cachedRaw === 'object') {
+      const revived = {};
+      Object.keys(cachedRaw).forEach((k) => {
+        const v = cachedRaw[k];
+        revived[k] = v && typeof v === 'object' && typeof v.__d === 'number' ? new Date(v.__d) : v;
+      });
+      RUNTIME_CACHE_.rawCols[sheetName][headerName] = revived;
+      return revived;
+    }
+  }
   const s = sheet_(sheetName),
     h = header_(sheetName),
     col = h.indexOf(headerName);
   const lastRow = s.getLastRow();
   if (col < 0 || lastRow < 2) return {};
   const values = s.getRange(2, col + 1, lastRow - 1, 1).getValues(),
-    out = {};
-  for (let i = 0; i < values.length; i++) out[i + 2] = values[i][0];
+    out = {},
+    serializable = {};
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i][0];
+    out[i + 2] = v;
+    serializable[i + 2] =
+      Object.prototype.toString.call(v) === '[object Date]' && !isNaN(v.getTime())
+        ? { __d: v.getTime() }
+        : v;
+  }
+  RUNTIME_CACHE_.rawCols[sheetName][headerName] = out;
+  if (SHEET_CACHEABLE_[sheetName]) {
+    sheetCachePutJson_(sheetCacheKey_('RAW_' + headerName, sheetName), serializable, SHEET_CACHE_TTL_SEC_);
+  }
   return out;
 }
 
@@ -2319,12 +3003,25 @@ function dashboardAnalyticsFor_(incidents, reportedRaw, scope) {
 
 // apps/webapp/src/server/app/bootstrap-service.js
 function publicUser_(u) {
+  let pictureUrl = '';
+  let pictureFileId = '';
+  try {
+    if (book_().getSheetByName('APP_USER_PROFILE')) {
+      const profile = find_('APP_USER_PROFILE', 'user_id', u.user_id);
+      if (profile) {
+        pictureUrl = profile.picture_url || '';
+        pictureFileId = profile.picture_file_id || '';
+      }
+    }
+  } catch (_) {}
   return {
     user_id: u.user_id,
     username: u.username,
-    display_name: u.display_name,
-    role: u.role,
-    active: u.active === 'TRUE',
+    display_name: u.display_name || u.username || '',
+    role: u.role || 'USER',
+    active: itsdActiveBool_(u.active),
+    picture_url: pictureUrl,
+    picture_file_id: pictureFileId,
   };
 }
 
@@ -2381,6 +3078,7 @@ function itsdImpl_getBootstrap_(token) {
       model: x['รุ่น'],
       serial: x['หมายเลขซีเรียล'],
       asset_no: x['เลขครุภัณฑ์'],
+      asset_code: x['หมายเลขสินทรัพย์'],
       owner: x['ชื่อผู้รับผิดชอบ'],
       org: x['หน่วยงานหลัก'],
       suborg: x['หน่วยงานย่อย'],
@@ -2421,7 +3119,8 @@ function itsdImpl_doGet_() {
   return template
     .evaluate()
     .setTitle(b.short_name || b.project_name)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 // apps/webapp/src/server/entrypoints/webapp.js
@@ -2973,6 +3672,8 @@ function actionKeysForRole_(roleOrUser) {
     'inventory.view',
     'inventory.edit',
     'inventory.update_after_inspection',
+    'license.view',
+    'license.reveal_secret',
     'master_data.import',
     'ticket.manage_all',
     'role.manage',
@@ -2982,6 +3683,10 @@ function actionKeysForRole_(roleOrUser) {
   ].forEach((k) => {
     if (keys[k] === undefined) keys[k] = permission_defaultAllowed_(role, k);
   });
+  if (!['ADMIN', 'MANAGER'].includes(role)) {
+    keys['license.view'] = false;
+    keys['license.reveal_secret'] = false;
+  }
   if (role === 'ADMIN') {
     keys['role.manage'] = true;
     keys['permission.update'] = true;
@@ -3190,42 +3895,54 @@ function inventoryValidateChoices_(patch, old) {
     throw Error('กรุณาเลือกยี่ห้อจาก MST_DEVICE_MODELS หรือให้ผู้ดูแลเพิ่มยี่ห้อและรุ่นในข้อมูลหลัก');
 }
 
-// apps/webapp/src/server/features/inventory/inventory-service.js
-function nextInventoryId_() {
-  const codes = rows_('INVENTORY')
-    .map((r) => String(r['รหัสอุปกรณ์'] || '').trim())
+// apps/webapp/src/server/features/inventory/inventory-id-service.js
+function nextInventoryIdFromValues_(values, defaultPrefix) {
+  const ids = (Array.isArray(values) ? values : [])
+    .map((row) => String(Array.isArray(row) ? row[0] || '' : row || '').trim())
     .filter(Boolean);
-  const existing = new Set(codes.map((c) => c.toUpperCase()));
-  const uuidRx = /^INV-[0-9A-F]{8}$/i;
-  const seqRx = /^(.+-)(\d+)$/;
-  let prefix = '';
-  let width = 4;
-  for (let i = codes.length - 1; i >= 0; i--) {
-    const code = codes[i];
-    if (uuidRx.test(code)) continue;
-    const m = code.match(seqRx);
-    if (m) {
-      prefix = m[1];
-      width = Math.max(4, m[2].length);
+  const uuidPattern = /^INV-[0-9A-F]{8}$/i;
+  let sequence = null;
+  for (let index = ids.length - 1; index >= 0; index--) {
+    if (uuidPattern.test(ids[index])) continue;
+    const match = ids[index].match(/^(.+-)(\d+)$/);
+    if (match) {
+      sequence = { prefix: match[1], width: match[2].length };
       break;
     }
   }
-  if (!prefix) prefix = 'INV-TOR70-';
-  let maxNum = 0;
-  codes.forEach((code) => {
-    if (uuidRx.test(code)) return;
-    if (code.toUpperCase().startsWith(prefix.toUpperCase())) {
-      const tail = code.slice(prefix.length);
-      if (/^\d+$/.test(tail)) maxNum = Math.max(maxNum, Number(tail) || 0);
-    }
+  const prefix = sequence ? sequence.prefix : String(defaultPrefix || 'INV-TOR70-');
+  let width = sequence ? sequence.width : 4;
+  let max = 0;
+  const used = new Set(ids);
+  ids.forEach((id) => {
+    if (uuidPattern.test(id)) return;
+    const match = id.match(/^(.+-)(\d+)$/);
+    if (!match || match[1] !== prefix) return;
+    max = Math.max(max, Number(match[2]));
+    width = Math.max(width, match[2].length);
   });
-  let nextNum = maxNum + 1;
-  let candidate = prefix + String(nextNum).padStart(width, '0');
-  while (existing.has(candidate.toUpperCase())) {
-    nextNum++;
-    candidate = prefix + String(nextNum).padStart(width, '0');
+  let next = max + 1;
+  let candidate = prefix + String(next).padStart(width, '0');
+  while (used.has(candidate)) {
+    next += 1;
+    candidate = prefix + String(next).padStart(width, '0');
   }
   return candidate;
+}
+
+// apps/webapp/src/server/features/inventory/inventory-id-service.js
+function nextInventoryId_() {
+  const inventorySheet = sheet_('INVENTORY');
+  const idColumn = header_('INVENTORY').indexOf('รหัสอุปกรณ์') + 1;
+  if (idColumn < 1) throw Error('ไม่พบคอลัมน์รหัสอุปกรณ์ใน INVENTORY');
+  const lastRow = inventorySheet.getLastRow();
+  const values =
+    lastRow > 1 ? inventorySheet.getRange(2, idColumn, lastRow - 1, 1).getDisplayValues() : [];
+  const configuredPrefix = String(
+    PropertiesService.getScriptProperties().getProperty('INVENTORY_ID_PREFIX') ||
+      'INV-TOR70-',
+  ).trim();
+  return nextInventoryIdFromValues_(values, configuredPrefix || 'INV-TOR70-');
 }
 
 // apps/webapp/src/server/features/inventory/inventory-service.js
@@ -3245,7 +3962,8 @@ function itsdImpl_saveInventory_(token, data) {
     type = get('type', 'ประเภทอุปกรณ์', 120);
   if (!type) throw Error('กรุณาระบุประเภทอุปกรณ์');
   return lock_(() => {
-    const id = get('id', 'รหัสอุปกรณ์', 80) || nextInventoryId_(),
+    const id =
+        get('id', 'รหัสอุปกรณ์', 80) || nextInventoryId_(),
       old = find_('INVENTORY', 'รหัสอุปกรณ์', id),
       patch = {
         รหัสอุปกรณ์: id,
@@ -3254,6 +3972,12 @@ function itsdImpl_saveInventory_(token, data) {
         รุ่น: get('model', 'รุ่น', 120),
         หมายเลขซีเรียล: get('serial', 'หมายเลขซีเรียล', 160),
         เลขครุภัณฑ์: get('asset_no', 'เลขครุภัณฑ์', 160),
+        หมายเลขสินทรัพย์:
+          data.asset_code !== undefined
+            ? get('asset_code', 'หมายเลขสินทรัพย์', 120)
+            : old
+              ? old['หมายเลขสินทรัพย์'] || ''
+              : '',
         ชื่อผู้รับผิดชอบ: get('owner', 'ผู้รับผิดชอบ', 160),
         หน่วยงานหลัก: get('org', 'หน่วยงานหลัก', 180),
         หน่วยงานย่อย: get('suborg', 'หน่วยงานย่อย', 180),
@@ -3337,6 +4061,8 @@ function itsdImpl_canImportMasterData_(token) {
 function itsdImpl_saveImportedInventory_(token, rows) {
   const u = importPermissionGuard_(token, 'inventory');
   if (!Array.isArray(rows)) throw Error('ข้อมูลนำเข้าไม่ถูกต้อง');
+  if (rows.length > SECURITY_LIMITS.IMPORT_ROWS)
+    throw Error('นำเข้าได้สูงสุด ' + SECURITY_LIMITS.IMPORT_ROWS + ' รายการต่อครั้ง');
   const out = [];
   rows.forEach((r) => out.push(saveInventory(token, r)));
   if (typeof permissionAudit_log_ === 'function')
@@ -4319,6 +5045,111 @@ function admin35SaveProfile_(actor, userId, data) {
 }
 
 // apps/webapp/src/server/features/users/user-service.js
+function itsdImpl_uploadUserProfilePicture_(token, name, mime, base64) {
+  const actor = require_(token);
+  ensureAdminModuleSchema_();
+  name = boundedText_(name || 'avatar.jpg', 'ชื่อไฟล์', 120, true);
+  mime = boundedText_(mime || 'image/jpeg', 'ชนิดไฟล์', 80, true);
+  base64 = boundedText_(base64, 'ข้อมูลรูปภาพ', SECURITY_LIMITS.BASE64, false);
+  if (!String(mime || '').startsWith('image/')) {
+    throw Error('รองรับเฉพาะไฟล์รูปภาพเท่านั้น');
+  }
+  const bytes = Utilities.base64Decode(base64);
+  if (!bytes.length) throw Error('ไฟล์รูปภาพว่างเปล่า');
+  if (bytes.length > 5 * 1024 * 1024) throw Error('ไฟล์รูปภาพมีขนาดใหญ่เกินไป (ไม่เกิน 5 MB)');
+
+  return lock_(() => {
+    let folder;
+    const targetFolderId = '18znTfPsF8Y91nj-8bpoYy5rRl1pWZIh-';
+    try {
+      folder = DriveApp.getFolderById(targetFolderId);
+    } catch (_) {
+      try {
+        folder = driveFolderBySetting_('pictures_folder_id', 'Google Drive Pictures');
+      } catch (_) {
+        try {
+          folder = admin35AssetsFolder_();
+        } catch (_) {
+          folder = DriveApp.getRootFolder();
+        }
+      }
+    }
+    const ext = mime === 'image/png' ? '.png' : (mime === 'image/webp' ? '.webp' : '.jpg');
+    const safeName = 'avatar-' + actor.user_id + '-' + Utilities.formatDate(new Date(), TZ, 'yyyyMMdd-HHmmss') + ext;
+    const file = folder.createFile(Utilities.newBlob(bytes, mime, safeName));
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (_) {}
+
+    const fileId = file.getId();
+    const pictureUrl = 'https://lh3.googleusercontent.com/d/' + fileId;
+    const profileRow = find_('APP_USER_PROFILE', 'user_id', actor.user_id);
+    const oldFileId = profileRow && profileRow.picture_file_id;
+
+    if (profileRow) {
+      update_('APP_USER_PROFILE', profileRow.__row, {
+        picture_file_id: fileId,
+        picture_url: pictureUrl,
+        updated_at: now_(),
+        updated_by: actor.user_id,
+      });
+    } else {
+      append_('APP_USER_PROFILE', {
+        profile_id: 'PRF-' + Utilities.getUuid().slice(0, 8).toUpperCase(),
+        user_id: actor.user_id,
+        email: '',
+        telephone: '',
+        position: '',
+        department_id: '',
+        org_unit_id: '',
+        picture_file_id: fileId,
+        picture_url: pictureUrl,
+        active: true,
+        updated_at: now_(),
+        updated_by: actor.user_id,
+      });
+    }
+
+    if (oldFileId && oldFileId !== fileId) {
+      try {
+        DriveApp.getFileById(oldFileId).setTrashed(true);
+      } catch (_) {}
+    }
+    resetRows_('APP_USER_PROFILE');
+
+    return {
+      success: true,
+      file_id: fileId,
+      picture_url: pictureUrl,
+    };
+  });
+}
+
+// apps/webapp/src/server/features/users/user-service.js
+function itsdImpl_removeUserProfilePicture_(token) {
+  const actor = require_(token);
+  ensureAdminModuleSchema_();
+  return lock_(() => {
+    const profileRow = find_('APP_USER_PROFILE', 'user_id', actor.user_id);
+    if (!profileRow) return { success: true };
+    const oldFileId = profileRow.picture_file_id;
+    update_('APP_USER_PROFILE', profileRow.__row, {
+      picture_file_id: '',
+      picture_url: '',
+      updated_at: now_(),
+      updated_by: actor.user_id,
+    });
+    if (oldFileId) {
+      try {
+        DriveApp.getFileById(oldFileId).setTrashed(true);
+      } catch (_) {}
+    }
+    resetRows_('APP_USER_PROFILE');
+    return { success: true };
+  });
+}
+
+// apps/webapp/src/server/features/users/user-service.js
 function itsdImpl_saveAdminUser_(token, data) {
   const actor = requirePermission_(
     token,
@@ -4712,8 +5543,10 @@ function writeAudit_(actor, action, moduleCode, entityType, entityId, result, de
       client_info: '',
       session_ref: String(sessionRef || '').slice(0, 160),
     });
+    return true;
   } catch (e) {
     console.warn('[AUDIT_WRITE_FAILED]', e && e.message ? e.message : e);
+    return false;
   }
 }
 
@@ -5027,24 +5860,26 @@ function permission_seedActionPermissions_() {
     current.map((x) => String(x.role_key || '').toUpperCase() + '|' + String(x.action_key || '')),
   );
   const date = now_();
-  PERMISSION_ACTION_DEFAULTS_.concat(PERMISSION_LINE_ACTION_DEFAULTS_).forEach((x) => {
-    const key = x[1] + '|' + x[3];
-    if (used.has(key)) return;
-    append_('APP_ROLE_ACTION_PERMISSIONS', {
-      permission_id: x[0],
-      role_key: x[1],
-      module_key: x[2],
-      action_key: x[3],
-      action_name: x[4],
-      is_allowed: x[5],
-      scope_rule: x[6],
-      is_system_required: x[7],
-      updated_at: date,
-      updated_by: x[8],
-      note: x[9],
+  PERMISSION_ACTION_DEFAULTS_
+    .concat(PERMISSION_LINE_ACTION_DEFAULTS_, PERMISSION_LICENSE_ACTION_DEFAULTS_)
+    .forEach((x) => {
+      const key = x[1] + '|' + x[3];
+      if (used.has(key)) return;
+      append_('APP_ROLE_ACTION_PERMISSIONS', {
+        permission_id: x[0],
+        role_key: x[1],
+        module_key: x[2],
+        action_key: x[3],
+        action_name: x[4],
+        is_allowed: x[5],
+        scope_rule: x[6],
+        is_system_required: x[7],
+        updated_at: date,
+        updated_by: x[8],
+        note: x[9],
+      });
+      used.add(key);
     });
-    used.add(key);
-  });
   PERMISSION_ACTION_SEEDED_ = true;
   return true;
 }
@@ -5108,6 +5943,8 @@ function permission_defaultAllowed_(role, actionKey) {
       'ticket.create_for_user',
       'master_data.import',
       'inventory.edit',
+      'license.view',
+      'license.reveal_secret',
     ].includes(actionKey);
   const tech = [
     'ticket.view_unassigned',
@@ -5860,7 +6697,10 @@ function itsdImpl_deleteOrgUnit_(token, id) {
 }
 
 // apps/webapp/src/server/maintenance/backup-verification.js
-function itsdImpl_itsdBackupBeforeV1064_() {
+function itsdImpl_itsdBackupBeforeV1064_(token) {
+  const actor = requirePermission_(token, 'SETTINGS', 'MANAGE');
+  if (roleKey_(actor) !== 'ADMIN')
+    throw Error('เฉพาะ ADMIN เท่านั้นที่สำรองข้อมูลเพื่อบำรุงรักษาได้');
   const source = book_(); // Existing ITSD database accessor; do not guess spreadsheet IDs.
   if (!source || !source.getId) throw new Error('Database accessor book_() unavailable');
   const required = ['PM_PLANS', 'PM_PLAN_HISTORY'];
@@ -6116,6 +6956,7 @@ function itsdImpl_ocpbImportCommit_(payload) {
       target.setValues(ready);
       SpreadsheetApp.flush();
       ocpbImportVerifyCommittedKeys_(request.kind, target, ready, expectedHeaders);
+      resetRows_(sheet.getName());
     } catch (writeErr) {
       const rollback = ocpbImportRollbackWrite_(sheet, target, insertedRows);
       cache.remove(cacheKey);
@@ -6191,7 +7032,10 @@ function ocpbImportAssertReadyAgainstTargetValidation_(target, ready, headers) {
 }
 
 // apps/webapp/src/server/features/imports/import-service.js
-function itsdImpl_verifyOcpbImportV1018_() {
+function itsdImpl_verifyOcpbImportV1018_(token) {
+  const actor = requirePermission_(token, 'SETTINGS', 'VIEW');
+  if (roleKey_(actor) !== 'ADMIN')
+    throw Error('เฉพาะ ADMIN เท่านั้นที่ตรวจสอบโครงสร้าง Import ได้');
   const ss = ocpbImportGetSpreadsheet_();
   const ticket = ss.getSheetByName(OCPB_IMPORT_CONFIG.SHEETS.TICKET);
   const inventory = ss.getSheetByName(OCPB_IMPORT_CONFIG.SHEETS.INVENTORY);
@@ -6221,18 +7065,18 @@ function itsdImpl_verifyOcpbImportV1018_() {
 }
 
 // apps/webapp/src/server/features/imports/import-service.js
-function itsdImpl_verifyOcpbImportV1016_() {
-  return verifyOcpbImportV1018();
+function itsdImpl_verifyOcpbImportV1016_(token) {
+  return itsdImpl_verifyOcpbImportV1018_(token);
 }
 
 // apps/webapp/src/server/features/imports/import-service.js
-function itsdImpl_verifyOcpbImportV1015_() {
-  return verifyOcpbImportV1018();
+function itsdImpl_verifyOcpbImportV1015_(token) {
+  return itsdImpl_verifyOcpbImportV1018_(token);
 }
 
 // apps/webapp/src/server/features/imports/import-service.js
-function itsdImpl_verifyOcpbImportV1013_() {
-  return verifyOcpbImportV1018();
+function itsdImpl_verifyOcpbImportV1013_(token) {
+  return itsdImpl_verifyOcpbImportV1018_(token);
 }
 
 // apps/webapp/src/server/features/imports/import-service.js
@@ -8882,6 +9726,11 @@ function pmpCommit_(changes) {
       range.setValues(values);
     });
     SpreadsheetApp.flush();
+    changes.forEach((c) => {
+      try {
+        if (c && c.sheet && typeof c.sheet.getName === 'function') resetRows_(c.sheet.getName());
+      } catch (_) {}
+    });
   } catch (error) {
     let restored = true;
     attempted.reverse().forEach((c) => {
@@ -9186,7 +10035,10 @@ function pmOrgs_() {
 }
 
 // apps/webapp/src/server/features/pm/calendar-service.js
-function itsdImpl_pmSetupCandidate_() {
+function itsdImpl_pmSetupCandidate_(token) {
+  const actor = requirePermission_(token, 'SETTINGS', 'MANAGE');
+  if (roleKey_(actor) !== 'ADMIN')
+    throw Error('เฉพาะ ADMIN เท่านั้นที่ตั้งค่า PM Candidate ได้');
   const book = book_();
   return lock_(() => {
     [
@@ -9215,12 +10067,223 @@ function itsdImpl_pmSetupCandidate_() {
 const CALENDAR122_TAB_ = 'APP_HOLIDAYS';
 const CALENDAR122_HEADERS_ = ['id','kind','title','start_date','end_date','notes','active','deleted','revision','updated_at','updated_by'];
 
+function thaiOfficialHolidaysByYear_(year) {
+  const y = Number(year) > 2400 ? Number(year) - 543 : Number(year);
+  const list = [];
+  function add(start, end, title, notes) {
+    list.push({
+      kind: 'HOLIDAY',
+      title: title,
+      start_date: start,
+      end_date: end,
+      notes: notes || ('วันหยุดราชการประจำปี พ.ศ. ' + (y + 543) + ' (ตามประกาศทางการ / ธปท.)'),
+      active: true,
+    });
+  }
+
+  if (y === 2026) {
+    add('2026-01-01', '2026-01-01', 'วันขึ้นปีใหม่');
+    add('2026-01-02', '2026-01-02', 'วันหยุดราชการเพิ่มเป็นกรณีพิเศษ');
+    add('2026-03-03', '2026-03-03', 'วันมาฆบูชา');
+    add('2026-04-06', '2026-04-06', 'วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช และวันที่ระลึกมหาจักรีบรมราชวงศ์');
+    add('2026-04-13', '2026-04-15', 'วันสงกรานต์');
+    add('2026-05-04', '2026-05-04', 'วันฉัตรมงคล');
+    add('2026-05-11', '2026-05-11', 'วันพืชมงคลจรดพระนังคัลแรกนาขวัญ');
+    add('2026-05-31', '2026-05-31', 'วันวิสาขบูชา');
+    add('2026-06-01', '2026-06-01', 'วันหยุดชดเชยวันวิสาขบูชา');
+    add('2026-06-03', '2026-06-03', 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2026-07-28', '2026-07-28', 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2026-07-29', '2026-07-29', 'วันอาสาฬหบูชา');
+    add('2026-07-30', '2026-07-30', 'วันเข้าพรรษา');
+    add('2026-08-12', '2026-08-12', 'วันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2026-10-13', '2026-10-13', 'วันนวมินทรมหาราช');
+    add('2026-10-23', '2026-10-23', 'วันปิยมหาราช');
+    add('2026-12-05', '2026-12-05', 'วันคล้ายวันพระบรมราชสมภพพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร วันชาติ และวันพ่อแห่งชาติ');
+    add('2026-12-07', '2026-12-07', 'วันหยุดชดเชยวันคล้ายวันพระบรมราชสมภพฯ วันชาติ และวันพ่อแห่งชาติ');
+    add('2026-12-10', '2026-12-10', 'วันรัฐธรรมนูญ');
+    add('2026-12-31', '2026-12-31', 'วันสิ้นปี');
+  } else if (y === 2027) {
+    add('2027-01-01', '2027-01-01', 'วันขึ้นปีใหม่');
+    add('2027-02-21', '2027-02-21', 'วันมาฆบูชา');
+    add('2027-02-22', '2027-02-22', 'วันหยุดชดเชยวันมาฆบูชา');
+    add('2027-04-06', '2027-04-06', 'วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช และวันที่ระลึกมหาจักรีบรมราชวงศ์');
+    add('2027-04-13', '2027-04-15', 'วันสงกรานต์');
+    add('2027-05-04', '2027-05-04', 'วันฉัตรมงคล');
+    add('2027-05-10', '2027-05-10', 'วันพืชมงคลจรดพระนังคัลแรกนาขวัญ');
+    add('2027-05-20', '2027-05-20', 'วันวิสาขบูชา');
+    add('2027-06-03', '2027-06-03', 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2027-07-18', '2027-07-18', 'วันอาสาฬหบูชา');
+    add('2027-07-19', '2027-07-19', 'วันเข้าพรรษา และวันหยุดชดเชยวันอาสาฬหบูชา');
+    add('2027-07-20', '2027-07-20', 'วันหยุดชดเชยวันเข้าพรรษา');
+    add('2027-07-28', '2027-07-28', 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2027-08-12', '2027-08-12', 'วันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2027-10-13', '2027-10-13', 'วันนวมินทรมหาราช');
+    add('2027-10-23', '2027-10-23', 'วันปิยมหาราช');
+    add('2027-10-25', '2027-10-25', 'วันหยุดชดเชยวันปิยมหาราช');
+    add('2027-12-05', '2027-12-05', 'วันคล้ายวันพระบรมราชสมภพพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร วันชาติ และวันพ่อแห่งชาติ');
+    add('2027-12-06', '2027-12-06', 'วันหยุดชดเชยวันคล้ายวันพระบรมราชสมภพฯ วันชาติ และวันพ่อแห่งชาติ');
+    add('2027-12-10', '2027-12-10', 'วันรัฐธรรมนูญ');
+    add('2027-12-31', '2027-12-31', 'วันสิ้นปี');
+  } else if (y === 2028) {
+    add('2028-01-01', '2028-01-01', 'วันขึ้นปีใหม่');
+    add('2028-01-03', '2028-01-03', 'วันหยุดชดเชยวันขึ้นปีใหม่');
+    add('2028-02-10', '2028-02-10', 'วันมาฆบูชา');
+    add('2028-04-06', '2028-04-06', 'วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช และวันที่ระลึกมหาจักรีบรมราชวงศ์');
+    add('2028-04-13', '2028-04-15', 'วันสงกรานต์');
+    add('2028-04-17', '2028-04-17', 'วันหยุดชดเชยวันสงกรานต์');
+    add('2028-05-04', '2028-05-04', 'วันฉัตรมงคล');
+    add('2028-05-08', '2028-05-08', 'วันวิสาขบูชา');
+    add('2028-05-15', '2028-05-15', 'วันพืชมงคลจรดพระนังคัลแรกนาขวัญ');
+    add('2028-06-03', '2028-06-03', 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2028-06-05', '2028-06-05', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2028-07-06', '2028-07-06', 'วันอาสาฬหบูชา');
+    add('2028-07-07', '2028-07-07', 'วันเข้าพรรษา');
+    add('2028-07-28', '2028-07-28', 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2028-08-12', '2028-08-12', 'วันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2028-08-14', '2028-08-14', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2028-10-13', '2028-10-13', 'วันนวมินทรมหาราช');
+    add('2028-10-23', '2028-10-23', 'วันปิยมหาราช');
+    add('2028-12-05', '2028-12-05', 'วันคล้ายวันพระบรมราชสมภพพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร วันชาติ และวันพ่อแห่งชาติ');
+    add('2028-12-10', '2028-12-10', 'วันรัฐธรรมนูญ');
+    add('2028-12-11', '2028-12-11', 'วันหยุดชดเชยวันรัฐธรรมนูญ');
+    add('2028-12-31', '2028-12-31', 'วันสิ้นปี');
+  } else if (y === 2029) {
+    add('2029-01-01', '2029-01-01', 'วันขึ้นปีใหม่');
+    add('2029-02-27', '2029-02-27', 'วันมาฆบูชา');
+    add('2029-04-06', '2029-04-06', 'วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช และวันที่ระลึกมหาจักรีบรมราชวงศ์');
+    add('2029-04-13', '2029-04-15', 'วันสงกรานต์');
+    add('2029-04-16', '2029-04-16', 'วันหยุดชดเชยวันสงกรานต์');
+    add('2029-05-04', '2029-05-04', 'วันฉัตรมงคล');
+    add('2029-05-14', '2029-05-14', 'วันพืชมงคลจรดพระนังคัลแรกนาขวัญ');
+    add('2029-05-27', '2029-05-27', 'วันวิสาขบูชา');
+    add('2029-05-28', '2029-05-28', 'วันหยุดชดเชยวันวิสาขบูชา');
+    add('2029-06-03', '2029-06-03', 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2029-06-04', '2029-06-04', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2029-07-25', '2029-07-25', 'วันอาสาฬหบูชา');
+    add('2029-07-26', '2029-07-26', 'วันเข้าพรรษา');
+    add('2029-07-28', '2029-07-28', 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2029-07-30', '2029-07-30', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2029-08-12', '2029-08-12', 'วันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2029-08-13', '2029-08-13', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2029-10-13', '2029-10-13', 'วันนวมินทรมหาราช');
+    add('2029-10-15', '2029-10-15', 'วันหยุดชดเชยวันนวมินทรมหาราช');
+    add('2029-10-23', '2029-10-23', 'วันปิยมหาราช');
+    add('2029-12-05', '2029-12-05', 'วันคล้ายวันพระบรมราชสมภพพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร วันชาติ และวันพ่อแห่งชาติ');
+    add('2029-12-10', '2029-12-10', 'วันรัฐธรรมนูญ');
+    add('2029-12-31', '2029-12-31', 'วันสิ้นปี');
+  } else if (y === 2030) {
+    add('2030-01-01', '2030-01-01', 'วันขึ้นปีใหม่');
+    add('2030-02-17', '2030-02-17', 'วันมาฆบูชา');
+    add('2030-02-18', '2030-02-18', 'วันหยุดชดเชยวันมาฆบูชา');
+    add('2030-04-06', '2030-04-06', 'วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราช และวันที่ระลึกมหาจักรีบรมราชวงศ์');
+    add('2030-04-08', '2030-04-08', 'วันหยุดชดเชยวันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกมหาราชฯ');
+    add('2030-04-13', '2030-04-15', 'วันสงกรานต์');
+    add('2030-04-16', '2030-04-16', 'วันหยุดชดเชยวันสงกรานต์');
+    add('2030-05-04', '2030-05-04', 'วันฉัตรมงคล');
+    add('2030-05-06', '2030-05-06', 'วันหยุดชดเชยวันฉัตรมงคล');
+    add('2030-05-13', '2030-05-13', 'วันพืชมงคลจรดพระนังคัลแรกนาขวัญ');
+    add('2030-05-17', '2030-05-17', 'วันวิสาขบูชา');
+    add('2030-06-03', '2030-06-03', 'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี');
+    add('2030-07-15', '2030-07-15', 'วันอาสาฬหบูชา');
+    add('2030-07-16', '2030-07-16', 'วันเข้าพรรษา');
+    add('2030-07-28', '2030-07-28', 'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2030-07-29', '2030-07-29', 'วันหยุดชดเชยวันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว');
+    add('2030-08-12', '2030-08-12', 'วันเฉลิมพระชนมพรรษาสมเด็จพระบรมราชชนนีพันปีหลวง และวันแม่แห่งชาติ');
+    add('2030-10-13', '2030-10-13', 'วันนวมินทรมหาราช');
+    add('2030-10-14', '2030-10-14', 'วันหยุดชดเชยวันนวมินทรมหาราช');
+    add('2030-10-23', '2030-10-23', 'วันปิยมหาราช');
+    add('2030-12-05', '2030-12-05', 'วันคล้ายวันพระบรมราชสมภพพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร วันชาติ และวันพ่อแห่งชาติ');
+    add('2030-12-10', '2030-12-10', 'วันรัฐธรรมนูญ');
+    add('2030-12-31', '2030-12-31', 'วันสิ้นปี');
+  }
+  return list;
+}
+
+function calendar122SeedYear_(year, actorId) {
+  const ceYear = Number(year) > 2400 ? Number(year) - 543 : Number(year);
+  const holidays = thaiOfficialHolidaysByYear_(ceYear);
+  if (!holidays || !holidays.length) throw Error('ไม่พบข้อมูลวันหยุดราชการสำหรับปี พ.ศ. ' + (ceYear + 543));
+  return lock_(() => {
+    const sheet = admin35EnsureSheet_(CALENDAR122_TAB_, CALENDAR122_HEADERS_);
+    const existing = pmList_(sheet, CALENDAR122_HEADERS_);
+    const map = {};
+    existing.forEach(x => {
+      map[x.start_date + '|' + x.title] = x;
+    });
+    const toInsert = [];
+    const timestamp = now_();
+    let updatedCount = 0;
+
+    for (const h of holidays) {
+      const key = h.start_date + '|' + h.title;
+      const found = map[key];
+      if (!found) {
+        toInsert.push([
+          Utilities.getUuid(),
+          h.kind,
+          h.title,
+          h.start_date,
+          h.end_date,
+          h.notes,
+          'TRUE',
+          'FALSE',
+          1,
+          timestamp,
+          actorId || 'ADMIN',
+        ]);
+        map[key] = { id: true };
+      } else if (found.deleted === 'TRUE' || found.active !== 'TRUE') {
+        const rowNum = found.__row;
+        if (rowNum && rowNum >= 2) {
+          const rec = Object.assign({}, found, {
+            active: 'TRUE',
+            deleted: 'FALSE',
+            revision: (Number(found.revision) || 0) + 1,
+            updated_at: timestamp,
+            updated_by: actorId || 'ADMIN',
+          });
+          sheet.getRange(rowNum, 1, 1, CALENDAR122_HEADERS_.length)
+            .setValues([CALENDAR122_HEADERS_.map(k => safeSheetValue_(rec[k]))]);
+          updatedCount++;
+        }
+      }
+    }
+
+    if (toInsert.length > 0) {
+      const startRow = sheet.getLastRow() + 1;
+      const maxRows = sheet.getMaxRows();
+      if (startRow + toInsert.length - 1 > maxRows) {
+        sheet.insertRowsAfter(maxRows, (startRow + toInsert.length - 1) - maxRows);
+      }
+      sheet.getRange(startRow, 1, toInsert.length, CALENDAR122_HEADERS_.length).setValues(toInsert);
+    }
+    return {
+      ceYear: ceYear,
+      beYear: ceYear + 543,
+      added: toInsert.length,
+      updated: updatedCount,
+      total: holidays.length,
+    };
+  });
+}
+
 function calendar122Rows_() {
-  const sheet = book_().getSheetByName(CALENDAR122_TAB_);
-  if (!sheet) return [];
+  let sheet = book_().getSheetByName(CALENDAR122_TAB_);
+  if (!sheet) {
+    sheet = admin35EnsureSheet_(CALENDAR122_TAB_, CALENDAR122_HEADERS_);
+  }
   const headers = sheet.getRange(1, 1, 1, CALENDAR122_HEADERS_.length).getDisplayValues()[0];
   if (JSON.stringify(headers) !== JSON.stringify(CALENDAR122_HEADERS_)) throw Error('โครงสร้าง APP_HOLIDAYS ไม่ถูกต้อง กรุณาติดต่อ ADMIN');
-  return pmList_(sheet, CALENDAR122_HEADERS_).filter(x => x.deleted !== 'TRUE').map(x => ({
+  let raw = pmList_(sheet, CALENDAR122_HEADERS_);
+  if (!raw.some(x => x.start_date && x.start_date.startsWith('2026-') && x.deleted !== 'TRUE')) {
+    try {
+      calendar122SeedYear_(2026, 'SYSTEM_INIT');
+      raw = pmList_(sheet, CALENDAR122_HEADERS_);
+    } catch (e) {
+      // Ignore seeding error on read
+    }
+  }
+  return raw.filter(x => x.deleted !== 'TRUE').map(x => ({
     id:x.id, kind:x.kind, title:x.title, start_date:x.start_date, end_date:x.end_date,
     notes:x.notes, active:x.active === 'TRUE', revision:Number(x.revision), updated_at:x.updated_at,
   })).sort((a,b) => a.start_date.localeCompare(b.start_date) || a.title.localeCompare(b.title, 'th') || a.id.localeCompare(b.id));
@@ -9235,6 +10298,48 @@ function calendar122Guard_(token, write) {
 function itsdImpl_getCalendarEntries_(token) {
   calendar122Guard_(token, false);
   return { entries:calendar122Rows_() };
+}
+
+function itsdImpl_importThaiHolidays_(token, targetYear) {
+  const actor = calendar122Guard_(token, true);
+  let yearsToImport = [];
+  if (String(targetYear).toUpperCase() === 'ALL') {
+    yearsToImport = [2026, 2027, 2028, 2029, 2030];
+  } else {
+    const parsed = Number(targetYear);
+    const ce = parsed > 2400 ? parsed - 543 : parsed;
+    if (ce < 2026 || ce > 2035) throw Error('ระบุปีไม่ถูกต้อง (รองรับ พ.ศ. 2569 - 2578)');
+    yearsToImport = [ce];
+  }
+
+  let totalAdded = 0;
+  let totalUpdated = 0;
+  const importedYears = [];
+  for (const y of yearsToImport) {
+    const res = calendar122SeedYear_(y, actor.user_id);
+    totalAdded += res.added;
+    totalUpdated += res.updated;
+    importedYears.push(res.beYear);
+  }
+
+  if (typeof permissionAudit_log_ === 'function') {
+    permissionAudit_log_(
+      actor,
+      'CALENDAR_IMPORT_HOLIDAYS',
+      'SETTINGS',
+      String(targetYear),
+      'SUCCESS',
+      JSON.stringify({ importedYears, totalAdded, totalUpdated })
+    );
+  }
+
+  return {
+    ok: true,
+    years: importedYears,
+    added: totalAdded,
+    updated: totalUpdated,
+    entries: calendar122Rows_(),
+  };
 }
 
 function calendar122Validate_(input) {
@@ -9522,12 +10627,15 @@ function project70OpenBook_() {
       'PROJECT_NOT_CONFIGURED: ติดตั้งโครงการผ่าน project70Bootstrap_ ใน Apps Script editor',
     );
   const binding = project70Binding_();
-  const isAuthorizedDb = DB_ID === PROJECT70_LEGACY_DB_ || DB_ID === PROJECT70_TARGET_DB_;
-  const isAuthorizedScript =
-    ScriptApp.getScriptId() === PROJECT70_LEGACY_SCRIPT_ ||
-    ScriptApp.getScriptId() === PROJECT70_TARGET_SCRIPT_;
+  const isAuthorizedDb = DB_ID === PROJECT70_CONFIRMED_DB_;
+  const isAuthorizedScript = ScriptApp.getScriptId() === PROJECT70_CONFIRMED_SCRIPT_;
   if (!binding && (!isAuthorizedDb || !isAuthorizedScript))
     throw Error('PROJECT_NOT_BOUND: กรุณาผูกโครงการก่อนใช้งาน');
+  if (
+    binding &&
+    (binding.database_id !== DB_ID || binding.script_id !== ScriptApp.getScriptId())
+  )
+    throw Error('PROJECT_BINDING_RUNTIME_MISMATCH');
   const book = SpreadsheetApp.openById(DB_ID),
     marker = project70Identity_(book);
   if (
@@ -9541,8 +10649,7 @@ function project70OpenBook_() {
   if (
     !binding &&
     marker.itsd_binding_script_id &&
-    marker.itsd_binding_script_id !== PROJECT70_LEGACY_SCRIPT_ &&
-    marker.itsd_binding_script_id !== PROJECT70_TARGET_SCRIPT_
+    marker.itsd_binding_script_id !== PROJECT70_CONFIRMED_SCRIPT_
   )
     throw Error('PROJECT_DATABASE_IDENTITY_MISMATCH');
   return book;
@@ -9626,8 +10733,11 @@ function project70Bootstrap_() {
       !PROJECT70_TIMEZONES_.includes(timezone)
     )
       throw Error('ตั้ง ITSD_PROJECT_ID, ITSD_ENVIRONMENT และ ITSD_TIMEZONE ตามคู่มือก่อนติดตั้ง');
-    if (!DB_ID || DB_ID === PROJECT70_LEGACY_DB_)
-      throw Error('ใช้ฐานข้อมูลใหม่ที่แยกจากชุดตรวจสอบเดิม และกำหนด SPREADSHEET_ID ก่อนติดตั้ง');
+    if (
+      DB_ID !== PROJECT70_CONFIRMED_DB_ ||
+      ScriptApp.getScriptId() !== PROJECT70_CONFIRMED_SCRIPT_
+    )
+      throw Error('Apps Script หรือ SPREADSHEET_ID ไม่ตรงกับโครงการ Production ที่ยืนยันแล้ว');
     const username = normalizeUsername_(p.getProperty('ITSD_SETUP_ADMIN_USERNAME')),
       password = String(p.getProperty('ITSD_SETUP_ADMIN_PASSWORD') || ''),
       displayName = boundedText_(p.getProperty('ITSD_SETUP_ADMIN_NAME'), 'ชื่อ ADMIN', 120, true),
@@ -9685,6 +10795,7 @@ function project70Bootstrap_() {
     RUNTIME_CACHE_.sheets = {};
     RUNTIME_CACHE_.headers = {};
     RUNTIME_CACHE_.rows = {};
+    RUNTIME_CACHE_.rawCols = {};
     if (!rows_('APP_USERS').length) {
       const salt = random_();
       append_('APP_USERS', {
@@ -9837,6 +10948,27 @@ function project70Configuration_() {
       ),
       { report_logo_data_url: serviceReportReadLogoDataUrl_(settings) },
     ),
+    sticker: Object.assign(
+      Object.fromEntries(
+        [
+          'sticker_project_title',
+          'sticker_org_subtitle',
+          'sticker_contract_no',
+          'sticker_warranty_period',
+          'sticker_contact_phone',
+          'sticker_provider_name',
+          'sticker_provider_address',
+          'sticker_seq_prefix',
+          'sticker_layout',
+          'sticker_logo_file_id',
+          'sticker_provider_logo_file_id',
+        ].map((k) => [k, settings[k] || '']),
+      ),
+      {
+        sticker_logo_data_url: serviceReportReadLogoDataUrl_(settings, 'sticker_logo_file_id'),
+        sticker_provider_logo_data_url: serviceReportReadLogoDataUrl_(settings, 'sticker_provider_logo_file_id'),
+      },
+    ),
   };
 }
 
@@ -9863,9 +10995,25 @@ function itsdImpl_saveProjectConfiguration_(token, input) {
     'report_provider_address',
     'report_title',
     'report_project_description',
+    'sticker_project_title',
+    'sticker_org_subtitle',
+    'sticker_contract_no',
+    'sticker_warranty_period',
+    'sticker_contact_phone',
+    'sticker_provider_name',
+    'sticker_provider_address',
+    'sticker_seq_prefix',
+    'sticker_layout',
   ].forEach(
     (k) =>
-      (settings[k] = boundedText_(input[k], k, k === 'report_provider_address' ? 500 : 240, true)),
+      (settings[k] = boundedText_(
+        input[k],
+        k,
+        k.includes('address') || k.includes('title') || k.includes('project') || k.includes('warranty')
+          ? 500
+          : 240,
+        true,
+      )),
   );
   return lock_(() => {
     project70CheckRevision_(input.revision);
@@ -10132,11 +11280,11 @@ function itsdImpl_createProjectDriveFolders_(token, input) {
 }
 
 // apps/webapp/src/server/features/service-reports/work-order-service.js
-function serviceReportReadLogoDataUrl_(settings) {
+function serviceReportReadLogoDataUrl_(settings, key = 'report_logo_file_id') {
   const s = settings || systemSettingsMap_();
-  const id = String(s.report_logo_file_id || '').trim();
+  const id = String(s[key] || '').trim();
   if (!id) return '';
-  const cacheKey = 'ITSD_REPORT_LOGO_' + id;
+  const cacheKey = 'ITSD_LOGO_' + id;
   const cached = CacheService.getScriptCache().get(cacheKey);
   if (cached) return cached;
   try {
@@ -10155,6 +11303,30 @@ function serviceReportReadLogoDataUrl_(settings) {
 }
 
 function itsdImpl_uploadServiceReportLogo_(token, name, mime, base64) {
+  return project70UploadLogoHelper_(token, name, mime, base64, 'report_logo_file_id', 'REPORT_LOGO', 'อัปโหลดโลโก้หัวใบงาน ');
+}
+
+function itsdImpl_clearServiceReportLogo_(token) {
+  return project70ClearLogoHelper_(token, 'report_logo_file_id', 'REPORT_LOGO', 'คืนค่าโลโก้หัวใบงานเป็นค่าเริ่มต้น');
+}
+
+function itsdImpl_uploadStickerLogo_(token, name, mime, base64) {
+  return project70UploadLogoHelper_(token, name, mime, base64, 'sticker_logo_file_id', 'STICKER_LOGO', 'อัปโหลดโลโก้โครงการบนสติ๊กเกอร์ ');
+}
+
+function itsdImpl_clearStickerLogo_(token) {
+  return project70ClearLogoHelper_(token, 'sticker_logo_file_id', 'STICKER_LOGO', 'คืนค่าโลโก้โครงการบนสติ๊กเกอร์เป็นค่าเริ่มต้น');
+}
+
+function itsdImpl_uploadStickerProviderLogo_(token, name, mime, base64) {
+  return project70UploadLogoHelper_(token, name, mime, base64, 'sticker_provider_logo_file_id', 'STICKER_PROVIDER_LOGO', 'อัปโหลดโลโก้ผู้ให้บริการบนสติ๊กเกอร์ ');
+}
+
+function itsdImpl_clearStickerProviderLogo_(token) {
+  return project70ClearLogoHelper_(token, 'sticker_provider_logo_file_id', 'STICKER_PROVIDER_LOGO', 'คืนค่าโลโก้ผู้ให้บริการบนสติ๊กเกอร์เป็นค่าเริ่มต้น');
+}
+
+function project70UploadLogoHelper_(token, name, mime, base64, settingKey, auditTarget, auditDesc) {
   const actor = project70Admin_(token, 'EDIT');
   name = boundedText_(name, 'ชื่อไฟล์', 120, true);
   mime = boundedText_(mime, 'ชนิดไฟล์', 80, true);
@@ -10167,48 +11339,48 @@ function itsdImpl_uploadServiceReportLogo_(token, name, mime, base64) {
   if (bytes.length > 5 * 1024 * 1024) throw Error('ไฟล์โลโก้ต้องมีขนาดไม่เกิน 5 MB');
   return lock_(() => {
     ensureAdminModuleSchema_();
-    const old = find_('APP_SETTINGS', 'key', 'report_logo_file_id'),
+    const old = find_('APP_SETTINGS', 'key', settingKey),
       oldId = (old && old.value) || '';
     const safeName =
-      'service-report-logo-' +
+      settingKey + '-' +
       Utilities.formatDate(new Date(), TZ, 'yyyyMMdd-HHmmss') +
       (mime === 'image/png' ? '.png' : '.jpg');
     const file = admin35AssetsFolder_().createFile(Utilities.newBlob(bytes, mime, safeName));
-    admin35SetSetting_('report_logo_file_id', file.getId());
+    admin35SetSetting_(settingKey, file.getId());
     if (oldId && oldId !== file.getId()) {
       try {
-        CacheService.getScriptCache().remove('ITSD_REPORT_LOGO_' + oldId);
+        CacheService.getScriptCache().remove('ITSD_LOGO_' + oldId);
         DriveApp.getFileById(oldId).setTrashed(true);
       } catch (_) {}
     }
     const dataUrl = 'data:' + mime + ';base64,' + Utilities.base64Encode(bytes);
     try {
       if (dataUrl.length < 95000)
-        CacheService.getScriptCache().put('ITSD_REPORT_LOGO_' + file.getId(), dataUrl, 21600);
+        CacheService.getScriptCache().put('ITSD_LOGO_' + file.getId(), dataUrl, 21600);
     } catch (_) {}
     writeAudit_(
       actor,
       'UPLOAD',
       'SETTINGS',
-      'REPORT_LOGO',
+      auditTarget,
       file.getId(),
       'SUCCESS',
-      'อัปโหลดโลโก้หัวใบงาน ' + name,
+      auditDesc + name,
     );
     return { file_id: file.getId(), data_url: dataUrl, revision: project70Revision_() };
   });
 }
 
-function itsdImpl_clearServiceReportLogo_(token) {
+function project70ClearLogoHelper_(token, settingKey, auditTarget, auditDesc) {
   const actor = project70Admin_(token, 'EDIT');
   return lock_(() => {
     ensureAdminModuleSchema_();
-    const old = find_('APP_SETTINGS', 'key', 'report_logo_file_id'),
+    const old = find_('APP_SETTINGS', 'key', settingKey),
       oldId = (old && old.value) || '';
-    admin35SetSetting_('report_logo_file_id', '');
+    admin35SetSetting_(settingKey, '');
     if (oldId) {
       try {
-        CacheService.getScriptCache().remove('ITSD_REPORT_LOGO_' + oldId);
+        CacheService.getScriptCache().remove('ITSD_LOGO_' + oldId);
         DriveApp.getFileById(oldId).setTrashed(true);
       } catch (_) {}
     }
@@ -10216,10 +11388,10 @@ function itsdImpl_clearServiceReportLogo_(token) {
       actor,
       'DELETE',
       'SETTINGS',
-      'REPORT_LOGO',
+      auditTarget,
       oldId,
       'SUCCESS',
-      'คืนค่าโลโก้หัวใบงานเป็นค่าเริ่มต้น',
+      auditDesc,
     );
     return { file_id: '', data_url: '', revision: project70Revision_() };
   });

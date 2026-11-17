@@ -1,15 +1,27 @@
 /**
- * Project: ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)
+ * Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
  * File: Api.js
- * Version: V1.1.59
+ * Version: V1.2.08
  * Stage: production
  * Purpose: Compatibility facade for existing browser and maintenance callers
  * Notes:
  * - No secrets in source code
  * - Preserve existing data and backward compatibility
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-11
+ * Modified: 2026-11-17
  * Change History:
+ * - V1.2.08: Expose importThaiHolidays endpoint for Thai official holidays management.
+ * - V1.2.07: Expose upload/clear endpoints for sticker template logos.
+ * - V1.2.06: Version bump for step numbers bright green styling.
+ * - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).
+ * - V1.2.04: Version bump for Google Sites iframe embedding support.
+ * - V1.2.03: Style Choose File button with blue pill capsule and align desktop file upload with action buttons.
+ * - V1.2.02: Version bump for compact ticket detail fields and file upload zone.
+ * - V1.2.01: Version bump for LINE inbox UI improvements.
+ * - V1.2.00: Expose verifyForgotPasswordEmail public endpoint.
+ * - V1.1.99: Version bump for circular social login buttons.
+ * - V1.1.69: Add authenticated, on-demand Inventory License summary and secret-reveal endpoints.
+ * - V1.1.68: Publish the sequential inventory and CM-Form_69 release while retaining authenticated maintenance entry points.
  * - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที) and unify project/Drive/DB bindings.
  * - V1.0.79: Purchase fiscal-year dropdown 2560-2580; retain all verified V1.0.78 fixes.
  * - V1.0.78: LINE review editor, assetless tickets, themed messages and Thai PM period controls.
@@ -19,6 +31,7 @@
 function getPublicSystemBranding() { return itsdImpl_getPublicSystemBranding_.apply(this, arguments); }
 function include(name) { return itsdImpl_include_.apply(this, arguments); }
 function login(username, password) { return itsdImpl_login_.apply(this, arguments); }
+function verifyForgotPasswordEmail(email) { return itsdImpl_verifyForgotPasswordEmail_.apply(this, arguments); }
 function logout(token) { return itsdImpl_logout_.apply(this, arguments); }
 function changePassword(token, oldPassword, newPassword) { return itsdImpl_changePassword_.apply(this, arguments); }
 function getBootstrap(token) { return itsdImpl_getBootstrap_.apply(this, arguments); }
@@ -38,6 +51,8 @@ function saveAsset(token, data) { return itsdImpl_saveAsset_.apply(this, argumen
 function updateAsset(token, data) { return itsdImpl_updateAsset_.apply(this, arguments); }
 function editInventoryItem(token, data) { return itsdImpl_editInventoryItem_.apply(this, arguments); }
 function updateInventory(token, data) { return itsdImpl_updateInventory_.apply(this, arguments); }
+function getAssetLicenses(token, assetId) { return itsdImpl_getAssetLicenses_.apply(this, arguments); }
+function revealAssetLicenseSecret(token, assetId, fieldKey, currentPassword) { return itsdImpl_revealAssetLicenseSecret_.apply(this, arguments); }
 function canImportMasterData(token) { return itsdImpl_canImportMasterData_.apply(this, arguments); }
 function saveImportedInventory(token, rows) { return itsdImpl_saveImportedInventory_.apply(this, arguments); }
 function importInventoryRows(token, rows) { return itsdImpl_importInventoryRows_.apply(this, arguments); }
@@ -55,6 +70,8 @@ function getPublicSystemIconData() { return itsdImpl_getPublicSystemIconData_.ap
 function getSystemIconData(token) { return itsdImpl_getSystemIconData_.apply(this, arguments); }
 function getAdminUsers(token) { return itsdImpl_getAdminUsers_.apply(this, arguments); }
 function saveAdminUser(token, data) { return itsdImpl_saveAdminUser_.apply(this, arguments); }
+function uploadUserProfilePicture(token, name, mime, base64) { return itsdImpl_uploadUserProfilePicture_.apply(this, arguments); }
+function removeUserProfilePicture(token) { return itsdImpl_removeUserProfilePicture_.apply(this, arguments); }
 function resetAdminUserPassword(token, userId, newPassword) { return itsdImpl_resetAdminUserPassword_.apply(this, arguments); }
 function setAdminUserActive(token, userId, active) { return itsdImpl_setAdminUserActive_.apply(this, arguments); }
 function getAdminPermissions(token) { return itsdImpl_getAdminPermissions_.apply(this, arguments); }
@@ -69,14 +86,14 @@ function saveOrgUnit(token, data) { return itsdImpl_saveOrgUnit_.apply(this, arg
 function deleteOrgUnit(token, id) { return itsdImpl_deleteOrgUnit_.apply(this, arguments); }
 function getPasswordPolicy(token) { return itsdImpl_getPasswordPolicy_.apply(this, arguments); }
 function savePasswordPolicy(token, input) { return itsdImpl_savePasswordPolicy_.apply(this, arguments); }
-function itsdBackupBeforeV1064() { return itsdImpl_itsdBackupBeforeV1064_.apply(this, arguments); }
+function itsdBackupBeforeV1064(token) { return itsdImpl_itsdBackupBeforeV1064_.apply(this, arguments); }
 function ocpbImportGetBootstrap(authToken) { return itsdImpl_ocpbImportGetBootstrap_.apply(this, arguments); }
 function ocpbImportPreview(payload) { return itsdImpl_ocpbImportPreview_.apply(this, arguments); }
 function ocpbImportCommit(payload) { return itsdImpl_ocpbImportCommit_.apply(this, arguments); }
-function verifyOcpbImportV1018() { return itsdImpl_verifyOcpbImportV1018_.apply(this, arguments); }
-function verifyOcpbImportV1016() { return itsdImpl_verifyOcpbImportV1016_.apply(this, arguments); }
-function verifyOcpbImportV1015() { return itsdImpl_verifyOcpbImportV1015_.apply(this, arguments); }
-function verifyOcpbImportV1013() { return itsdImpl_verifyOcpbImportV1013_.apply(this, arguments); }
+function verifyOcpbImportV1018(token) { return itsdImpl_verifyOcpbImportV1018_.apply(this, arguments); }
+function verifyOcpbImportV1016(token) { return itsdImpl_verifyOcpbImportV1016_.apply(this, arguments); }
+function verifyOcpbImportV1015(token) { return itsdImpl_verifyOcpbImportV1015_.apply(this, arguments); }
+function verifyOcpbImportV1013(token) { return itsdImpl_verifyOcpbImportV1013_.apply(this, arguments); }
 function itsdLineClaimForReview(token, inboxId, expectedRevision) { return itsdImpl_itsdLineClaimForReview_.apply(this, arguments); }
 function itsdLineReconcileInspect(token, inboxId) { return itsdImpl_itsdLineReconcileInspect_.apply(this, arguments); }
 function itsdLineCreateTicketFromClaim() { return itsdImpl_itsdLineCreateTicketFromClaim_.apply(this, arguments); }
@@ -98,9 +115,10 @@ function pmGetPlanning(token, query) { return itsdImpl_pmGetPlanning_.apply(this
 function pmGetPlanningDetail(token, id) { return itsdImpl_pmGetPlanningDetail_.apply(this, arguments); }
 function pmGetPlanningExport(token, query, signature) { return itsdImpl_pmGetPlanningExport_.apply(this, arguments); }
 function pmSavePlanning(token, input) { return itsdImpl_pmSavePlanning_.apply(this, arguments); }
-function pmSetupCandidate() { return itsdImpl_pmSetupCandidate_.apply(this, arguments); }
+function pmSetupCandidate(token) { return itsdImpl_pmSetupCandidate_.apply(this, arguments); }
 function pmGetCalendar(token, month) { return itsdImpl_pmGetCalendar_.apply(this, arguments); }
 function getCalendarEntries(token) { return itsdImpl_getCalendarEntries_.apply(this, arguments); }
+function importThaiHolidays(token, year) { return itsdImpl_importThaiHolidays_.apply(this, arguments); }
 function saveCalendarEntry(token, input) { return itsdImpl_saveCalendarEntry_.apply(this, arguments); }
 function deleteCalendarEntry(token, id, revision) { return itsdImpl_deleteCalendarEntry_.apply(this, arguments); }
 function pmSavePlan(token, input) { return itsdImpl_pmSavePlan_.apply(this, arguments); }
@@ -121,6 +139,10 @@ function getServiceReport(token, id) { return itsdImpl_getServiceReport_.apply(t
 function saveServiceReportDetails(token, id, input) { return itsdImpl_saveServiceReportDetails_.apply(this, arguments); }
 function uploadServiceReportLogo(token, name, mime, base64) { return itsdImpl_uploadServiceReportLogo_.apply(this, arguments); }
 function clearServiceReportLogo(token) { return itsdImpl_clearServiceReportLogo_.apply(this, arguments); }
+function uploadStickerLogo(token, name, mime, base64) { return itsdImpl_uploadStickerLogo_.apply(this, arguments); }
+function clearStickerLogo(token) { return itsdImpl_clearStickerLogo_.apply(this, arguments); }
+function uploadStickerProviderLogo(token, name, mime, base64) { return itsdImpl_uploadStickerProviderLogo_.apply(this, arguments); }
+function clearStickerProviderLogo(token) { return itsdImpl_clearStickerProviderLogo_.apply(this, arguments); }
 function lineLegacyReviewInbox(token, input) { return itsdImpl_lineLegacyReviewInbox_.apply(this, arguments); }
 function saveDeviceModel(token, data) { return itsdImpl_saveDeviceModel_.apply(this, arguments); }
 function deactivateDeviceModel(token, id) { return itsdImpl_deactivateDeviceModel_.apply(this, arguments); }

@@ -1,14 +1,39 @@
 <!--
-  Project: OCPB IT Service Desk
-  File: index.html
-  Version: V1.1.43
-  Stage: beta
-  Purpose: Web application shell and generated asset includes
-  Notes:
-  - No secrets in source code
-  - Preserve existing data and backward compatibility
-  Modified: 2026-11-04
-  Change History:
+  Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
+  File: Index.html
+ * Version: V1.2.08
+ * Stage: production
+ * Purpose: Web application shell and generated asset includes
+ * Notes:
+ * - No secrets in source code
+ * - Preserve existing data and backward compatibility
+ * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
+ * Modified: 2026-11-17
+ * Change History:
+ * - V1.2.08: Add Thai official holidays auto-import tools and ITSUPPORT purple role pill badge.
+ * - V1.2.07: Add Sticker Template tab and batch A4 sheet printing for equipment maintenance labels.
+ * - V1.2.06: Version bump for step numbers bright green styling.
+  - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).
+  - V1.2.04: Version bump for Google Sites iframe embedding support.
+  - V1.2.03: Style Choose File button with blue pill capsule and align desktop file upload with action buttons.
+  - V1.2.02: Compact ticket repair detail fields and file upload zone for single screen fit without scrolling.
+  - V1.2.01: Update LINE inbox icon to official iOS rounded squircle and enable message scrolling with sticky new ticket form.
+  - V1.2.00: Add forgot password modal for user email verification and password reset requests.
+  - V1.1.99: Replace social login buttons with circular LINE and Google popup login buttons.
+  - V1.1.73: Move #themeToggle immediately after the notification bell and soften active/primary UI chrome for Light/Dark legibility.
+  - V1.1.71: Restore Light/Dark mode switcher (ocpb_mode, Dark default) and synchronize LINE Inbox & Import Wizard with the unified theme tokens.
+  - V1.1.70: Adopt single Dark design system (JetBrains Mono + #000000/#04060f/#4d49fc/#00d4ff) and remove legacy theme/palette switcher to reduce asset load.
+  - V1.1.69: Publish the secured Inventory License tab assets and client workflow.
+  - V1.1.68: Finalize sequential inventory IDs and CM-Form_69, remove the 12-palette switcher and retain the confirmed project branding and binding.
+  - V1.1.64: Bump to V1.1.64 for Inventory search/pick & editable device details across Status Update and CM Service Report dialogs.
+  - V1.1.60: Bump to V1.1.60 for compact single-screen equipment edit dialog.
+  - V1.1.59: Rewrite project header & default branding to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที), editable by ADMIN via Settings.
+  - V1.1.58: Synchronized deployment across both Script IDs, modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม).
+  - V1.1.54: Modular equipment drawer & separate saving per tab (ข้อมูลทั่วไป, คุณลักษณะ, การสำรวจ, ประวัติแจ้งซ่อม).
+  - V1.1.53: Complete Clay and Sea theme overhaul across entire ITSD Web App.
+  - V1.1.52: Bright blue circular base for inventory & modal close buttons; luminous white hover in dark mode, bright theme in light mode; sign out stays red.
+  - V1.1.51: Synchronize continuous horizontal dividing line across sidebar brand and topbar.
+  - V1.1.50: Bright luminous selection on hover/focus for all status and action icons.
   - V1.1.43: Add accessible live-region semantics to save-result messages.
   - V1.0.96: แสดงสถานะครุภัณฑ์เป็นภาษาไทยบน Web Application โดยคงค่าฐานข้อมูลเป็นรหัสภาษาอังกฤษ.
   - V1.0.79: Purchase fiscal-year dropdown 2560-2580; retain all verified V1.0.78 fixes.
@@ -17,30 +42,22 @@
   - V1.0.74: Use a palette-cycle button for twelve built-in palettes.
 -->
 <!doctype html>
-<html lang="th">
+<html lang="th" data-theme="dark" class="dark">
   <head>
     <base target="_top" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark light" />
     <script>
       (function () {
-        var mode = 'light';
-        var palette = 'palette-01';
+        var mode = 'dark';
         try {
-          var legacy = localStorage.getItem('ocpb_theme');
-          var savedMode = localStorage.getItem('ocpb_mode');
-          var savedPalette = localStorage.getItem('ocpb_palette');
-          mode = savedMode === 'dark' || (!savedMode && legacy === 'dark') ? 'dark' : 'light';
-          palette = /^palette-(0[1-9]|1[0-2])$/.test(savedPalette || '')
-            ? savedPalette
-            : legacy === 'indigo'
-              ? 'palette-09'
-              : 'palette-01';
-        } catch (_) {}
+          if (window.localStorage && window.localStorage.getItem('ocpb_mode') === 'light') {
+            mode = 'light';
+          }
+        } catch (e) {}
         var root = document.documentElement;
         root.dataset.theme = mode;
-        root.dataset.palette = palette;
         root.classList.toggle('dark', mode === 'dark');
         root.style.colorScheme = mode;
       })();
@@ -48,10 +65,12 @@
     <script id="publicSystemBranding" type="application/json">
       <?!= publicBrandingJson ?>
     </script>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -76,9 +95,9 @@
             <span class="material-symbols-rounded" aria-hidden="true">account_circle</span>
           </div>
           <div class="login48-brand-copy">
-            <span class="login48-eyebrow">IT SERVICE DESK</span>
-            <h1 id="loginBrandTitle">IT Service Desk</h1>
-            <p id="loginBrandDescription">ระบบบริหารจัดการงานบริการไอที</p>
+            <span class="login48-eyebrow">IT Service Desk</span>
+            <h1 id="loginBrandTitle">IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์</h1>
+            <p id="loginBrandDescription">ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์</p>
           </div>
         </div>
 
@@ -88,7 +107,7 @@
         </div>
 
         <label class="login48-field" for="username"
-          >ชื่อผู้ใช้
+          >ชื่อผู้ใช้ (Username)
           <span class="login48-input">
             <span class="material-symbols-rounded" aria-hidden="true">person</span>
             <input
@@ -97,21 +116,21 @@
               autocapitalize="none"
               spellcheck="false"
               required
-              placeholder="กรุณากรอกชื่อผู้ใช้"
+              placeholder="กรุณากรอกชื่อผู้ใช้ / Username"
             />
           </span>
         </label>
 
         <label class="login48-field" for="password"
-          >รหัสผ่าน
+          >รหัสผ่าน (Password)
           <span class="login48-input">
-            <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+            <span class="material-symbols-rounded" aria-hidden="true">key</span>
             <input
               id="password"
               type="password"
               autocomplete="current-password"
               required
-              placeholder="กรุณากรอกรหัสผ่าน"
+              placeholder="กรุณากรอกรหัสผ่าน / Password"
             />
             <button
               id="loginPasswordToggle"
@@ -130,7 +149,7 @@
           <button
             type="button"
             class="login48-text-link"
-            onclick="showLoginFutureNotice('ลืมรหัสผ่าน')"
+            onclick="openForgotPasswordModal()"
           >
             ลืมรหัสผ่าน?
           </button>
@@ -142,23 +161,35 @@
           >
           <span id="loginSubmitText">เข้าสู่ระบบ</span>
         </button>
+        <div id="loginError" class="error login48-error" role="alert" style="min-height:20px;margin-top:10px;text-align:center;color:#ef4444;font-size:14px;font-weight:500;"></div>
 
-        <div class="login48-divider"><span>หรือ</span></div>
-        <div class="login48-social" aria-label="ช่องทางเข้าสู่ระบบเพิ่มเติมที่เตรียมไว้สำหรับอนาคต">
+        <div class="login48-divider"><span>หรือเข้าสู่ระบบด้วย</span></div>
+        <div class="login48-social" aria-label="เข้าสู่ระบบด้วย LINE หรือ Google">
           <button
             type="button"
-            class="login48-provider"
-            onclick="showLoginFutureNotice('Google Sign In')"
+            class="login48-provider login48-provider-circle login48-line"
+            onclick="loginWithLine()"
+            title="เข้าสู่ระบบด้วย LINE"
+            aria-label="เข้าสู่ระบบด้วย LINE"
           >
-            <span class="login48-provider-mark" aria-hidden="true">G</span><span>Google</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 5.86 2 10.63c0 2.96 1.7 5.61 4.38 7.15.19.11.31.32.31.54l-.23 1.48c-.06.39.34.69.69.51l2.56-1.36c.17-.09.37-.11.55-.05.81.24 1.7.37 2.62.37 5.52 0 10-3.86 10-8.63C22 5.86 17.52 2 12 2z" fill="#06C755"/>
+              <path d="M7 8.5v5h2.2v-1.1H7.9V8.5H7zm3.1 0v5h.9v-5h-.9zm2 0v5h.9v-2.7l1.7 2.7h.9V8.5h-.9v2.7l-1.7-2.7h-.9zm4.2 0v5h2.4v-1.1h-1.5v-.8h1.3v-1.1h-1.3v-.9h1.5V8.5h-2.4z" fill="#ffffff"/>
+            </svg>
           </button>
           <button
             type="button"
-            class="login48-provider"
-            onclick="showLoginFutureNotice('Apple Sign In')"
+            class="login48-provider login48-provider-circle login48-google"
+            onclick="loginWithGoogle()"
+            title="เข้าสู่ระบบด้วย Google"
+            aria-label="เข้าสู่ระบบด้วย Google"
           >
-            <span class="material-symbols-rounded" aria-hidden="true">phone_iphone</span
-            ><span>Apple</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
           </button>
         </div>
         <div class="login48-create">
@@ -172,13 +203,12 @@
           </button>
         </div>
 
-        <small id="loginError" class="error login48-error" role="alert"></small>
         <div class="login-build-meta" aria-label="ข้อมูลเวอร์ชันและผู้สร้าง">
           <span id="itsdBuildVersion"
             >ITSD
             <?= appVersion ?></span
           >
-          <span>Create by : Longze Design</span>
+          <span>Create by : LongZe Design</span>
         </div>
 
         <div id="loginProgress" class="login-progress hidden" aria-live="polite" aria-hidden="true">
@@ -206,7 +236,7 @@
           </div>
           <div class="brand-copy">
             <strong id="sideTitle">IT Service Desk</strong
-            ><small id="sideDescription">ระบบบริหารจัดการงานบริการไอที</small>
+            ><small id="sideDescription">ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์</small>
           </div>
         </div>
         <div class="section-name">หน้าหลัก</div>
@@ -287,25 +317,15 @@
               <div id="uxNotificationMenu" class="ux-notification-menu hidden"></div>
             </div>
             <button
-              id="paletteToggle"
-              type="button"
-              class="top-icon-button palette-toggle"
-              onclick="changePalette()"
-              aria-label="เปลี่ยนชุดสี"
-              title="เปลี่ยนชุดสี"
-            >
-              <span class="material-symbols-rounded" aria-hidden="true">palette</span>
-            </button>
-            <button
               id="themeToggle"
               type="button"
               class="top-icon-button mode-toggle"
               onclick="toggleTheme()"
-              aria-label="เปิด Dark Mode"
-              aria-pressed="false"
-              title="Light / Dark Mode"
+              aria-label="สลับเป็น Light Mode"
+              aria-pressed="true"
+              title="สลับ Light / Dark Mode"
             >
-              <span class="material-symbols-rounded" aria-hidden="true">dark_mode</span>
+              <span class="material-symbols-rounded" aria-hidden="true">light_mode</span>
             </button>
             <div class="top-divider" aria-hidden="true"></div>
             <div id="uxTopUserMeta" class="ux-top-user-meta"></div>
@@ -337,6 +357,98 @@
           </button>
         </div>
         <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- Modal ลืมรหัสผ่าน (Forgot Password Modal) -->
+    <div
+      id="forgotPasswordModal"
+      class="forgot-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="forgotPasswordTitle"
+    >
+      <div class="forgot-modal-backdrop" onclick="closeForgotPasswordModal()"></div>
+      <div class="forgot-modal-box">
+        <div class="forgot-modal-head">
+          <div class="forgot-modal-title-wrap">
+            <span class="material-symbols-rounded forgot-modal-icon" aria-hidden="true">lock_reset</span>
+            <h2 id="forgotPasswordTitle">ลืมรหัสผ่าน</h2>
+          </div>
+          <button
+            type="button"
+            class="forgot-modal-close"
+            onclick="closeForgotPasswordModal()"
+            aria-label="ปิดหน้าต่าง"
+          >
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <form id="forgotPasswordForm" onsubmit="event.preventDefault(); submitForgotPassword();">
+          <div id="forgotFormContent">
+            <p class="forgot-modal-desc">
+              กรุณากรอกอีเมลที่ลงทะเบียนไว้ในระบบ (อีเมลเดียวกันกับในข้อมูลผู้ใช้) เพื่อตรวจสอบสิทธิ์และขอรีเซ็ตรหัสผ่าน
+            </p>
+
+            <label class="forgot-modal-field" for="forgotEmail">
+              <span>อีเมลผู้ใช้งาน (Registered Email)</span>
+              <div class="forgot-modal-input-wrap">
+                <span class="material-symbols-rounded" aria-hidden="true">mail</span>
+                <input
+                  id="forgotEmail"
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  required
+                  placeholder="ตัวอย่าง: user@example.com"
+                  oninput="clearForgotError()"
+                />
+              </div>
+            </label>
+
+            <div id="forgotError" class="forgot-modal-alert error hidden" role="alert"></div>
+
+            <div class="forgot-modal-actions">
+              <button type="button" class="btn secondary" onclick="closeForgotPasswordModal()">
+                ยกเลิก
+              </button>
+              <button type="submit" id="forgotSubmitBtn" class="btn primary">
+                <span id="forgotSubmitIcon" class="material-symbols-rounded" aria-hidden="true">search_check</span>
+                <span id="forgotSubmitText">ตรวจสอบข้อมูล</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="forgotSuccessContent" class="forgot-success-content hidden">
+            <div class="forgot-success-badge">
+              <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+            </div>
+            <h3 class="forgot-success-title">ตรวจสอบข้อมูลสำเร็จ</h3>
+            <div class="forgot-success-card">
+              <div class="forgot-info-row">
+                <span class="label">ชื่อผู้ใช้:</span>
+                <strong id="forgotFoundUsername" class="value">-</strong>
+              </div>
+              <div class="forgot-info-row">
+                <span class="label">ชื่อ-นามสกุล:</span>
+                <strong id="forgotFoundDisplay" class="value">-</strong>
+              </div>
+              <div class="forgot-info-row">
+                <span class="label">อีเมล:</span>
+                <span id="forgotFoundEmail" class="value text-dim">-</span>
+              </div>
+            </div>
+            <p class="forgot-success-hint">
+              ระบบยืนยันข้อมูลผู้ใช้งานตรงกับระบบแล้ว กรุณาติดต่อผู้ดูแลระบบ (Admin) เพื่อขอรับรหัสผ่านชั่วคราว หรือปฏิบัติตามคำแนะนำของหน่วยงาน
+            </p>
+            <div class="forgot-modal-actions centered">
+              <button type="button" class="btn primary" onclick="closeForgotPasswordModal()">
+                กลับสู่หน้าเข้าสู่ระบบ
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
     <div id="toast" class="toast hidden" role="status" aria-live="polite" aria-atomic="true"></div>
