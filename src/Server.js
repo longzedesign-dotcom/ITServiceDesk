@@ -1,15 +1,16 @@
 /**
  * Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
  * File: Server.js
- * Version: V1.2.08
+ * Version: V1.2.09
  * Stage: production
  * Purpose: Private runtime, feature services and platform adapters
  * Notes:
  * - No secrets in source code
  * - Preserve existing data and backward compatibility
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-17
+ * Modified: 2026-11-18
  * Change History:
+ * - V1.2.09: Add sticker font size scale stepped slider (5 levels: 85% to 120%) with real-time preview and proportional scaling.
  * - V1.2.08: Add Thai official holidays auto-import (2569-2573), PM calendar holiday auto-seed, and ITSUPPORT purple role pill badge.
  * - V1.2.07: Add Sticker Template (แม่แบบสติ๊กเกอร์) tab and batch A4 sheet printing for equipment maintenance labels.
  * - V1.2.06: Bright green background for form section step numbers (1, 2, 3).
@@ -66,7 +67,7 @@
  * - V1.0.76: Modular production structure with compatible public APIs.
  */
 // apps/webapp/src/server/app/release.js
-const APP_VERSION = 'V1.2.08';
+const APP_VERSION = 'V1.2.09';
 
 // apps/webapp/src/server/platform/environment.js
 const DB_ID =
@@ -10960,6 +10961,7 @@ function project70Configuration_() {
           'sticker_provider_address',
           'sticker_seq_prefix',
           'sticker_layout',
+          'sticker_font_scale',
           'sticker_logo_file_id',
           'sticker_provider_logo_file_id',
         ].map((k) => [k, settings[k] || '']),
@@ -11004,6 +11006,7 @@ function itsdImpl_saveProjectConfiguration_(token, input) {
     'sticker_provider_address',
     'sticker_seq_prefix',
     'sticker_layout',
+    'sticker_font_scale',
   ].forEach(
     (k) =>
       (settings[k] = boundedText_(

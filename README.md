@@ -4,7 +4,7 @@
 
 ### Next-Gen Serverless IT Service Desk, Asset Inventory Management & Automated Workflow Suite
 
-[![Version](https://img.shields.io/badge/Version-ITSD%20V1.2.08-F97316?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
+[![Version](https://img.shields.io/badge/Version-ITSD%20V1.2.09-F97316?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Theme](https://img.shields.io/badge/Theme-Dark%20Theme%20Admin%20Dashboard-0D0D0D?style=flat-square)](https://github.com/longzedesign-dotcom/ITServiceDesk)
 [![Developer](https://img.shields.io/badge/Developer-LongZe%20Design-purple?style=flat-square)](https://github.com/longzedesign-dotcom)
 [![Platform](https://img.shields.io/badge/Platform-Google%20Apps%20Script%20%7C%20Web%20App-34A853?style=flat-square&logo=google)](https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit)
@@ -26,7 +26,7 @@
 | **Google Drive Root** | `ITSD` (`1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk`) | https://drive.google.com/drive/folders/1fy0Th9kkrcSdfJciTn_C15OMWHkSvOtk |
 | **Google Sheets Database** | `DBS_ITSD` (`1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs`) | https://docs.google.com/spreadsheets/d/1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs/edit |
 | **Apps Script Project (Edit)** | `ITServiceDesk` (`1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg`) | https://script.google.com/home/projects/1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg/edit |
-| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.2.08` · Production Deployment) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
+| **Web App Deploy (Exec)** | `AKfycbxTiZ-...` (`ITSD V1.2.09` · Production Deployment) | https://script.google.com/macros/s/AKfycbxTiZ-1A7NiE8jFhNjf_pDE0GQSmWn539J7RtfJ2M3EsuVkS8DkhfLcXNhw9FMijYf3/exec |
 
 ---
 
@@ -45,7 +45,8 @@
 
 **ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที)** พัฒนาขึ้นด้วยสถาปัตยกรรม **100% Serverless** บน Google Workspace โดยใช้ **Google Apps Script (V8)** ขับเคลื่อน Single Page Application (SPA) เชื่อมต่อกับ **Google Sheets (`DBS_ITSD`)** เป็นฐานข้อมูลหลัก และจัดเก็บเอกสาร/รูปภาพ/ไฟล์สำรองข้อมูลบน **Google Drive (`ITSD`)**
 
-**จุดเด่นสำคัญใน V1.2.08:**
+**จุดเด่นสำคัญใน V1.2.09:**
+- **Sticker Font Size Stepped Slider with Real-time Preview (V1.2.09)**: แถบเลื่อนปรับขนาดตัวอักษรสติ๊กเกอร์ติดอุปกรณ์ 5 ระดับ (85% XS เล็กมาก, 92.5% S เล็ก, 100% M มาตรฐาน, 110% L ใหญ่, 120% XL ใหญ่พิเศษ) วางในตำแหน่งแนวระนาบเดียวกับปุ่มคำสั่ง พร้อมการคำนวณสัดส่วนฟอนต์อัตโนมัติ (Dynamic Proportional Scaling) ไม่ล้นกรอบ และพรีวิวสดแบบเรียลไทม์ทันทีที่ปรับ
 - **Thai Official Holidays Auto-Import & PM Calendar Integration (V1.2.08)**: ฟังก์ชันดึงวันหยุดราชการไทยอัตโนมัติในเมนูตั้งค่าระบบ > จัดการวันหยุด เลือกล่วงหน้าได้ 3–5 ปี (พ.ศ. 2569–2573) และนำไปไฮไลต์บนปฏิทินแผน PM อัตโนมัติ
 - **Sticker Template & Batch A4 Printing (V1.2.07–V1.2.08)**: แท็บแม่แบบสติ๊กเกอร์และการพิมพ์สติ๊กเกอร์เป็นชุด A4 มาตรฐาน (12/15 ดวง) รองรับการเลือกพิมพ์ครุภัณฑ์ทั้งหมดโดยไม่จำกัดจำนวนรายการ พร้อมระบบพรีวิวสด
 - **Role Badge Styling for ITSUPPORT (V1.2.08)**: ปรับสีพื้นหลังบทบาท "ฝ่ายสนับสนุน IT" (ITSUPPORT) ให้เป็นแถบสีม่วงเข้าชุดกับ "เจ้าหน้าที่ IT" (TECHNICIAN) ชัดเจนทั้ง Light และ Dark Mode
