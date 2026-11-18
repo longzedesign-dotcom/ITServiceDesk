@@ -1,15 +1,17 @@
 /**
  * Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
  * File: Entrypoints.js
- * Version: V1.2.07
+ * Version: V1.2.09
  * Stage: production
  * Purpose: Web application and LINE HTTP entrypoints
  * Notes:
  * - No secrets in source code
  * - Preserve existing data and backward compatibility
  * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-17
+ * Modified: 2026-11-18
  * Change History:
+ * - V1.2.09: Version bump for sticker font size scale stepped slider support.
+ * - V1.2.08: Version bump for Thai official holidays auto-import and ITSUPPORT purple role styling.
  * - V1.2.07: Add Sticker Template tab and batch A4 sheet printing for equipment maintenance labels.
  * - V1.2.06: Version bump for step numbers bright green styling.
  * - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).

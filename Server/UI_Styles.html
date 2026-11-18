@@ -1,30 +1,32 @@
 <!--
   Project: IT Service Desk : ระบบแจ้งซ่อม บริหารจัดการงานครุภัณฑ์
   File: UI_Styles.html
- * Version: V1.2.07
- * Stage: production
- * Purpose: Unified # Dark design-system stylesheet and print-safe report overrides
- * Notes:
- * - No secrets in source code
- * - Preserve existing data and backward compatibility
- * - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
- * Modified: 2026-11-17
- * Change History:
- * - V1.2.07: Add Sticker Template styling and batch equipment inventory print sheets.
- * - V1.2.06: Bright green background for form section step numbers (1, 2, 3).
- * - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).
- * - V1.2.04: Version bump for Google Sites iframe embedding support.
- * - V1.2.03: Style Choose File button with blue pill capsule and align desktop file upload with action buttons.
- * - V1.2.02: Compact ticket repair detail fields and file upload zone for single screen fit without scrolling.
- * - V1.2.01: Official iOS rounded squircle LINE icon and scrollable LINE inbox messages with locked new ticket form.
- * - V1.2.00: Styling for forgot password modal, inputs, states and dark/light theme support.
- * - V1.1.99: Circular LINE and Google social login icon buttons with soft shadow and dark/light mode support.
- * - V1.1.73: Soften active sidebar/primary/tab button surfaces for Light/Dark legibility and unify notification dropdown & toast surfaces across both modes.
- * - V1.1.71: Restore Light/Dark mode toggle (#themeToggle, Dark default) and move LINE Inbox & Import Wizard styles into unified theme tokens.
- * - V1.1.70: Migrate entire Web App to the unified # Dark design system (JetBrains Mono + Noto Sans Thai, #000000/#04060f/#4d49fc/#00d4ff/#ef4444), fix unclosed KPI rule, and remove multi-palette/Light-Dark switcher overhead.
- * - V1.1.69: Add responsive, accessible License cards and horizontal drawer tabs for the secured license workflow.
- * - V1.1.68: Finalize Clay & Sea as the single palette, the 980px compact editor and CM-Form_69 release styling.
- * - V1.1.64: Add inventory picker & status device grid styles, plus .asset-grid-2 for side-by-side CM service report rows.
+  Version: V1.2.09
+  Stage: production
+  Purpose: Unified # Dark design-system stylesheet and print-safe report overrides
+  Notes:
+  - No secrets in source code
+  - Preserve existing data and backward compatibility
+  - Project name is customizable via Admin -> System Settings (APP_SETTINGS)
+  Modified: 2026-11-18
+  Change History:
+  - V1.2.09: Add sticker font size scale stepped slider (5 levels: 85% to 120%) with real-time preview and proportional scaling.
+  - V1.2.08: Add Thai official holidays styles, PM calendar holiday integration highlights, and ITSUPPORT role badge purple styling.
+  - V1.2.07: Add Sticker Template styling and batch equipment inventory print sheets.
+  - V1.2.06: Bright green background for form section step numbers (1, 2, 3).
+  - V1.2.05: Inline title and description on single line for แจ้งซ่อมใหม่ (แจ้งซ่อมใหม่ : กรอกข้อมูลเพื่อแจ้งปัญหาให้ทีมงานตรวจสอบและแก้ไข).
+  - V1.2.04: Version bump for Google Sites iframe embedding support.
+  - V1.2.03: Style Choose File button with blue pill capsule and align desktop file upload with action buttons.
+  - V1.2.02: Compact ticket repair detail fields and file upload zone for single screen fit without scrolling.
+  - V1.2.01: Official iOS rounded squircle LINE icon and scrollable LINE inbox messages with locked new ticket form.
+  - V1.2.00: Styling for forgot password modal, inputs, states and dark/light theme support.
+  - V1.1.99: Circular LINE and Google social login icon buttons with soft shadow and dark/light mode support.
+  - V1.1.73: Soften active sidebar/primary/tab button surfaces for Light/Dark legibility and unify notification dropdown & toast surfaces across both modes.
+  - V1.1.71: Restore Light/Dark mode toggle (#themeToggle, Dark default) and move LINE Inbox & Import Wizard styles into unified theme tokens.
+  - V1.1.70: Migrate entire Web App to the unified # Dark design system (JetBrains Mono + Noto Sans Thai, #000000/#04060f/#4d49fc/#00d4ff/#ef4444), fix unclosed KPI rule, and remove multi-palette/Light-Dark switcher overhead.
+  - V1.1.69: Add responsive, accessible License cards and horizontal drawer tabs for the secured license workflow.
+  - V1.1.68: Finalize Clay & Sea as the single palette, the 980px compact editor and CM-Form_69 release styling.
+  - V1.1.64: Add inventory picker & status device grid styles, plus .asset-grid-2 for side-by-side CM service report rows.
   - V1.1.60: Add compact .asset-compact-form single-screen modal grid & tight vertical spacing.
   - V1.1.59: Rewrite project header to ITSD : ITServiceDesk (ระบบแจ้งซ่อมออนไลน์ และการจัดการครุภัณฑ์ไอที).
   - V1.1.43: Place high-contrast save-result messages above dialogs and style inline inventory errors.
@@ -10908,6 +10910,50 @@ html[data-theme='light'] .ui-side-tabs button.active {
 .project70-actions button {
   min-height: 42px;
   white-space: normal;
+}
+.stk-font-slider-container {
+  min-width: 300px;
+  max-width: 440px;
+  background: var(--dark-surface-elevated, #f8fafc);
+  border: 1px solid var(--dark-border-muted, #cbd5e1);
+  border-radius: 12px;
+  padding: 8px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.stk-stepped-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #e11d48;
+  border-radius: 2px;
+  outline: none;
+  margin: 0;
+  cursor: pointer;
+}
+.stk-stepped-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #e11d48;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.stk-stepped-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.stk-stepped-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #e11d48;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
 }
 .project70 dl {
   display: grid;
