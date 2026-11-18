@@ -1426,7 +1426,11 @@ const PM_SOFT_DELETED_ = 'ลบแล้ว';
 const PROJECT70_CONFIRMED_DB_ = '1JtOd13gEJpwqPlaBJy87hGrUa1hO_MnVmmKRAaoAyEs';
 
 // apps/webapp/src/server/features/projects/project-binding.js
-const PROJECT70_CONFIRMED_SCRIPT_ = '1drKyOpXXRBkf9s9uFXZi6h3PoSy1Ud-SfqMkx8xPyDNNl1XWxcGiVUF7';
+const PROJECT70_CONFIRMED_SCRIPTS_ = [
+  '1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg',
+  '1drKyOpXXRBkf9s9uFXZi6h3PoSy1Ud-SfqMkx8xPyDNNl1XWxcGiVUF7',
+];
+const PROJECT70_CONFIRMED_SCRIPT_ = '1G24xkTApOioEWGknDyVxqQ-sNzICsG8HQoP-5IkfJK98sfGsir_0QWcg';
 
 // apps/webapp/src/server/features/projects/project-binding.js
 const PROJECT70_TIMEZONES_ = ['Asia/Bangkok', 'Asia/Ho_Chi_Minh', 'Asia/Jakarta'];
@@ -10628,7 +10632,9 @@ function project70OpenBook_() {
     );
   const binding = project70Binding_();
   const isAuthorizedDb = DB_ID === PROJECT70_CONFIRMED_DB_;
-  const isAuthorizedScript = ScriptApp.getScriptId() === PROJECT70_CONFIRMED_SCRIPT_;
+  const isAuthorizedScript =
+    ScriptApp.getScriptId() === PROJECT70_CONFIRMED_SCRIPT_ ||
+    PROJECT70_CONFIRMED_SCRIPTS_.includes(ScriptApp.getScriptId());
   if (!binding && (!isAuthorizedDb || !isAuthorizedScript))
     throw Error('PROJECT_NOT_BOUND: กรุณาผูกโครงการก่อนใช้งาน');
   if (
@@ -10649,7 +10655,8 @@ function project70OpenBook_() {
   if (
     !binding &&
     marker.itsd_binding_script_id &&
-    marker.itsd_binding_script_id !== PROJECT70_CONFIRMED_SCRIPT_
+    marker.itsd_binding_script_id !== PROJECT70_CONFIRMED_SCRIPT_ &&
+    !PROJECT70_CONFIRMED_SCRIPTS_.includes(marker.itsd_binding_script_id)
   )
     throw Error('PROJECT_DATABASE_IDENTITY_MISMATCH');
   return book;
@@ -10735,7 +10742,8 @@ function project70Bootstrap_() {
       throw Error('ตั้ง ITSD_PROJECT_ID, ITSD_ENVIRONMENT และ ITSD_TIMEZONE ตามคู่มือก่อนติดตั้ง');
     if (
       DB_ID !== PROJECT70_CONFIRMED_DB_ ||
-      ScriptApp.getScriptId() !== PROJECT70_CONFIRMED_SCRIPT_
+      (ScriptApp.getScriptId() !== PROJECT70_CONFIRMED_SCRIPT_ &&
+        !PROJECT70_CONFIRMED_SCRIPTS_.includes(ScriptApp.getScriptId()))
     )
       throw Error('Apps Script หรือ SPREADSHEET_ID ไม่ตรงกับโครงการ Production ที่ยืนยันแล้ว');
     const username = normalizeUsername_(p.getProperty('ITSD_SETUP_ADMIN_USERNAME')),
