@@ -67,7 +67,7 @@
 flowchart TD
     User(["ผู้ใช้งาน / ช่างเทคนิค / ADMIN"]) -->|HTTPS| WebApp["ITSD Web App SPA (Index.html + UI_Client.html)"]
     WebApp -->|google.script.run| Facade["Api.js / Entrypoints.js"]
-    Facade --> Core["Server.js Engine (V1.1.70)"]
+    Facade --> Core["Server.js Engine (V1.2.09)"]
 
     subgraph Google["Google Workspace Cloud"]
         Core <-->|Session & Icon Cache| Cache[("CacheService")]
@@ -149,7 +149,7 @@ ITSD/
     ├── appsscript.json              # Manifest (Asia/Bangkok, V8, OAuth Scopes)
     ├── Entrypoints.js               # doGet() และ doPost()
     ├── Api.js                       # Public API Facade (google.script.run)
-    ├── Server.js                    # Core Enterprise Engine (V1.1.70)
+    ├── Server.js                    # Core Enterprise Engine (V1.2.09)
     ├── Index.html                   # Web App Shell & Login Layout
     ├── UI_Client.html               # Client Controllers & SPA Views
     ├── UI_Styles.html               # Theme Tokens (Dark Theme Admin Dashboard / Dark & Light)
